@@ -8,24 +8,18 @@ import (
 
 func TestBreaker_Call_Once_Succeeds(t *testing.T) {
 	fn := stability.Breaker[int](mockAlwaysSucceeds(), 3)
-	res, err := fn(context.Background())
+	res, err := fn(context.Background(), 42)
 	if err != nil {
 		t.Fatalf("error must be nil, but got %v", err)
 	}
-	if res == nil {
-		t.Fatal("result must be not nil")
-	}
-	if *res != 42 {
-		t.Fatalf("result must be %d, but got %d", 42, *res)
+	if res != 42 {
+		t.Fatalf("result must be %d, but got %d", 42, res)
 	}
 }
 
 func TestBreaker_Call_Once_Fails(t *testing.T) {
 	fn := stability.Breaker[int](mockAlwaysFails(), 3)
-	res, err := fn(context.Background())
-	if res != nil {
-		t.Fatal("result must be nil")
-	}
+	_, err := fn(context.Background(), 42)
 	if err.Error() != "error" {
 		t.Fatalf("error must be %s, but got %s", "error", err.Error())
 	}
@@ -35,12 +29,9 @@ func TestBreaker_Call_Threshold(t *testing.T) {
 	threshold := 3
 	fn := stability.Breaker[int](mockAlwaysFails(), threshold)
 	for range threshold {
-		_, _ = fn(context.Background())
+		_, _ = fn(context.Background(), 42)
 	}
-	res, err := fn(context.Background())
-	if res != nil {
-		t.Fatal("result must be nil")
-	}
+	_, err := fn(context.Background(), 42)
 	if err.Error() != stability.ErrorBreakerServiceUnavailable.Error() {
 		t.Fatalf("error must be %s, but got %s", "error", err.Error())
 	}
@@ -53,7 +44,7 @@ func TestBreaker_Call_Concurrent(t *testing.T) {
 	errs := make(chan error, 3)
 	for range goroutines {
 		go func() {
-			_, err := fn(context.Background())
+			_, err := fn(context.Background(), 42)
 			errs <- err
 		}()
 	}

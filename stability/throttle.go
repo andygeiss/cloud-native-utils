@@ -16,13 +16,13 @@ var (
 // The function can only be called up to `maxTokens` times initially,
 // and then tokens are refilled by `refill` every `duration`. If the limit is exceeded,
 // the function returns `ErrorThrottleTooManyCalls`.
-func Throttle[T any](fn service.Function[T], maxTokens, refill uint, duration time.Duration) service.Function[T] {
+func Throttle[IN, OUT any](fn service.Function[IN, OUT], maxTokens, refill uint, duration time.Duration) service.Function[IN, OUT] {
 	var tokens = maxTokens
 	var once sync.Once
 	var mutex sync.Mutex
-	return func(ctx context.Context) (*T, error) {
+	return func(ctx context.Context, in IN) (out OUT, err error) {
 		if ctx.Err() != nil {
-			return nil, ctx.Err()
+			return out, ctx.Err()
 		}
 		// Use `once` to ensure the refill logic runs exactly once, even with multiple callers.
 		once.Do(func() {
@@ -49,10 +49,10 @@ func Throttle[T any](fn service.Function[T], maxTokens, refill uint, duration ti
 		mutex.Lock()
 		defer mutex.Unlock()
 		if tokens <= 0 {
-			return nil, ErrorThrottleTooManyCalls
+			return out, ErrorThrottleTooManyCalls
 		}
 		tokens--
 		// Call the wrapped function and return its result.
-		return fn(ctx)
+		return fn(ctx, in)
 	}
 }
