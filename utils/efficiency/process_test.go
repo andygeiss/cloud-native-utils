@@ -1,7 +1,7 @@
 package efficiency_test
 
 import (
-	"cloud-native/efficiency"
+	"cloud-native/utils/efficiency"
 	"context"
 	"errors"
 	"testing"

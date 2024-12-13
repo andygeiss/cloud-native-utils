@@ -1,7 +1,7 @@
 package stability_test
 
 import (
-	"cloud-native/service"
+	"cloud-native/utils/service"
 	"context"
 	"errors"
 	"sync"

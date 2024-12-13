@@ -1,7 +1,7 @@
 package efficiency
 
 import (
-	"cloud-native/service"
+	"cloud-native/utils/service"
 	"context"
 	"runtime"
 	"sync"

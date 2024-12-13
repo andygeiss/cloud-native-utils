@@ -1,7 +1,7 @@
 package stability_test
 
 import (
-	"cloud-native/stability"
+	"cloud-native/utils/stability"
 	"context"
 	"sync/atomic"
 	"testing"

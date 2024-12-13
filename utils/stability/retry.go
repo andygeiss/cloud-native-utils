@@ -1,7 +1,7 @@
 package stability
 
 import (
-	"cloud-native/service"
+	"cloud-native/utils/service"
 	"context"
 	"time"
 )

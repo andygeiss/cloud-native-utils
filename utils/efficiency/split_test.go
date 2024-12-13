@@ -1,15 +1,15 @@
-package concurrency_test
+package efficiency_test
 
 import (
-	"cloud-native/concurrency"
+	"cloud-native/utils/efficiency"
 	"testing"
 	"time"
 )
 
 func TestSplit_One_Consumer(t *testing.T) {
 	in := []int{1, 2, 3}
-	producer := concurrency.Generate[int](in...)
-	consumer := concurrency.Split(producer, 1)
+	producer := efficiency.Generate[int](in...)
+	consumer := efficiency.Split(producer, 1)
 	sum := 0
 	for range 3 {
 		val := <-consumer[0]
@@ -22,8 +22,8 @@ func TestSplit_One_Consumer(t *testing.T) {
 
 func TestSplit_Two_Consumers(t *testing.T) {
 	in := []int{1, 2, 3, 5}
-	producer := concurrency.Generate[int](in...)
-	consumer := concurrency.Split(producer, 2)
+	producer := efficiency.Generate[int](in...)
+	consumer := efficiency.Split(producer, 2)
 	sum := 0
 	go func() {
 		for val := range consumer[0] {
