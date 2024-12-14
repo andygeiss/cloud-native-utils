@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 )
 
 func mockAlwaysFails() service.Function[int, int] {
@@ -21,6 +22,23 @@ func mockAlwaysSucceeds() service.Function[int, int] {
 			return 42, nil
 		}
 	}()
+}
+
+func mockCancel() service.Function[int, int] {
+	return func(ctx context.Context, in int) (int, error) {
+		return in, ctx.Err()
+	}
+}
+
+func mockSlow(duration time.Duration) service.Function[int, int] {
+	return func(ctx context.Context, in int) (int, error) {
+		select {
+		case <-ctx.Done():
+			return 0, ctx.Err()
+		case <-time.After(duration):
+			return in * 2, nil
+		}
+	}
 }
 
 func mockFailsTimes(n int) service.Function[int, int] {
