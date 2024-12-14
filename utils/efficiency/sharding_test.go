@@ -7,37 +7,41 @@ import (
 )
 
 func TestSharding(t *testing.T) {
-	shards := efficiency.NewSharding[int, int](3)
-	shards.Add(0, 42)
-	if !shards.Contains(0) {
-		t.Error("key must be found")
+	shards := efficiency.NewSharding[string, int](3)
+	key, value := "0", 42
+	shards.Put(key, value)
+	value, exists := shards.Get(key)
+	if !exists {
+		t.Errorf("expected '%s' to be in the shards, but it was not found.", key)
 	}
-	shards.Add(1, 21)
-	if !shards.Contains(1) {
-		t.Error("key must be found")
+	if value != 42 {
+		t.Errorf("value must be correct, but got %v", value)
 	}
-	shards.Delete(1)
-	if shards.Contains(1) {
-		t.Error("key must not be found")
-	}
-	if !shards.Contains(0) {
-		t.Error("key must still be found")
+	shards.Delete(key)
+	_, exists = shards.Get(key)
+	if exists {
+		t.Errorf("expected '%s' to be not in the shards, but it was found.", key)
 	}
 }
 
-func TestShardingConcurrency(t *testing.T) {
+func TestSharding_Concurrency(t *testing.T) {
 	shards := efficiency.NewSharding[string, string](3)
 	for i := 0; i < 1000; i++ {
 		go func(i int) {
 			key := fmt.Sprintf("key %d", i)
 			value := fmt.Sprintf("value %d", i)
-			shards.Add(key, value)
-			if !shards.Contains(key) {
+			shards.Put(key, value)
+			result, exists := shards.Get(key)
+			if !exists {
 				t.Errorf("expected '%s' to be in the shards, but it was not found.", key)
 			}
+			if value != result {
+				t.Errorf("value must be correct, but got %v", value)
+			}
 			shards.Delete(key)
-			if shards.Contains(key) {
-				t.Errorf("expected '%s' to be deleted from the shards, but it was found.", key)
+			_, exists = shards.Get(key)
+			if exists {
+				t.Errorf("expected '%s' to be not in the shards, but it was found.", key)
 			}
 		}(i)
 	}

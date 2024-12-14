@@ -38,21 +38,21 @@ func (a Sharding[K, V]) getShard(key K) *Shard[K, V] {
 	return &a[index]
 }
 
-// Add adds a key-value pair to the appropriate shard.
-func (a Sharding[K, V]) Add(key K, value V) {
+// Get retrieves a value from the appropriate shard.
+func (a Sharding[K, V]) Get(key K) (value V, exists bool) {
+	shard := a.getShard(key)
+	shard.mutex.RLock()
+	defer shard.mutex.RUnlock()
+	value, exists = shard.items[key]
+	return value, exists
+}
+
+// Put adds a key-value pair to the appropriate shard.
+func (a Sharding[K, V]) Put(key K, value V) {
 	shard := a.getShard(key)
 	shard.mutex.Lock()
 	defer shard.mutex.Unlock()
 	shard.items[key] = value
-}
-
-// Contains checks if the key exists in the appropriate shard.
-func (a Sharding[K, V]) Contains(key K) bool {
-	shard := a.getShard(key)
-	shard.mutex.RLock()
-	defer shard.mutex.RUnlock()
-	_, exists := shard.items[key]
-	return exists
 }
 
 // Delete removes a key-value pair from the appropriate shard.
