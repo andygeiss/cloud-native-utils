@@ -8,4 +8,6 @@ type Logger[K, V any] interface {
 	WriteDelete(key K)
 	// WritePut writes a put event to the log.
 	WritePut(key K, value V)
+	// ReadEvents reads events from the log in a streaming manner.
+	ReadEvents() (<-chan Event[K, V], <-chan error)
 }

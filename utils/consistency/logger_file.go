@@ -76,6 +76,45 @@ func (a *FileLogger[K, V]) Error() <-chan error {
 	return a.errorCh
 }
 
+// ReadEvents reads events from the log file and returns two channels.
+// The method uses a goroutine to read events asynchronously, allowing the caller
+// to process events and handle errors as they are received.
+func (a *FileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
+	errorCh := make(chan error, 1)
+	eventCh := make(chan Event[K, V], 100)
+	// Launch a goroutine to handle the file reading process asynchronously.
+	go func() {
+		defer close(errorCh)
+		defer close(eventCh)
+		// Open the log file for reading.
+		file, err := os.Open(a.file)
+		if err != nil {
+			errorCh <- err
+			return
+		}
+		defer file.Close()
+		// Create a JSON decoder to read events from the file.
+		decoder := json.NewDecoder(file)
+		// Read events in a loop until EOF or an error occurs.
+		for {
+			var event Event[K, V]
+			// Decode the next event from the file.
+			if err := decoder.Decode(&event); err != nil {
+				if err.Error() == "EOF" {
+					// Exit gracefully if all events have been read.
+					return
+				}
+				// Report any other decoding errors and terminate the loop.
+				errorCh <- err
+				return
+			}
+			// Send the successfully decoded event to the event channel.
+			eventCh <- event
+		}
+	}()
+	return eventCh, errorCh
+}
+
 // WriteDelete writes a delete event to the log.
 func (a *FileLogger[K, V]) WriteDelete(key K) {
 	a.mutex.Lock()         // Lock the logger to ensure thread-safe access.
