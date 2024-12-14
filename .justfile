@@ -1,3 +1,4 @@
+set dotenv-load
 
 # test the Go sources
 test:
