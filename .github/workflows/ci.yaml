@@ -1,16 +1,17 @@
 name: Continuous Integration
 on: [push]
 jobs:
-  build-utils:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: set up Go
         uses: actions/setup-go@v4
 
-      - name: Set up Just
+      - name: set up Just
         uses: taiki-e/install-action@just
 
-      - name: Test
+      - name: call just test
         run: just test
