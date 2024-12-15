@@ -6,9 +6,9 @@ import (
 	"sync"
 )
 
-// FileLogger is a file-based implementation of the Logger interface.
+// JsonFileLogger is a file-based implementation of the Logger interface.
 // It writes events to a JSON-formatted file for persistence.
-type FileLogger[K, V any] struct {
+type JsonFileLogger[K, V any] struct {
 	errorCh      chan error       // Channel for propagating errors to the caller.
 	eventCh      chan Event[K, V] // Channel for queuing events to be written.
 	file         string           // Path to the log file.
@@ -18,11 +18,11 @@ type FileLogger[K, V any] struct {
 	closeOnce    sync.Once        // Ensures the Close method is called only once.
 }
 
-// NewFileLogger initializes a new FileLogger for the given file path.
-func NewFileLogger[K, V any](file string) *FileLogger[K, V] {
+// NewJsonFileLogger initializes a new JsonFileLogger for the given file path.
+func NewJsonFileLogger[K, V any](file string) *JsonFileLogger[K, V] {
 	errorCh := make(chan error, 1)
 	eventCh := make(chan Event[K, V], 100) // Buffered channel for queuing events.
-	logger := &FileLogger[K, V]{
+	logger := &JsonFileLogger[K, V]{
 		errorCh: errorCh,
 		eventCh: eventCh,
 		file:    file,
@@ -34,7 +34,7 @@ func NewFileLogger[K, V any](file string) *FileLogger[K, V] {
 }
 
 // run processes events from the event channel and writes them to the file.
-func (a *FileLogger[K, V]) run() {
+func (a *JsonFileLogger[K, V]) run() {
 	// Mark the goroutine as done when this method exits.
 	defer a.wg.Done()
 	// Open the log file for appending or create it if it doesn't exist.
@@ -56,7 +56,7 @@ func (a *FileLogger[K, V]) run() {
 }
 
 // Close shuts down the logger, ensuring all pending events are written.
-func (a *FileLogger[K, V]) Close() error {
+func (a *JsonFileLogger[K, V]) Close() error {
 	var closeErr error
 	// Ensure Close is executed only once.
 	a.closeOnce.Do(func() {
@@ -72,14 +72,14 @@ func (a *FileLogger[K, V]) Close() error {
 }
 
 // Error returns a read-only channel for retrieving errors.
-func (a *FileLogger[K, V]) Error() <-chan error {
+func (a *JsonFileLogger[K, V]) Error() <-chan error {
 	return a.errorCh
 }
 
 // ReadEvents reads events from the log file and returns two channels.
 // The method uses a goroutine to read events asynchronously, allowing the caller
 // to process events and handle errors as they are received.
-func (a *FileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
+func (a *JsonFileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
 	errorCh := make(chan error, 1)
 	eventCh := make(chan Event[K, V], 100)
 	// Launch a goroutine to handle the file reading process asynchronously.
@@ -116,7 +116,7 @@ func (a *FileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
 }
 
 // WriteDelete writes a delete event to the log.
-func (a *FileLogger[K, V]) WriteDelete(key K) {
+func (a *JsonFileLogger[K, V]) WriteDelete(key K) {
 	a.mutex.Lock()         // Lock the logger to ensure thread-safe access.
 	defer a.mutex.Unlock() // Unlock the logger when the method exits.
 	a.lastSequence++       // Increment the sequence number for this event.
@@ -128,7 +128,7 @@ func (a *FileLogger[K, V]) WriteDelete(key K) {
 }
 
 // WritePut writes a put event to the log.
-func (a *FileLogger[K, V]) WritePut(key K, value V) {
+func (a *JsonFileLogger[K, V]) WritePut(key K, value V) {
 	a.mutex.Lock()         // Lock the logger to ensure thread-safe access.
 	defer a.mutex.Unlock() // Unlock the logger when the method exits.
 	a.lastSequence++       // Increment the sequence number for this event.

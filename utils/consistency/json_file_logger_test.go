@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func decode[K, V any](logFile string) (events []consistency.Event[K, V], err error) {
+func decodeJson[K, V any](logFile string) (events []consistency.Event[K, V], err error) {
 	file, err := os.Open(logFile)
 	if err != nil {
 		return nil, err
@@ -25,17 +25,17 @@ func decode[K, V any](logFile string) (events []consistency.Event[K, V], err err
 	return events, nil
 }
 
-func TestFileLogger_Succeeds(t *testing.T) {
-	logFile := "filelogger_succeeds.log"
+func TestJsonFileLogger_Succeeds(t *testing.T) {
+	logFile := "json_file_logger_succeeds.log"
 	defer os.Remove(logFile)
-	logger := consistency.NewFileLogger[string, string](logFile)
+	logger := consistency.NewJsonFileLogger[string, string](logFile)
 	defer logger.Close()
 	logger.WritePut("key1", "value1")
 	logger.WritePut("key2", "value2")
 	logger.WritePut("key3", "value3")
 	logger.WriteDelete("key2")
 	time.Sleep(200 * time.Millisecond)
-	events, err := decode[string, string](logFile)
+	events, err := decodeJson[string, string](logFile)
 	if err != nil {
 		t.Fatalf("err must be nil, but got %v", err)
 	}
@@ -49,22 +49,22 @@ func TestFileLogger_Succeeds(t *testing.T) {
 	}
 }
 
-func TestFileLogger_Error_Handling(t *testing.T) {
-	logFile := "/non-existent/filelogger_error_handling.log"
-	logger := consistency.NewFileLogger[string, string](logFile)
+func TestJsonFileLogger_Error_Handling(t *testing.T) {
+	logFile := "/non-existent/json_file_error_handling.log"
+	logger := consistency.NewJsonFileLogger[string, string](logFile)
 	defer logger.Close()
 	logger.WritePut("key1", "value1")
 	time.Sleep(200 * time.Millisecond)
-	_, err := decode[string, string](logFile)
+	_, err := decodeJson[string, string](logFile)
 	if err == nil {
 		t.Fatal("err must be not nil")
 	}
 }
 
-func TestFileLogger_Graceful_Shutdown(t *testing.T) {
-	logFile := "filelogger_graceful_shutdown.log"
+func TestJsonFileLogger_Graceful_Shutdown(t *testing.T) {
+	logFile := "json_file_graceful_shutdown.log"
 	defer os.Remove(logFile)
-	logger := consistency.NewFileLogger[string, string](logFile)
+	logger := consistency.NewJsonFileLogger[string, string](logFile)
 	logger.WritePut("key1", "value1")
 	logger.WritePut("key2", "value2")
 	logger.WritePut("key3", "value3")
@@ -74,7 +74,7 @@ func TestFileLogger_Graceful_Shutdown(t *testing.T) {
 		t.Fatalf("failed to close logger: %v", err)
 	}
 	// Verify all events are written before shutdown
-	events, err := decode[string, string](logFile)
+	events, err := decodeJson[string, string](logFile)
 	if err != nil {
 		t.Fatalf("err must be nil, but got %v", err)
 	}
@@ -83,9 +83,9 @@ func TestFileLogger_Graceful_Shutdown(t *testing.T) {
 	}
 }
 
-func TestFileLogger_ReadEvents_Error(t *testing.T) {
-	logFile := "/non-existent/filelogger_readevents_error.log"
-	logger := consistency.NewFileLogger[string, string](logFile)
+func TestJsonFileLogger_ReadEvents_Error(t *testing.T) {
+	logFile := "/non-existent/json_file_read_events_error.log"
+	logger := consistency.NewJsonFileLogger[string, string](logFile)
 	defer logger.Close()
 	// Call ReadEvents to attempt to read events from the file.
 	_, errorCh := logger.ReadEvents()
@@ -99,10 +99,10 @@ func TestFileLogger_ReadEvents_Error(t *testing.T) {
 	}
 }
 
-func TestFileLogger_ReadEvents_Succeeds(t *testing.T) {
-	logFile := "filelogger_readevents_succeeds.log"
+func TestJsonFileLogger_ReadEvents_Succeeds(t *testing.T) {
+	logFile := "json_file_read_events_succeeds.log"
 	defer os.Remove(logFile)
-	logger := consistency.NewFileLogger[string, string](logFile)
+	logger := consistency.NewJsonFileLogger[string, string](logFile)
 	logger.WritePut("1", "value")
 	logger.Close()
 	// Call ReadEvents to read back the events from the file.
