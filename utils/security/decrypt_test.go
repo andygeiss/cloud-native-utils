@@ -18,7 +18,7 @@ func TestDecrypt(t *testing.T) {
 	}
 }
 
-func TestDecryptMalformedCiphertext(t *testing.T) {
+func TestDecrypt_Malformed_Ciphertext(t *testing.T) {
 	key := security.GenerateKey()
 	// Insufficient length for nonce.
 	malformedCiphertext := make([]byte, 5)
@@ -28,7 +28,7 @@ func TestDecryptMalformedCiphertext(t *testing.T) {
 	}
 }
 
-func TestDecryptInvalidKey(t *testing.T) {
+func TestDecrypt_Invalid_Key(t *testing.T) {
 	plaintext := []byte("Test invalid key case")
 	ciphertext, _ := security.Encrypt(plaintext)
 	invalidKey := security.GenerateKey()
