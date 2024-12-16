@@ -17,7 +17,7 @@ func GenerateKey() [32]byte {
 
 // Encrypt takes an input byte slice (plaintext) and encrypts it using AES-GCM.
 // It returns the encrypted data (ciphertext) and the key used for encryption.
-func Encrypt(in []byte) (out []byte, key [32]byte) {
+func Encrypt(plaintext []byte) (ciphertext []byte, key [32]byte) {
 	// Generate a random 256-bit AES key.
 	key = GenerateKey()
 	// Create a new AES cipher block using the generated key.
@@ -30,5 +30,5 @@ func Encrypt(in []byte) (out []byte, key [32]byte) {
 	_, _ = io.ReadFull(rand.Reader, nonce)
 	// Encrypt the input data using GCM, appending the nonce to the ciphertext.
 	// The nonce is necessary for decryption.
-	return gcm.Seal(nonce, nonce, in, nil), key
+	return gcm.Seal(nonce, nonce, plaintext, nil), key
 }
