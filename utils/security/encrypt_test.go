@@ -45,6 +45,6 @@ func TestEncrypt(t *testing.T) {
 		t.Fatalf("failed to decrypt ciphertext: %v", err)
 	}
 	if string(decrypted) != string(plaintext) {
-		t.Errorf("decrypted text does not match original plaintext. Got: %s, Want: %s", decrypted, plaintext)
+		t.Errorf("decrypted text must match, but got %s, wanted %s", decrypted, plaintext)
 	}
 }
