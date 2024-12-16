@@ -1,6 +1,7 @@
 package consistency_test
 
 import (
+	"cloud-native/utils/assert"
 	"cloud-native/utils/consistency"
 	"encoding/json"
 	"os"
@@ -36,16 +37,10 @@ func TestJsonFileLogger_Succeeds(t *testing.T) {
 	logger.WriteDelete("key2")
 	time.Sleep(200 * time.Millisecond)
 	events, err := decodeJson[string, string](logFile)
-	if err != nil {
-		t.Fatalf("err must be nil, but got %v", err)
-	}
-	if len(events) != 4 {
-		t.Fatalf("expected 4 events, but got %d", len(events))
-	}
+	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "events length must be 4", len(events), 4)
 	for i := range 4 {
-		if events[i].Sequence != uint64(i+1) {
-			t.Fatalf("sequence must be %d, but got %d", events[0].Sequence, uint64(i+1))
-		}
+		assert.That(t, "sequence must be correct", events[i].Sequence, uint64(i+1))
 	}
 }
 
@@ -56,9 +51,7 @@ func TestJsonFileLogger_Error_Handling(t *testing.T) {
 	logger.WritePut("key1", "value1")
 	time.Sleep(200 * time.Millisecond)
 	_, err := decodeJson[string, string](logFile)
-	if err == nil {
-		t.Fatal("err must be not nil")
-	}
+	assert.That(t, "err must not be nil", err != nil, true)
 }
 
 func TestJsonFileLogger_Graceful_Shutdown(t *testing.T) {
@@ -70,17 +63,12 @@ func TestJsonFileLogger_Graceful_Shutdown(t *testing.T) {
 	logger.WritePut("key3", "value3")
 	logger.WriteDelete("key2")
 	// Close the logger gracefully
-	if err := logger.Close(); err != nil {
-		t.Fatalf("failed to close logger: %v", err)
-	}
+	errClose := logger.Close()
+	assert.That(t, "err must be nil", errClose == nil, true)
 	// Verify all events are written before shutdown
 	events, err := decodeJson[string, string](logFile)
-	if err != nil {
-		t.Fatalf("err must be nil, but got %v", err)
-	}
-	if len(events) != 4 {
-		t.Fatalf("expected 4 events, but got %d", len(events))
-	}
+	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "events length must be 4", len(events), 4)
 }
 
 func TestJsonFileLogger_ReadEvents_Error(t *testing.T) {
@@ -93,9 +81,7 @@ func TestJsonFileLogger_ReadEvents_Error(t *testing.T) {
 	select {
 	case err := <-errorCh:
 		// Verify that an error is received, as the file does not exist.
-		if err == nil {
-			t.Fatal("err must not be nil")
-		}
+		assert.That(t, "err must not be nil", err != nil, true)
 	}
 }
 
@@ -110,13 +96,9 @@ func TestJsonFileLogger_ReadEvents_Succeeds(t *testing.T) {
 	select {
 	case event := <-eventCh:
 		// Verify that the event read back matches the one that was written.
-		if event.Key != "1" {
-			t.Fatalf("key must be correct, but got %v", event.Key)
-		}
+		assert.That(t, "key must be correct", event.Key, "1")
 	case err := <-errorCh:
 		// Verify that no error occurred during reading.
-		if err != nil {
-			t.Fatal("err must be nil") // Fail the test if an error is returned.
-		}
+		assert.That(t, "err must be nil", err == nil, true)
 	}
 }

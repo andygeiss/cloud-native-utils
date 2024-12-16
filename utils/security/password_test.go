@@ -1,6 +1,7 @@
 package security_test
 
 import (
+	"cloud-native/utils/assert"
 	"cloud-native/utils/security"
 	"testing"
 )
@@ -8,41 +9,26 @@ import (
 func TestPassword(t *testing.T) {
 	plaintext := []byte("securepassword")
 	hash, err := security.Password(plaintext)
-	if err != nil {
-		t.Fatalf("failed to hash password: %v", err)
-	}
-	if len(hash) == 0 {
-		t.Error("hashed password is empty")
-	}
+	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "hashed password must be non-empty", len(hash) > 0, true)
 }
 
 func TestIsPasswordValid(t *testing.T) {
 	plaintext := []byte("securepassword")
-	hash, err := security.Password(plaintext)
-	if err != nil {
-		t.Fatalf("failed to hash password: %v", err)
-	}
-	if !security.IsPasswordValid(hash, plaintext) {
-		t.Error("valid password was rejected")
-	}
 	wrongPassword := []byte("wrongpassword")
-	if security.IsPasswordValid(hash, wrongPassword) {
-		t.Error("invalid password was accepted")
-	}
+	hash, err := security.Password(plaintext)
+	isValid := security.IsPasswordValid(hash, plaintext)
+	isInvalid := !security.IsPasswordValid(hash, wrongPassword)
+	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "password must be valid", isValid, true)
+	assert.That(t, "password must be invalid", isInvalid, true)
 }
 
 func TestPassword_Consistency(t *testing.T) {
 	plaintext := []byte("securepassword")
-	hash1, err := security.Password(plaintext)
-	if err != nil {
-		t.Fatalf("failed to hash password: %v", err)
-	}
-	hash2, err := security.Password(plaintext)
-	if err != nil {
-		t.Fatalf("failed to hash password: %v", err)
-	}
-	// Verify the hashes are different.
-	if string(hash1) == string(hash2) {
-		t.Error("identical hashes generated for the same password, which violates bcrypt's design")
-	}
+	hash1, err1 := security.Password(plaintext)
+	hash2, err2 := security.Password(plaintext)
+	assert.That(t, "err1 must be nil", err1 == nil, true)
+	assert.That(t, "err2 must be nil", err2 == nil, true)
+	assert.That(t, "hashes must be different", string(hash1) != string(hash2), true)
 }

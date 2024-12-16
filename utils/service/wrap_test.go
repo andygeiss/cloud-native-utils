@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"cloud-native/utils/assert"
 	"cloud-native/utils/service"
 	"context"
 	"testing"
@@ -13,12 +14,8 @@ func TestWrap_Succeeds(t *testing.T) {
 	}
 	wrappedFn := service.Wrap[int](succeedsFn)
 	res, err := wrappedFn(context.Background(), 42)
-	if err != nil {
-		t.Fatalf("error must be nil, but got %v", err)
-	}
-	if res != 42 {
-		t.Fatalf("result must be %d, but got %d", 42, res)
-	}
+	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "result must be correct", res, 42)
 }
 
 func TestWrap_Fails_With_Timeout(t *testing.T) {
@@ -30,10 +27,6 @@ func TestWrap_Fails_With_Timeout(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
 	_, err := wrappedFn(ctx, 42)
-	if err == nil {
-		t.Fatal("error must be not nil")
-	}
-	if err.Error() != "context deadline exceeded" {
-		t.Fatalf("error must be correct, but got %v", err)
-	}
+	assert.That(t, "err must not be nil", err != nil, true)
+	assert.That(t, "err must be correct", err.Error(), "context deadline exceeded")
 }

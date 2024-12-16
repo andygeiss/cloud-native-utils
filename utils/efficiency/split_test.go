@@ -1,6 +1,7 @@
 package efficiency_test
 
 import (
+	"cloud-native/utils/assert"
 	"cloud-native/utils/efficiency"
 	"testing"
 	"time"
@@ -15,9 +16,7 @@ func TestSplit_One_Consumer(t *testing.T) {
 		val := <-consumer[0]
 		sum += val
 	}
-	if sum != 6 {
-		t.Fatalf("sum must be 6, but got %d", sum)
-	}
+	assert.That(t, "sum must be correct", sum, 6)
 }
 
 func TestSplit_Two_Consumers(t *testing.T) {
@@ -36,7 +35,5 @@ func TestSplit_Two_Consumers(t *testing.T) {
 		}
 	}()
 	time.Sleep(100 * time.Millisecond)
-	if sum != 11 {
-		t.Fatalf("sum must be 11, but got %d", sum)
-	}
+	assert.That(t, "sum must be correct", sum, 11)
 }

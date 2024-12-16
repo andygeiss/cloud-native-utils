@@ -1,6 +1,7 @@
 package efficiency_test
 
 import (
+	"cloud-native/utils/assert"
 	"cloud-native/utils/efficiency"
 	"context"
 	"errors"
@@ -18,9 +19,7 @@ func TestProcess_Three_Int_Values(t *testing.T) {
 	for val := range outCh {
 		sum += val
 	}
-	if sum != 6 {
-		t.Fatalf("sum must be 6, but got %d", sum)
-	}
+	assert.That(t, "sum must be correct", sum, 6)
 }
 
 func TestProcess_Ten_Values(t *testing.T) {
@@ -34,9 +33,7 @@ func TestProcess_Ten_Values(t *testing.T) {
 	for val := range outCh {
 		sum += val
 	}
-	if sum != 55 {
-		t.Fatalf("sum must be 55, but got %d", sum)
-	}
+	assert.That(t, "sum must be correct", sum, 55)
 }
 
 func TestProcess_Error_Handling(t *testing.T) {
@@ -48,8 +45,6 @@ func TestProcess_Error_Handling(t *testing.T) {
 	})
 	select {
 	case err := <-errCh:
-		if err.Error() != "error" {
-			t.Error("err must be correct")
-		}
+		assert.That(t, "err must be correct", err.Error(), "error")
 	}
 }

@@ -1,6 +1,7 @@
 package efficiency_test
 
 import (
+	"cloud-native/utils/assert"
 	"cloud-native/utils/efficiency"
 	"testing"
 )
@@ -14,9 +15,7 @@ func TestMerge_One_Producer(t *testing.T) {
 	for val := range consumer {
 		sum += val
 	}
-	if sum != 6 {
-		t.Fatalf("sum must be 6, but got %d", sum)
-	}
+	assert.That(t, "sum must be correct", sum, 6)
 }
 
 func TestMerge_Three_Producer(t *testing.T) {
@@ -28,7 +27,5 @@ func TestMerge_Three_Producer(t *testing.T) {
 	for val := range consumer {
 		sum += val
 	}
-	if sum != 6 {
-		t.Fatalf("sum must be 6, but got %d", sum)
-	}
+	assert.That(t, "sum must be correct", sum, 6)
 }

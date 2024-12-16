@@ -1,50 +1,30 @@
 package security_test
 
 import (
+	"cloud-native/utils/assert"
 	"cloud-native/utils/security"
 	"crypto/aes"
 	"crypto/cipher"
-	"reflect"
 	"testing"
 )
 
-func TestGenerateKey_Succeeds(t *testing.T) {
+func TestGenerateKey(t *testing.T) {
 	key := security.GenerateKey()
-	if len(key) != 32 {
-		t.Fatalf("key length must be 32, but got %d", len(key))
-	}
 	zeroKey := [32]byte{}
-	if reflect.DeepEqual(key, zeroKey) {
-		t.Fatal("key must be secure, but is all zeros")
-	}
+	assert.That(t, "key length must be correct", len(key), 32)
+	assert.That(t, "key must be secure", key != zeroKey, true)
 }
 
 func TestEncrypt(t *testing.T) {
 	plaintext := []byte("Alice and Bob")
 	ciphertext, key := security.Encrypt(plaintext)
-	if len(ciphertext) == 0 {
-		t.Fatal("ciphertext is empty")
-	}
-	block, err := aes.NewCipher(key[:])
-	if err != nil {
-		t.Fatalf("AES block creation failed: %v", err)
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		t.Fatalf("failed to create GCM cipher: %v", err)
-	}
+	block, _ := aes.NewCipher(key[:])
+	gcm, _ := cipher.NewGCM(block)
 	nonceSize := gcm.NonceSize()
-	if len(ciphertext) <= nonceSize {
-		t.Errorf("ciphertext length (%d) is too short to include nonce (%d)", len(ciphertext), nonceSize)
-	}
-	// Extract the nonce from the ciphertext.
 	nonce := ciphertext[:nonceSize]
-	// Decrypt the ciphertext to verify it matches the original plaintext.
 	decrypted, err := gcm.Open(nil, nonce, ciphertext[nonceSize:], nil)
-	if err != nil {
-		t.Fatalf("failed to decrypt ciphertext: %v", err)
-	}
-	if string(decrypted) != string(plaintext) {
-		t.Errorf("decrypted text must match, but got %s, wanted %s", decrypted, plaintext)
-	}
+	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "cipertext must include nonce", len(ciphertext) > nonceSize, true)
+	assert.That(t, "ciphertext is not empty", len(ciphertext) > 0, true)
+	assert.That(t, "plaintext must match", string(decrypted), string(plaintext))
 }

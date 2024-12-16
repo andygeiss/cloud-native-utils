@@ -1,6 +1,7 @@
 package efficiency_test
 
 import (
+	"cloud-native/utils/assert"
 	"cloud-native/utils/efficiency"
 	"fmt"
 	"testing"
@@ -11,17 +12,11 @@ func TestSharding(t *testing.T) {
 	key, value := "0", 42
 	shards.Put(key, value)
 	value, exists := shards.Get(key)
-	if !exists {
-		t.Errorf("expected '%s' to be in the shards, but it was not found.", key)
-	}
-	if value != 42 {
-		t.Errorf("value must be correct, but got %v", value)
-	}
+	assert.That(t, "key found", exists, true)
 	shards.Delete(key)
 	_, exists = shards.Get(key)
-	if exists {
-		t.Errorf("expected '%s' to be not in the shards, but it was found.", key)
-	}
+	assert.That(t, "value must be correct", value, 42)
+	assert.That(t, "key not found", !exists, true)
 }
 
 func TestSharding_Concurrency(t *testing.T) {
@@ -32,17 +27,11 @@ func TestSharding_Concurrency(t *testing.T) {
 			value := fmt.Sprintf("value %d", i)
 			shards.Put(key, value)
 			result, exists := shards.Get(key)
-			if !exists {
-				t.Errorf("expected '%s' to be in the shards, but it was not found.", key)
-			}
-			if value != result {
-				t.Errorf("value must be correct, but got %v", value)
-			}
+			assert.That(t, "key found", exists, true)
 			shards.Delete(key)
 			_, exists = shards.Get(key)
-			if exists {
-				t.Errorf("expected '%s' to be not in the shards, but it was found.", key)
-			}
+			assert.That(t, "value must be correct", value, result)
+			assert.That(t, "key not found", !exists, true)
 		}(i)
 	}
 }
