@@ -15,6 +15,10 @@ make-certs:
         -key-file {{cert-dir}}/server.key \
         localhost 127.0.0.1 ::1
 
-# Test the Go sources.
+# Test the Go sources (Units).
 test:
     @go test -v ./utils/...
+
+# Test module integration like the Server.
+test-integration:
+    @go test -v --tags=integration ./utils/...
