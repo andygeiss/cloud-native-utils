@@ -3,15 +3,14 @@ package consistency_test
 import (
 	"cloud-native/utils/consistency"
 	"fmt"
+	"math/rand"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Transaction struct {
-	ID              string    `json:"id"`
+	ID              uint64    `json:"id"`
 	DebitAccountID  string    `json:"debit_account_id"`
 	CreditAccountID string    `json:"credit_account_id"`
 	Amount          float64   `json:"amount"`
@@ -25,10 +24,10 @@ func Benchmark_GobFileLogger(b *testing.B) {
 	// Create N transactions.
 	txs := make([]Transaction, n)
 	for i := 0; i < n; i++ {
-		txs[i] = Transaction{ID: uuid.New().String()}
+		txs[i] = Transaction{ID: uint64(rand.Int63())}
 	}
 	// Create a GOB file logger.
-	logger := consistency.NewGobFileLogger[string, Transaction](jsonFile)
+	logger := consistency.NewGobFileLogger[uint64, Transaction](jsonFile)
 	defer logger.Close()
 	b.Run(fmt.Sprintf("write %d put events into the log file", n), func(b *testing.B) {
 		for i := 0; i < n; i++ {
@@ -51,10 +50,10 @@ func Benchmark_JsonFileLogger(b *testing.B) {
 	// Create N transactions.
 	txs := make([]Transaction, n)
 	for i := 0; i < n; i++ {
-		txs[i] = Transaction{ID: uuid.New().String()}
+		txs[i] = Transaction{ID: uint64(rand.Int63())}
 	}
 	// Create a JSON file logger.
-	logger := consistency.NewJsonFileLogger[string, Transaction](jsonFile)
+	logger := consistency.NewJsonFileLogger[uint64, Transaction](jsonFile)
 	defer logger.Close()
 	b.Run(fmt.Sprintf("write %d put events into the log file", n), func(b *testing.B) {
 		for i := 0; i < n; i++ {
