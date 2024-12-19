@@ -1,10 +1,11 @@
 package efficiency
 
 import (
-	"cloud-native/utils/service"
 	"context"
 	"runtime"
 	"sync"
+
+	"github.com/andygeiss/cloud-native/utils/service"
 )
 
 // Process concurrently processes items from the input channel using the provided function `fn`.

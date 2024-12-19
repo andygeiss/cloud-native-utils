@@ -1,9 +1,10 @@
 package stability
 
 import (
-	"cloud-native/utils/service"
 	"context"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/service"
 )
 
 // Retry wraps a given function (`fn`) to retry its execution upon failure.

@@ -1,12 +1,13 @@
 package stability_test
 
 import (
-	"cloud-native/utils/assert"
-	"cloud-native/utils/stability"
 	"context"
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/assert"
+	"github.com/andygeiss/cloud-native/utils/stability"
 )
 
 func TestTimeout_SuccessfulFunction(t *testing.T) {

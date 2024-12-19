@@ -4,12 +4,13 @@
 package security_test
 
 import (
-	"cloud-native/utils/security"
 	"io"
 	"log"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/security"
 )
 
 func TestServer_Succeeds(t *testing.T) {

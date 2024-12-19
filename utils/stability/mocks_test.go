@@ -1,11 +1,12 @@
 package stability_test
 
 import (
-	"cloud-native/utils/service"
 	"context"
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/service"
 )
 
 func mockAlwaysFails() service.Function[int, int] {

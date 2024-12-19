@@ -1,9 +1,10 @@
 package stability
 
 import (
-	"cloud-native/utils/service"
 	"context"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/service"
 )
 
 // Timeout wraps a service.Function and enforces a timeout on its execution.

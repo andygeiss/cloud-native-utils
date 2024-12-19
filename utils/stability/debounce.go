@@ -1,10 +1,11 @@
 package stability
 
 import (
-	"cloud-native/utils/service"
 	"context"
 	"sync"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/service"
 )
 
 // Debounce wraps a given function (`fn`) to ensure it is not executed more often

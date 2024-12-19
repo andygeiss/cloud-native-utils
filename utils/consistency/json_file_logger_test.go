@@ -1,12 +1,13 @@
 package consistency_test
 
 import (
-	"cloud-native/utils/assert"
-	"cloud-native/utils/consistency"
 	"encoding/json"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/assert"
+	"github.com/andygeiss/cloud-native/utils/consistency"
 )
 
 func decodeJson[K, V any](logFile string) (events []consistency.Event[K, V], err error) {

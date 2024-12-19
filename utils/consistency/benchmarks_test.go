@@ -1,12 +1,13 @@
 package consistency_test
 
 import (
-	"cloud-native/utils/consistency"
 	"fmt"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/consistency"
 )
 
 type Transaction struct {

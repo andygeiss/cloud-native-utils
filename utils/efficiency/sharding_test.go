@@ -1,10 +1,11 @@
 package efficiency_test
 
 import (
-	"cloud-native/utils/assert"
-	"cloud-native/utils/efficiency"
 	"fmt"
 	"testing"
+
+	"github.com/andygeiss/cloud-native/utils/assert"
+	"github.com/andygeiss/cloud-native/utils/efficiency"
 )
 
 func TestSharding(t *testing.T) {

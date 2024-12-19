@@ -1,11 +1,12 @@
 package stability
 
 import (
-	"cloud-native/utils/service"
 	"context"
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/service"
 )
 
 var (

@@ -1,9 +1,10 @@
 package efficiency_test
 
 import (
-	"cloud-native/utils/assert"
-	"cloud-native/utils/efficiency"
 	"testing"
+
+	"github.com/andygeiss/cloud-native/utils/assert"
+	"github.com/andygeiss/cloud-native/utils/efficiency"
 )
 
 func TestGenerate_Empty(t *testing.T) {

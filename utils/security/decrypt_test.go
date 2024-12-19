@@ -1,9 +1,10 @@
 package security_test
 
 import (
-	"cloud-native/utils/assert"
-	"cloud-native/utils/security"
 	"testing"
+
+	"github.com/andygeiss/cloud-native/utils/assert"
+	"github.com/andygeiss/cloud-native/utils/security"
 )
 
 func TestDecrypt(t *testing.T) {

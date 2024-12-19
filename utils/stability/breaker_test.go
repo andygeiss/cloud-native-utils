@@ -1,10 +1,11 @@
 package stability_test
 
 import (
-	"cloud-native/utils/assert"
-	"cloud-native/utils/stability"
 	"context"
 	"testing"
+
+	"github.com/andygeiss/cloud-native/utils/assert"
+	"github.com/andygeiss/cloud-native/utils/stability"
 )
 
 func TestBreaker_Call_Once_Succeeds(t *testing.T) {

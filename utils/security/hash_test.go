@@ -1,10 +1,11 @@
 package security_test
 
 import (
-	"cloud-native/utils/assert"
-	"cloud-native/utils/security"
 	"reflect"
 	"testing"
+
+	"github.com/andygeiss/cloud-native/utils/assert"
+	"github.com/andygeiss/cloud-native/utils/security"
 )
 
 func TestHash(t *testing.T) {

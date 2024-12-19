@@ -1,11 +1,12 @@
 package service_test
 
 import (
-	"cloud-native/utils/assert"
-	"cloud-native/utils/service"
 	"context"
 	"testing"
 	"time"
+
+	"github.com/andygeiss/cloud-native/utils/assert"
+	"github.com/andygeiss/cloud-native/utils/service"
 )
 
 func TestWrap_Succeeds(t *testing.T) {

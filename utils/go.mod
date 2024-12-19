@@ -1,4 +1,4 @@
-module cloud-native
+module github.com/andygeiss/cloud-native/utils
 
 go 1.23.2
 
