@@ -4,6 +4,7 @@
 
 # Cloud Native Utils
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a4850cd982334d38b743a2e1f54ac62a)](https://app.codacy.com/gh/andygeiss/cloud-native-utils?utm_source=github.com&utm_medium=referral&utm_content=andygeiss/cloud-native-utils&utm_campaign=Badge_Grade)
 [![License](https://img.shields.io/github/license/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/blob/master/LICENSE)
 [![Releases](https://img.shields.io/github/v/release/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/andygeiss/cloud-native-utils)](https://goreportcard.com/report/github.com/andygeiss/cloud-native-utils)
