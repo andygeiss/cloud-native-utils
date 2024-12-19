@@ -25,5 +25,4 @@ jobs:
       - name: Upload to Codacy
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        run: echo .
-        #run: bash get.sh report --force-coverage-parser go -r .coverage.out
+        run: bash get.sh report --force-coverage-parser go -r .coverage.out
