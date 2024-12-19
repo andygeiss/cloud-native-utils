@@ -10,6 +10,9 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
 
+      - name: Set up Codacy script
+        run: curl -o get.sh -Ls https://coverage.codacy.com/get.sh
+
       - name: Set up Just
         uses: taiki-e/install-action@just
 
@@ -18,3 +21,9 @@ jobs:
 
       - name: Call just test
         run: just benchmark
+
+      - name: Upload to Codacy
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        run: echo .
+        #run: bash get.sh report --force-coverage-parser go -r .coverage.out

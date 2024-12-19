@@ -2,11 +2,11 @@ set dotenv-load
 
 # Benchmark the Go sources.
 benchmark:
-    @cd ./utils/consistency && go test -bench .
+    @cd ./consistency && go test -bench .
 
 # Create a local CA and sign a server certificate.
 # This will only be used if domains = ["localhost"].
-cert-dir := "./utils/security/testdata"
+cert-dir := "./security/testdata"
 make-certs:
     @brew install mkcert
     @rm -rf {{cert-dir}} ; mkdir {{cert-dir}}
@@ -17,8 +17,8 @@ make-certs:
 
 # Test the Go sources (Units).
 test:
-    @go test -v ./utils/...
+    @go test -v -coverprofile=.coverprofile.out ./...
 
 # Test module integration like the Server.
 test-integration:
-    @go test -v --tags=integration ./utils/...
+    @go test -v --tags=integration ./...
