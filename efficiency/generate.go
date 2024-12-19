@@ -4,6 +4,7 @@ package efficiency
 // It sends each input value into the returned channel in a separate goroutine.
 func Generate[T any](in ...T) <-chan T {
 	out := make(chan T)
+
 	// Start a goroutine to send the input values into the channel.
 	go func() {
 		defer close(out)

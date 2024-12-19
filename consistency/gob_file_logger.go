@@ -35,8 +35,10 @@ func NewGobFileLogger[K, V any](file string) *GobFileLogger[K, V] {
 
 // run processes events from the event channel and writes them to the file.
 func (a *GobFileLogger[K, V]) run() {
+
 	// Mark the goroutine as done when this method exits.
 	defer a.wg.Done()
+
 	// Open the log file for appending or create it if it doesn't exist.
 	file, err := os.OpenFile(a.file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -44,8 +46,10 @@ func (a *GobFileLogger[K, V]) run() {
 		return
 	}
 	defer file.Close()
+
 	// JSON encoder for writing events to the file.
 	encoder := gob.NewEncoder(file)
+
 	// Process events from the event channel.
 	for event := range a.eventCh {
 		if err := encoder.Encode(event); err != nil {
@@ -58,10 +62,12 @@ func (a *GobFileLogger[K, V]) run() {
 // Close shuts down the logger, ensuring all pending events are written.
 func (a *GobFileLogger[K, V]) Close() error {
 	var closeErr error
+
 	// Ensure Close is executed only once.
 	a.closeOnce.Do(func() {
 		close(a.eventCh) // Signal the event processing loop to stop.
 		a.wg.Wait()      // Wait for the processing goroutine to finish.
+
 		// Close the error channel and capture any errors that occurred.
 		close(a.errorCh)
 		for err := range a.errorCh {
@@ -82,10 +88,12 @@ func (a *GobFileLogger[K, V]) Error() <-chan error {
 func (a *GobFileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
 	errorCh := make(chan error, 1)
 	eventCh := make(chan Event[K, V], 100)
+
 	// Launch a goroutine to handle the file reading process asynchronously.
 	go func() {
 		defer close(errorCh)
 		defer close(eventCh)
+
 		// Open the log file for reading.
 		file, err := os.Open(a.file)
 		if err != nil {
@@ -93,21 +101,27 @@ func (a *GobFileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
 			return
 		}
 		defer file.Close()
+
 		// Create a JSON decoder to read events from the file.
 		decoder := gob.NewDecoder(file)
+
 		// Read events in a loop until EOF or an error occurs.
 		for {
 			var event Event[K, V]
+
 			// Decode the next event from the file.
 			if err := decoder.Decode(&event); err != nil {
+
+				// Exit gracefully if all events have been read.
 				if err.Error() == "EOF" {
-					// Exit gracefully if all events have been read.
 					return
 				}
+
 				// Report any other decoding errors and terminate the loop.
 				errorCh <- err
 				return
 			}
+
 			// Send the successfully decoded event to the event channel.
 			eventCh <- event
 		}

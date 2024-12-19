@@ -8,35 +8,64 @@ import (
 	"github.com/andygeiss/cloud-native-utils/service"
 )
 
-// Debounce wraps a given function (`fn`) to ensure it is not executed more often
-// than the specified `duration`. If a new call occurs within the debounce duration,
-// the previous call is canceled, and only the latest call proceeds.
-func Debounce[IN, OUT any](fn service.Function[IN, OUT], duration time.Duration) service.Function[IN, OUT] {
-	var debounceAt time.Time
-	var err error
-	var lastCancel context.CancelFunc
-	var lastCtx context.Context
-	var out OUT
-	var mutex sync.Mutex
-	return func(ctx context.Context, in IN) (OUT, error) {
-		if ctx.Err() != nil {
-			return out, ctx.Err()
+// Debounce delays the invocation of the provided function until a specified duration has passed since its last invocation.
+func Debounce[IN any](fn service.Function[IN], duration time.Duration) service.Function[IN] {
+	var mutex sync.RWMutex
+	var timer *time.Timer
+	var lastErr error
+
+	return func(ctx context.Context, in IN) (err error) {
+
+		// Early return if a timer is active
+		mutex.RLock()
+		if timer != nil {
+			defer mutex.RUnlock()
+			return lastErr
 		}
+		mutex.RUnlock()
+
 		mutex.Lock()
 		defer mutex.Unlock()
-		// If the current time is within the debounce duration (`debounceAt`),
-		// cancel the previous execution and return its result.
-		if time.Now().Before(debounceAt) {
-			if lastCancel != nil {
-				lastCancel()
-			}
-			return out, err
+
+		// Reset the timer after the duration
+		timer = time.AfterFunc(duration, func() {
+			timer = nil
+		})
+
+		// Execute the function and store the result
+		lastErr = fn(ctx, in)
+
+		return lastErr
+	}
+}
+
+// Debounce2 delays the invocation of a function with input and output until a specified duration has passed since its last invocation.
+func Debounce2[IN, OUT any](fn service.Function2[IN, OUT], duration time.Duration) service.Function2[IN, OUT] {
+	var lastErr error
+	var lastOut OUT
+	var timer *time.Timer
+	var mutex sync.RWMutex
+
+	return func(ctx context.Context, in IN) (out OUT, err error) {
+		// Early return if a timer is active
+		mutex.RLock()
+		if timer != nil {
+			defer mutex.RUnlock()
+			return lastOut, lastErr
 		}
-		// Create a new cancellable context for this execution.
-		lastCtx, lastCancel = context.WithCancel(ctx)
-		debounceAt = time.Now().Add(duration)
-		// Execute the provided function `fn` with the new context and store its result.
-		out, err = fn(lastCtx, in)
-		return out, err
+		mutex.RUnlock()
+
+		mutex.Lock()
+		defer mutex.Unlock()
+
+		// Reset the timer after the duration
+		timer = time.AfterFunc(duration, func() {
+			timer = nil
+		})
+
+		// Execute the function and store the results
+		lastOut, lastErr = fn(ctx, in)
+
+		return lastOut, lastErr
 	}
 }

@@ -22,11 +22,13 @@ func Benchmark_GobFileLogger(b *testing.B) {
 	jsonFile := "benchmark_gob_file_logger.json"
 	defer os.Remove(jsonFile)
 	n := 1000000
+
 	// Create N transactions.
 	txs := make([]Transaction, n)
 	for i := 0; i < n; i++ {
 		txs[i] = Transaction{ID: uint64(rand.Int63())}
 	}
+
 	// Create a GOB file logger.
 	logger := consistency.NewGobFileLogger[uint64, Transaction](jsonFile)
 	defer logger.Close()
@@ -48,11 +50,13 @@ func Benchmark_JsonFileLogger(b *testing.B) {
 	jsonFile := "benchmark_json_file_logger.json"
 	defer os.Remove(jsonFile)
 	n := 1000000
+
 	// Create N transactions.
 	txs := make([]Transaction, n)
 	for i := 0; i < n; i++ {
 		txs[i] = Transaction{ID: uint64(rand.Int63())}
 	}
+
 	// Create a JSON file logger.
 	logger := consistency.NewJsonFileLogger[uint64, Transaction](jsonFile)
 	defer logger.Close()

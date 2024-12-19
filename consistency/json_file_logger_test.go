@@ -63,9 +63,11 @@ func TestGobFileLogger_Graceful_Shutdown(t *testing.T) {
 	logger.WritePut("key2", "value2")
 	logger.WritePut("key3", "value3")
 	logger.WriteDelete("key2")
+
 	// Close the logger gracefully
 	errClose := logger.Close()
 	assert.That(t, "err must be nil", errClose == nil, true)
+
 	// Verify all events are written before shutdown
 	events, err := decodeGob[string, string](logFile)
 	assert.That(t, "err must be nil", err == nil, true)
@@ -76,8 +78,10 @@ func TestGobFileLogger_ReadEvents_Error(t *testing.T) {
 	logFile := "/non-existent/gob_file_logger_read_events_error.log"
 	logger := consistency.NewGobFileLogger[string, string](logFile)
 	defer logger.Close()
+
 	// Call ReadEvents to attempt to read events from the file.
 	_, errorCh := logger.ReadEvents()
+
 	// Use a select statement to capture the first error from the error channel.
 	select {
 	case err := <-errorCh:
@@ -92,6 +96,7 @@ func TestGobFileLogger_ReadEvents_Succeeds(t *testing.T) {
 	logger := consistency.NewGobFileLogger[string, string](logFile)
 	logger.WritePut("1", "value")
 	logger.Close()
+
 	// Call ReadEvents to read back the events from the file.
 	eventCh, errorCh := logger.ReadEvents()
 	select {
