@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/github/license/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/blob/master/LICENSE)
 [![Releases](https://img.shields.io/github/v/release/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/andygeiss/cloud-native-utils)](https://goreportcard.com/report/github.com/andygeiss/cloud-native-utils)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/03866f23f7a34d6192b5c2d14dc71200)](https://app.codacy.com/gh/andygeiss/cloud-native-utils/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 A collection of high-performance, modular utilities for enhancing testing,
 transactional consistency, efficiency, security and stability in cloud-native

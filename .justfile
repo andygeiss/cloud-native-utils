@@ -17,7 +17,7 @@ make-certs:
 
 # Test the Go sources (Units).
 test:
-    @go test -v -coverprofile=.coverprofile.out ./...
+    @go test -v -coverprofile=.coverprofile.out github.com/andygeiss/cloud-native-utils/...
 
 # Test module integration like the Server.
 test-integration:
