@@ -27,7 +27,7 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 		mutex.RLock()
 		if diff := failureCount - threshold; diff >= 0 {
 			// Calculate the next allowable retry time using exponential backoff.
-			retryAt := lastCall.Add((2 << 1) * time.Second)
+			retryAt := lastCall.Add((2 << diff) * time.Second)
 			if !time.Now().After(retryAt) {
 				mutex.RUnlock()
 				return out, ErrorBreakerServiceUnavailable
