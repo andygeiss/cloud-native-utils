@@ -27,10 +27,52 @@ func NewJsonFileLogger[K, V any](file string) *JsonFileLogger[K, V] {
 		eventCh: eventCh,
 		file:    file,
 	}
+
+	// Load the last sequence number from the file.
+	lastSeq, err := loadLastSequence[K, V](file)
+	if err != nil {
+		errorCh <- err // Report error if unable to read sequence number.
+	} else {
+		logger.lastSequence = lastSeq
+	}
+
 	// Start the event processing goroutine.
 	logger.wg.Add(1)
 	go logger.run()
 	return logger
+}
+
+// loadLastSequence reads the log file to determine the last sequence number.
+func loadLastSequence[K, V any](file string) (uint64, error) {
+	// Open the file for reading.
+	f, err := os.Open(file)
+	if err != nil {
+		// If the file doesn't exist, it's fine; this means no previous events.
+		if os.IsNotExist(err) {
+			return 0, nil
+		}
+		return 0, err // Return any other errors.
+	}
+	defer f.Close()
+
+	// Use a JSON decoder to parse events.
+	decoder := json.NewDecoder(f)
+	var lastSeq uint64
+	for {
+		var event Event[K, V]
+		if err := decoder.Decode(&event); err != nil {
+			if err.Error() == "EOF" {
+				break // End of file, stop reading.
+			}
+			return 0, err // Return decoding errors.
+		}
+		// Update lastSeq if the event's sequence number is higher.
+		if event.Sequence > lastSeq {
+			lastSeq = event.Sequence
+		}
+	}
+
+	return lastSeq, nil
 }
 
 // run processes events from the event channel and writes them to the file.
