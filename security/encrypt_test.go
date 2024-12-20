@@ -17,8 +17,9 @@ func TestGenerateKey(t *testing.T) {
 }
 
 func TestEncrypt(t *testing.T) {
+	key := security.GenerateKey()
 	plaintext := []byte("Alice and Bob")
-	ciphertext, key := security.Encrypt(plaintext)
+	ciphertext := security.Encrypt(plaintext, key)
 	block, _ := aes.NewCipher(key[:])
 	gcm, _ := cipher.NewGCM(block)
 	nonceSize := gcm.NonceSize()
