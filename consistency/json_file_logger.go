@@ -29,6 +29,12 @@ func NewJsonFileLogger[K, V any](file string) *JsonFileLogger[K, V] {
 		file:    file,
 	}
 
+	// Ensure that the directory and file exist.
+	_ = os.Mkdir(filepath.Dir(file), 0755)
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		_ = os.WriteFile(file, []byte(""), 0644)
+	}
+
 	// Load the last sequence number from the file.
 	lastSeq, err := loadLastSequence[K, V](file)
 	if err != nil {
@@ -80,8 +86,6 @@ func loadLastSequence[K, V any](file string) (uint64, error) {
 func (a *JsonFileLogger[K, V]) run() {
 	// Mark the goroutine as done when this method exits.
 	defer a.wg.Done()
-	// Create directory if it doesn't exist.
-	_ = os.Mkdir(filepath.Dir(a.file), 0755)
 	// Open the log file for appending or create it if it doesn't exist.
 	file, err := os.OpenFile(a.file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
