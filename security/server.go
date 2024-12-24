@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"golang.org/x/crypto/acme"
@@ -15,10 +16,11 @@ import (
 // It handles automatic TLS certificate acquisition, renewal, and secure settings.
 func tlsConfig(domains ...string) *tls.Config {
 	// Default directory for storing cached TLS certificates
-	const defaultCertCache = "./testdata"
+	keyFile := os.Getenv("SERVER_KEY")
+	tlsDir := filepath.Dir(keyFile)
 	// autocert.Manager automates the process of obtaining and managing TLS certificates.
 	mgr := &autocert.Manager{
-		Cache:      autocert.DirCache(defaultCertCache),
+		Cache:      autocert.DirCache(tlsDir),
 		HostPolicy: autocert.HostWhitelist(domains...),
 		Prompt:     autocert.AcceptTOS, // Automatically accept the Let's Encrypt Terms of Service
 	}
