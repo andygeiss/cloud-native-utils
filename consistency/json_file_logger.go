@@ -3,6 +3,7 @@ package consistency
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -79,6 +80,8 @@ func loadLastSequence[K, V any](file string) (uint64, error) {
 func (a *JsonFileLogger[K, V]) run() {
 	// Mark the goroutine as done when this method exits.
 	defer a.wg.Done()
+	// Create directory if it doesn't exist.
+	_ = os.Mkdir(filepath.Dir(a.file), 0755)
 	// Open the log file for appending or create it if it doesn't exist.
 	file, err := os.OpenFile(a.file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
