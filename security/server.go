@@ -2,7 +2,9 @@ package security
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"golang.org/x/crypto/acme"
@@ -59,8 +61,12 @@ func tlsConfig(domains ...string) *tls.Config {
 // NewServer creates and returns a configured HTTP server with secure TLS settings.
 // Accepts an HTTP request multiplexer (mux) and a list of domains for certificate management.
 func NewServer(mux *http.ServeMux, domains ...string) *http.Server {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "443"
+	}
 	return &http.Server{
-		Addr:              ":443",
+		Addr:              fmt.Sprintf(":%s", port),
 		Handler:           mux,
 		IdleTimeout:       5 * time.Second,
 		MaxHeaderBytes:    1 << 20, // Maximum size of request headers (1 MiB).
