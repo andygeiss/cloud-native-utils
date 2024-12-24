@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
@@ -65,8 +66,13 @@ func NewServer(mux *http.ServeMux, domains ...string) *http.Server {
 		port = "443"
 	}
 	return &http.Server{
-		Addr:           fmt.Sprintf(":%s", port),
-		Handler:        mux,
-		MaxHeaderBytes: 1 << 20, // Maximum size of request headers (1 MiB).
+		Addr:              fmt.Sprintf(":%s", port),
+		Handler:           mux,
+		IdleTimeout:       5 * time.Second,
+		MaxHeaderBytes:    1 << 20, // Maximum size of request headers (1 MiB).
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       5 * time.Second,
+		TLSConfig:         tlsConfig(domains...),
+		WriteTimeout:      5 * time.Second,
 	}
 }
