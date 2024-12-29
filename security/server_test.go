@@ -6,6 +6,7 @@ package security_test
 import (
 	"io"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -16,6 +17,7 @@ func TestServerWithTLS_Succeeds(t *testing.T) {
 	certFile := "testdata/server.crt"
 	keyFile := "testdata/server.key"
 	domains := []string{"localhost"}
+	os.Setenv("PORT", "443")
 	mux := http.NewServeMux()
 	// Define a test route that returns "success" for GET /test
 	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {

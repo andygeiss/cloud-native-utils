@@ -64,7 +64,7 @@ func tlsConfig(domains ...string) *tls.Config {
 func NewServer(mux *http.ServeMux) *http.Server {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "443"
+		port = "8080"
 	}
 	return &http.Server{
 		Addr:              fmt.Sprintf(":%s", port),
