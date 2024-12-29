@@ -60,9 +60,8 @@ func tlsConfig(domains ...string) *tls.Config {
 	return cfg
 }
 
-// NewServer creates and returns a configured HTTP server with secure TLS settings.
-// Accepts an HTTP request multiplexer (mux) and a list of domains for certificate management.
-func NewServer(mux *http.ServeMux, domains ...string) *http.Server {
+// NewServer creates and returns a configured HTTP server.
+func NewServer(mux *http.ServeMux) *http.Server {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "443"
@@ -74,7 +73,13 @@ func NewServer(mux *http.ServeMux, domains ...string) *http.Server {
 		MaxHeaderBytes:    1 << 20, // Maximum size of request headers (1 MiB).
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       5 * time.Second,
-		TLSConfig:         tlsConfig(domains...),
 		WriteTimeout:      5 * time.Second,
 	}
+}
+
+// NewServerWithTLS creates and returns a configured HTTP server with the given TLS configuration.
+func NewServerWithTLS(mux *http.ServeMux, domains ...string) *http.Server {
+	srv := NewServer(mux)
+	srv.TLSConfig = tlsConfig(domains...)
+	return srv
 }

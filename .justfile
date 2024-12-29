@@ -9,9 +9,9 @@ benchmark:
 cert-dir := "./security/testdata"
 make-certs:
     @rm -rf {{cert-dir}} ; mkdir {{cert-dir}}
-    @openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 -days 3650 \
-      -nodes -keyout {{cert-dir}}/server.key -out {{cert-dir}}/server.crt -subj "/CN=localhost" \
-      -addext "subjectAltName=DNS:localhost,DNS:*.localhost,IP:127.0.0.1"
+    @brew install mkcert
+    @mkcert -install
+    @mkcert -key-file {{cert-dir}}/server.key -cert-file {{cert-dir}}/server.crt localhost 127.0.0.1 ::1
 
 # Create the plugins.
 plugin:

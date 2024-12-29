@@ -5,7 +5,6 @@ package security_test
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"testing"
 	"time"
@@ -13,7 +12,7 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-func TestServer_Succeeds(t *testing.T) {
+func TestServerWithTLS_Succeeds(t *testing.T) {
 	certFile := "testdata/server.crt"
 	keyFile := "testdata/server.key"
 	domains := []string{"localhost"}
@@ -23,13 +22,11 @@ func TestServer_Succeeds(t *testing.T) {
 		w.Write([]byte("success"))
 	})
 	// Create a new server instance with the multiplexer and domains
-	server := security.NewServer(mux, domains...)
+	server := security.NewServerWithTLS(mux, domains...)
 	defer server.Close()
 	// Start the server in a separate goroutine to prevent blocking
 	go func() {
-		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
-			log.Fatalf("server failed to start: %v", err)
-		}
+		server.ListenAndServeTLS(certFile, keyFile)
 	}()
 	// Wait for the server to start (give it 2 seconds)
 	time.Sleep(2 * time.Second)
