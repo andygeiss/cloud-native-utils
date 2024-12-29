@@ -17,19 +17,22 @@ Go applications.
 ## **Module Features**
 
 - [**`assert`**](assert/): Provides tools for testing, including utility functions
-to assert value equality and simplify debugging during development.
+  to assert value equality and simplify debugging during development.
 - [**`consistency`**](consistency/): Implements transactional log management with
-`Event` and `EventType` abstractions, and supports file-based persistence using
-`JsonFileLogger` and `GobFileLogger` for reliable data storage.
+  `Event` and `EventType` abstractions, and supports file-based persistence using
+  `JsonFileLogger` for reliable data storage.
 - [**`efficiency`**](efficiency/): Offers utilities for generating read-only
-channels, merging and splitting streams, concurrent processing of channel items,
-and partitioning key-value stores using shards for scalability and performance.
+  channels, merging and splitting streams, concurrent processing of channel items,
+  and partitioning key-value stores using shards for scalability and performance.
+- [**`extensibility`**](extensibility/): Dynamically load external Go plugins using
+  `LoadPlugin`. Just provide a symbol name (e.g., a function) to integrate new
+  features on-the-fly—no rebuilds or redeploys required.
 - [**`security`**](security/): Includes encryption and decryption with AES-GCM,
-secure key generation, HMAC hashing, bcrypt-based password handling, and a
-preconfigured secure HTTP server with TLS for robust application security.
+  secure key generation, HMAC hashing, bcrypt-based password handling, and a
+  preconfigured secure HTTP server with TLS for robust application security.
 - [**`service`**](service/): Enhances service orchestration by grouping related
-functionality and wrapping functions to support context-aware execution in
-cloud-native environments.
+  functionality and wrapping functions to support context-aware execution in
+  cloud-native environments.
 - [**`stability`**](stability/): Ensures service robustness with mechanisms like
-circuit breakers, retries for transient failures, throttling for rate limiting,
-debounce for execution control, and timeouts for enforcing execution limits.
+  circuit breakers, retries for transient failures, throttling for rate limiting,
+  debounce for execution control, and timeouts for enforcing execution limits.
