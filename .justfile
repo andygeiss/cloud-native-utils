@@ -13,8 +13,12 @@ make-certs:
       -nodes -keyout {{cert-dir}}/server.key -out {{cert-dir}}/server.crt -subj "/CN=localhost" \
       -addext "subjectAltName=DNS:localhost,DNS:*.localhost,IP:127.0.0.1"
 
+# Create the plugins.
+plugin:
+    @go build -buildmode=plugin -o ./extensibility/testdata/adapter.so ./extensibility/testdata/adapter.go
+
 # Test the Go sources (Units).
-test:
+test: plugin
     @go test -v -coverprofile=.coverprofile.out github.com/andygeiss/cloud-native-utils/...
 
 # Test module integration like the Server.
