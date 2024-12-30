@@ -32,8 +32,9 @@ Go applications.
   preconfigured secure HTTP(S) server with liveness and readiness probes for
   robust application security.
 - [**`service`**](service/): Enhances service orchestration by grouping related
-  functionality and wrapping functions to support context-aware execution in
-  cloud-native environments.
+  functionality, wrapping functions to support context-aware execution and add
+  lifecycle-oriented functionality like signal handling in cloud-native
+  environments.
 - [**`stability`**](stability/): Ensures service robustness with mechanisms like
   circuit breakers, retries for transient failures, throttling for rate limiting,
   debounce for execution control, and timeouts for enforcing execution limits.
