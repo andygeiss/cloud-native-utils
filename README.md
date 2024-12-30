@@ -29,7 +29,8 @@ Go applications.
   features on-the-fly—no rebuilds or redeploys required.
 - [**`security`**](security/): Includes encryption and decryption with AES-GCM,
   secure key generation, HMAC hashing, bcrypt-based password handling, and a
-  preconfigured secure HTTP server with TLS for robust application security.
+  preconfigured secure HTTP(S) server with liveness and readiness probes for
+  robust application security.
 - [**`service`**](service/): Enhances service orchestration by grouping related
   functionality and wrapping functions to support context-aware execution in
   cloud-native environments.
