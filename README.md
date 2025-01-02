@@ -11,7 +11,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/b4e3a9c4859b47f1bc43613970ec8d12)](https://app.codacy.com/gh/andygeiss/cloud-native-utils/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
 A collection of high-performance, modular utilities for enhancing testing,
-transactional consistency, efficiency, security and stability in cloud-native
+transactional consistency, efficiency, security, and stability in cloud-native
 Go applications.
 
 ## **Module Features**
@@ -38,3 +38,7 @@ Go applications.
 - [**`stability`**](stability/): Ensures service robustness with mechanisms like
   circuit breakers, retries for transient failures, throttling for rate limiting,
   debounce for execution control, and timeouts for enforcing execution limits.
+- [**`templating`**](templating/): Offers a simple interface for generating
+  dynamic content with the standard `text/template` package. `Parse` panics on
+  invalid templates, while `Execute` returns the rendered string. Ideal for
+  generating HTML or other text-based output.
