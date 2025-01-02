@@ -38,7 +38,6 @@ Go applications.
 - [**`stability`**](stability/): Ensures service robustness with mechanisms like
   circuit breakers, retries for transient failures, throttling for rate limiting,
   debounce for execution control, and timeouts for enforcing execution limits.
-- [**`templating`**](templating/): Offers a simple interface for generating
-  dynamic content with the standard `text/template` package. `Parse` panics on
-  invalid templates, while `Execute` returns the rendered string. Ideal for
-  generating HTML or other text-based output.
+- [**`templating`**](templating/): Provides an `Engine` for managing templates
+  stored in an embedded filesystem. Use `Parse` to load multiple templates (via
+  glob patterns), and `Render` to execute them with custom data.
