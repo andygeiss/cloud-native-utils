@@ -12,6 +12,8 @@ make-certs:
     @brew install mkcert
     @mkcert -install
     @mkcert -key-file {{cert-dir}}/server.key -cert-file {{cert-dir}}/server.crt localhost 127.0.0.1 ::1
+    @mkcert -client -key-file {{cert-dir}}/client.key -cert-file {{cert-dir}}/client.crt localhost
+    @cp ~/Library/Application\ Support/mkcert/rootCA.pem {{cert-dir}}/ca.crt
 
 # Create the plugins.
 plugin:

@@ -5,22 +5,18 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
 )
 
-// tlsConfig creates and returns a *tls.Config configured for the given domains.
+// tlsServerConfig creates and returns a *tls.Config configured for the given domains.
 // It handles automatic TLS certificate acquisition, renewal, and secure settings.
-func tlsConfig(domains ...string) *tls.Config {
-	// Default directory for storing cached TLS certificates
-	keyFile := os.Getenv("SERVER_KEY")
-	tlsDir := filepath.Dir(keyFile)
+func tlsServerConfig(domains ...string) *tls.Config {
 	// autocert.Manager automates the process of obtaining and managing TLS certificates.
 	mgr := &autocert.Manager{
-		Cache:      autocert.DirCache(tlsDir),
+		Cache:      autocert.DirCache(".cache"),
 		HostPolicy: autocert.HostWhitelist(domains...),
 		Prompt:     autocert.AcceptTOS, // Automatically accept the Let's Encrypt Terms of Service
 	}
@@ -80,6 +76,6 @@ func NewServer(mux *http.ServeMux) *http.Server {
 // NewServerWithTLS creates and returns a configured HTTP server with the given TLS configuration.
 func NewServerWithTLS(mux *http.ServeMux, domains ...string) *http.Server {
 	srv := NewServer(mux)
-	srv.TLSConfig = tlsConfig(domains...)
+	srv.TLSConfig = tlsServerConfig(domains...)
 	return srv
 }
