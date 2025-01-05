@@ -37,9 +37,9 @@ func (a *ServerSessions) Update(info ServerSession) (sessionID string) {
 }
 
 // Get returns the session for the given sessionID.
-func (a *ServerSessions) Get(sessionID string) (ServerSession, bool) {
+func (a *ServerSessions) Get(sessionID string) (*ServerSession, bool) {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 	info, ok := a.sessions[sessionID]
-	return info, ok
+	return &info, ok
 }
