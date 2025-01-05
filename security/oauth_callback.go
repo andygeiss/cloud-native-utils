@@ -19,14 +19,14 @@ func OAuthCallback(w http.ResponseWriter, r *http.Request) {
 	// Exchange the code for an access token.
 	accessToken, err := getAccessToken(code)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to get access token: %v", err), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Use the access token to get the user's information.
 	userInfo, err := getUserInfo(accessToken)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to get user info: %v", err), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -60,7 +60,6 @@ func getAccessToken(code string) (string, error) {
 
 	// Set the request headers.
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.URL.RawQuery = params.Encode()
 
 	// Send the request and get the response.
@@ -117,7 +116,7 @@ func getUserInfo(accessToken string) (*githubUserInfo, error) {
 
 	// Check if the response status code is OK.
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("failed to get user info: status code is %v", res.StatusCode))
+		return nil, errors.New("failed to get user info")
 	}
 
 	// Parse the response body to get the user's information.
