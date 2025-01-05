@@ -7,6 +7,7 @@ import (
 
 // ServerSession is a session for a user.
 type ServerSession struct {
+	ID        string `json:"id"`
 	AvatarURL string `json:"avatar_url"`
 	EMail     string `json:"email"`
 	Login     string `json:"login"`
@@ -32,6 +33,7 @@ func (a *ServerSessions) Update(info ServerSession) (sessionID string) {
 	defer a.mutex.Unlock()
 	bytes := GenerateKey()
 	sessionID = hex.EncodeToString(bytes[:])
+	info.ID = sessionID
 	a.sessions[sessionID] = info
 	return sessionID
 }

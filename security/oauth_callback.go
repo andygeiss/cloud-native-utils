@@ -31,7 +31,7 @@ func OAuthCallback(homePath string, sessions *ServerSessions) http.HandlerFunc {
 		}
 
 		// Update the user's session.
-		sessionID := sessions.Update(ServerSession{
+		id := sessions.Update(ServerSession{
 			AvatarURL: userInfo.AvatarURL,
 			EMail:     userInfo.EMail,
 			Login:     userInfo.Login,
@@ -39,7 +39,7 @@ func OAuthCallback(homePath string, sessions *ServerSessions) http.HandlerFunc {
 		})
 
 		params := url.Values{}
-		params.Add("s", sessionID)
+		params.Add("s", id)
 
 		// Redirect the user to the home page.
 		http.Redirect(w, r, homePath+"?"+params.Encode(), http.StatusSeeOther)
