@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// OAuthLogin is the handler for the /github/login route.
 func OAuthCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	// state := r.URL.Query().Get("state")
