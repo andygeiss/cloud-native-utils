@@ -9,7 +9,7 @@ import (
 )
 
 // OAuthLogin is the handler for the /github/login route.
-func OAuthCallback(homePath string) http.HandlerFunc {
+func OAuthCallback(homePath string, sessions *ServerSessions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
 		// state := r.URL.Query().Get("state")
@@ -30,14 +30,19 @@ func OAuthCallback(homePath string) http.HandlerFunc {
 			return
 		}
 
-		// Set the user's information in the request headers.
-		r.Header.Set("X-User-Avatar-URL", userInfo.AvatarURL)
-		r.Header.Set("X-User-Email", userInfo.EMail)
-		r.Header.Set("X-User-Login", userInfo.Login)
-		r.Header.Set("X-User-Name", userInfo.Name)
+		// Update the user's session.
+		sessionID := sessions.Update(ServerSession{
+			AvatarURL: userInfo.AvatarURL,
+			EMail:     userInfo.EMail,
+			Login:     userInfo.Login,
+			Name:      userInfo.Name,
+		})
+
+		params := url.Values{}
+		params.Add("s", sessionID)
 
 		// Redirect the user to the home page.
-		http.Redirect(w, r, homePath, http.StatusSeeOther)
+		http.Redirect(w, r, homePath+"?"+params.Encode(), http.StatusSeeOther)
 	}
 }
 

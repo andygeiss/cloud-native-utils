@@ -9,15 +9,21 @@ import (
 
 // Mux creates a new mux with the liveness check endpoint (/liveness)
 // and the readiness check endpoint (/readiness).
-func Mux(ctx context.Context, efs embed.FS) *http.ServeMux {
+// It also adds an authentication endpoint (/auth/callback) and a login endpoint (/auth/login).
+// The mux is returned along with a new ServerSessions instance.
+func Mux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverSessions *ServerSessions) {
 	// Create a new mux with liveness and readyness endpoint.
-	mux := http.NewServeMux()
+	mux = http.NewServeMux()
+
+	// Create an in-memory store for the server sessions.
+	serverSessions = NewServerSessions()
 
 	// Add a file server to the mux.
 	mux.Handle("GET /", http.FileServerFS(efs))
 
 	// Add authentication to the mux.
-	mux.HandleFunc("GET /auth/callback", OAuthCallback(os.Getenv("HOME_PATH")))
+	homePath := os.Getenv("HOME_PATH")
+	mux.HandleFunc("GET /auth/callback", OAuthCallback(homePath, serverSessions))
 	mux.HandleFunc("GET /auth/login", OAuthLogin)
 
 	// Add a liveness check endpoint to the mux.
@@ -36,5 +42,5 @@ func Mux(ctx context.Context, efs embed.FS) *http.ServeMux {
 		}
 	})
 
-	return mux
+	return mux, serverSessions
 }
