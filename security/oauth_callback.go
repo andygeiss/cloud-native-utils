@@ -104,7 +104,7 @@ func getUserInfo(accessToken string) (*githubUserInfo, error) {
 
 	// Set the request headers.
 	req.Header.Add("Authorization", "Bearer "+accessToken)
-	req.Header.Add("Accept", "application/vnd.github.v3+json")
+	req.Header.Add("Accept", "application/vnd.github+json")
 
 	// Send the request and get the response.
 	client := NewClient("", "", "")
