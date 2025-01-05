@@ -3,34 +3,42 @@ package security
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 )
 
 // OAuthLogin is the handler for the /github/login route.
-func OAuthCallback(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
-	// state := r.URL.Query().Get("state")
+func OAuthCallback(homePath string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		code := r.URL.Query().Get("code")
+		// state := r.URL.Query().Get("state")
 
-	// TODO: Verify the state parameter to protect against CSRF attacks.
+		// TODO: Verify the state parameter to protect against CSRF attacks.
 
-	// Exchange the code for an access token.
-	accessToken, err := getAccessToken(code)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		// Exchange the code for an access token.
+		accessToken, err := getAccessToken(code)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Use the access token to get the user's information.
+		userInfo, err := getUserInfo(accessToken)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Set the user's information in the request headers.
+		r.Header.Set("X-User-Avatar-URL", userInfo.AvatarURL)
+		r.Header.Set("X-User-Email", userInfo.EMail)
+		r.Header.Set("X-User-Login", userInfo.Login)
+		r.Header.Set("X-User-Name", userInfo.Name)
+
+		// Redirect the user to the home page.
+		http.Redirect(w, r, homePath, http.StatusSeeOther)
 	}
-
-	// Use the access token to get the user's information.
-	userInfo, err := getUserInfo(accessToken)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Fprintf(w, "Hello, %s!", userInfo.Login)
 }
 
 // githubTokenResponse represents the response returned by the GitHub API when
