@@ -87,7 +87,7 @@ func getAccessToken(code string) (string, error) {
 // githubUserInfo represents the user's information returned by the GitHub API.
 type githubUserInfo struct {
 	AvatarURL string `json:"avatar_url"`
-	ID        string `json:"id"`
+	EMail     string `json:"email"`
 	Login     string `json:"login"`
 	Name      string `json:"name"`
 }
