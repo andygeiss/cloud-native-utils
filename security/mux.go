@@ -15,10 +15,13 @@ func Mux(ctx context.Context, efs embed.FS) *http.ServeMux {
 	// Add a file server to the mux.
 	mux.Handle("GET /", http.FileServerFS(efs))
 
+	// Add authentication to the mux.
+	mux.HandleFunc("GET /auth/callback", OAuthCallback)
+	mux.HandleFunc("GET /auth/login", OAuthLogin)
+
 	// Add a liveness check endpoint to the mux.
 	mux.HandleFunc("GET /liveness", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		// Write OK to the response body.
 		w.Write([]byte("OK"))
 	})
 
