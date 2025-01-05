@@ -17,18 +17,16 @@ func OAuthCallback(w http.ResponseWriter, r *http.Request) {
 	// TODO: Verify the state parameter to protect against CSRF attacks.
 
 	// Exchange the code for an access token.
-	// TODO: Implement this part of the code.
 	accessToken, err := getAccessToken(code)
 	if err != nil {
-		http.Error(w, "failed to get access token", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("failed to get access token: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	// Use the access token to get the user's information.
-	// TODO: Implement this part of the code.
 	userInfo, err := getUserInfo(accessToken)
 	if err != nil {
-		http.Error(w, "failed to get user info", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("failed to get user info: %v", err), http.StatusInternalServerError)
 		return
 	}
 
