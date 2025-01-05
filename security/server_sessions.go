@@ -9,8 +9,6 @@ import (
 type ServerSession struct {
 	ID        string `json:"id"`
 	AvatarURL string `json:"avatar_url"`
-	EMail     string `json:"email"`
-	Login     string `json:"login"`
 	Name      string `json:"name"`
 }
 

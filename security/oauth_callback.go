@@ -33,8 +33,6 @@ func OAuthCallback(homePath string, sessions *ServerSessions) http.HandlerFunc {
 		// Update the user's session.
 		id := sessions.Update(ServerSession{
 			AvatarURL: userInfo.AvatarURL,
-			EMail:     userInfo.EMail,
-			Login:     userInfo.Login,
 			Name:      userInfo.Name,
 		})
 
@@ -100,8 +98,6 @@ func getAccessToken(code string) (string, error) {
 // githubUserInfo represents the user's information returned by the GitHub API.
 type githubUserInfo struct {
 	AvatarURL string `json:"avatar_url"`
-	EMail     string `json:"email"`
-	Login     string `json:"login"`
 	Name      string `json:"name"`
 }
 

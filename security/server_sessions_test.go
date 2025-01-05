@@ -9,13 +9,13 @@ import (
 
 func TestServerSessions_Update(t *testing.T) {
 	sessions := security.NewServerSessions()
-	id := sessions.Update(security.ServerSession{AvatarURL: "avatar_url", EMail: "email", Login: "login", Name: "name"})
+	id := sessions.Update(security.ServerSession{AvatarURL: "avatar_url", Name: "name"})
 	assert.That(t, "id is correct", len(id), 64)
 }
 
 func TestServerSessions_Get(t *testing.T) {
 	sessions := security.NewServerSessions()
-	session := security.ServerSession{AvatarURL: "avatar_url", EMail: "email", Login: "login", Name: "name"}
+	session := security.ServerSession{AvatarURL: "avatar_url", Name: "name"}
 	id := sessions.Update(session)
 	session.ID = id
 	current, found := sessions.Get(id)
