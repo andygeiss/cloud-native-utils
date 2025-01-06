@@ -74,8 +74,7 @@ func getAccessToken(code string) (string, error) {
 	req.URL.RawQuery = params.Encode()
 
 	// Send the request and get the response.
-	client := NewClient("", "", "")
-	res, err := client.Do(req)
+	res, err := NewClient().Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -116,8 +115,7 @@ func getUserInfo(accessToken string) (*githubUserInfo, error) {
 	req.Header.Add("Accept", "application/vnd.github+json")
 
 	// Send the request and get the response.
-	client := NewClient("", "", "")
-	res, err := client.Do(req)
+	res, err := NewClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

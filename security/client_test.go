@@ -21,7 +21,7 @@ func TestClient_WithTLS_Succeeds(t *testing.T) {
 	serverCrt := "testdata/server.crt"
 	serverKey := "testdata/server.key"
 
-	client := security.NewClient(clientCrt, clientKey, caCrt)
+	client := security.NewClientWithTLS(clientCrt, clientKey, caCrt)
 
 	os.Setenv("PORT", "443")
 

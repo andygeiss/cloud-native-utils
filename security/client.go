@@ -57,12 +57,18 @@ func tlsClientConfig(certFile, keyFile, caFile string) *tls.Config {
 	}
 }
 
-// NewClient creates and returns a new *http.Client configured for mutual TLS authentication.
-func NewClient(certFile, keyFile, caFile string) *http.Client {
+// NewClient creates and returns a new *http.Client with a default timeout of 5 seconds.
+func NewClient() *http.Client {
 	return &http.Client{
 		Timeout: 5 * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: tlsClientConfig(certFile, keyFile, caFile),
-		},
 	}
+}
+
+// NewClientWithTLS creates and returns a new *http.Client with mutual TLS authentication.
+func NewClientWithTLS(certFile, keyFile, caFile string) *http.Client {
+	client := NewClient()
+	client.Transport = &http.Transport{
+		TLSClientConfig: tlsClientConfig(certFile, keyFile, caFile),
+	}
+	return client
 }
