@@ -18,10 +18,10 @@ func TestDebounce_Call_Once_Succeeds(t *testing.T) {
 }
 
 func TestDebounce_Call_Twice_Returns_Last_Result(t *testing.T) {
-	fn := stability.Debounce[int](mockSucceedsTimes(1), 50*time.Millisecond)
-	fn(context.Background(), 42)
+	fn := stability.Debounce[int](mockSucceedsTimes(2), 50*time.Millisecond)
+	fn(context.Background(), 21)
 	res, err := fn(context.Background(), 42)
-	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "err must be nil", err, nil)
 	assert.That(t, "result must be correct", res, 42)
 }
 

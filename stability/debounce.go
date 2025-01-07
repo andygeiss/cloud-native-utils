@@ -18,25 +18,32 @@ func Debounce[IN, OUT any](fn service.Function[IN, OUT], duration time.Duration)
 	var lastCtx context.Context
 	var out OUT
 	var mutex sync.Mutex
+
 	return func(ctx context.Context, in IN) (OUT, error) {
+		// If the caller's context is already canceled, bail out early
 		if ctx.Err() != nil {
 			return out, ctx.Err()
 		}
+
 		mutex.Lock()
 		defer mutex.Unlock()
-		// If the current time is within the debounce duration (`debounceAt`),
-		// cancel the previous execution and return its result.
+
+		// If we are still "inside" the last debounce window, cancel the old call
 		if time.Now().Before(debounceAt) {
 			if lastCancel != nil {
 				lastCancel()
 			}
-			return out, err
 		}
-		// Create a new cancellable context for this execution.
+
+		// Create a new cancellable context for the current (latest) call
 		lastCtx, lastCancel = context.WithCancel(ctx)
+
+		// Extend the "no new calls" window from *now*
 		debounceAt = time.Now().Add(duration)
-		// Execute the provided function `fn` with the new context and store its result.
+
+		// Now actually call fn for the latest input
 		out, err = fn(lastCtx, in)
+
 		return out, err
 	}
 }
