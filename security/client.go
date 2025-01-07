@@ -58,9 +58,11 @@ func tlsClientConfig(certFile, keyFile, caFile string) *tls.Config {
 }
 
 // NewClient creates and returns a new *http.Client with a default timeout of 5 seconds.
+// The timeout can be adjusted by setting the CLIENT_TIMEOUT environment variable.
 func NewClient() *http.Client {
+	// Create a new *http.Client with a default timeout of 5 seconds.
 	return &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: ParseDuration("CLIENT_TIMEOUT", 5*time.Second),
 	}
 }
 
