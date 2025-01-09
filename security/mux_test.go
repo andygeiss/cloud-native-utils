@@ -15,13 +15,13 @@ var efs embed.FS
 
 func TestServeMux_Is_Not_Nil(t *testing.T) {
 	ctx := context.Background()
-	mux, _ := security.Mux(ctx, efs)
+	mux, _ := security.NewServeMux(ctx, efs)
 	assert.That(t, "mux must not be nil", mux != nil, true)
 }
 
 func TestServeMux_Has_Health_Check(t *testing.T) {
 	ctx := context.Background()
-	mux, _ := security.Mux(ctx, efs)
+	mux, _ := security.NewServeMux(ctx, efs)
 	req := httptest.NewRequest("GET", "/liveness", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
@@ -31,7 +31,7 @@ func TestServeMux_Has_Health_Check(t *testing.T) {
 
 func TestServeMux_Has_Readiness_Check_When_Context_Active(t *testing.T) {
 	ctx := context.Background()
-	mux, _ := security.Mux(ctx, efs)
+	mux, _ := security.NewServeMux(ctx, efs)
 	req := httptest.NewRequest("GET", "/readiness", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
@@ -42,7 +42,7 @@ func TestServeMux_Has_Readiness_Check_When_Context_Active(t *testing.T) {
 func TestServeMux_Has_Readiness_Check_When_Context_Canceled(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Immediately cancel the context.
-	mux, _ := security.Mux(ctx, efs)
+	mux, _ := security.NewServeMux(ctx, efs)
 	req := httptest.NewRequest("GET", "/readiness", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
@@ -51,7 +51,7 @@ func TestServeMux_Has_Readiness_Check_When_Context_Canceled(t *testing.T) {
 
 func TestServeMux_Unknown_Route(t *testing.T) {
 	ctx := context.Background()
-	mux, _ := security.Mux(ctx, efs)
+	mux, _ := security.NewServeMux(ctx, efs)
 	req := httptest.NewRequest("GET", "/unknown", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
@@ -60,7 +60,7 @@ func TestServeMux_Unknown_Route(t *testing.T) {
 
 func TestServeMux_Has_Static_Assets(t *testing.T) {
 	ctx := context.Background()
-	mux, _ := security.Mux(ctx, efs)
+	mux, _ := security.NewServeMux(ctx, efs)
 	req := httptest.NewRequest("GET", "/testdata/server.crt", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
