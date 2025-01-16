@@ -4,7 +4,6 @@ import (
 	"context"
 	"embed"
 	"net/http"
-	"os"
 )
 
 // NewServeMux creates a new mux with the liveness check endpoint (/liveness)
@@ -20,11 +19,6 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 
 	// Add a file server to the mux.
 	mux.Handle("GET /", http.FileServerFS(efs))
-
-	// Add authentication to the mux.
-	homePath := os.Getenv("HOME_PATH")
-	mux.HandleFunc("GET /auth/callback", OAuthCallback(homePath, serverSessions))
-	mux.HandleFunc("GET /auth/login", OAuthLogin)
 
 	// Add a liveness check endpoint to the mux.
 	mux.HandleFunc("GET /liveness", func(w http.ResponseWriter, r *http.Request) {
