@@ -43,3 +43,10 @@ func (a *ServerSessions) Get(sessionID string) (*ServerSession, bool) {
 	info, ok := a.sessions[sessionID]
 	return &info, ok
 }
+
+// Remove removes the session for the given sessionID.
+func (a *ServerSessions) Remove(sessionID string) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	delete(a.sessions, sessionID)
+}

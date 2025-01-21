@@ -22,3 +22,11 @@ func TestServerSessions_Get(t *testing.T) {
 	assert.That(t, "session must be found", found, true)
 	assert.That(t, "session is correct", *current, session)
 }
+
+func TestServerSessions_Remove(t *testing.T) {
+	sessions := security.NewServerSessions()
+	id := sessions.Update(security.ServerSession{AvatarURL: "avatar_url", Name: "name"})
+	sessions.Remove(id)
+	_, found := sessions.Get(id)
+	assert.That(t, "session must not be found", found, false)
+}
