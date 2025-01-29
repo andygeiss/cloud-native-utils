@@ -25,28 +25,39 @@ func NewServerSessions() *ServerSessions {
 	}
 }
 
-// Update adds a new session to the serverSessions.
-func (a *ServerSessions) Update(info ServerSession) (sessionID string) {
+// Create adds a new session to the serverSessions.
+func (a *ServerSessions) Create() (session ServerSession) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 	bytes := GenerateKey()
-	sessionID = hex.EncodeToString(bytes[:])
-	info.ID = sessionID
-	a.sessions[sessionID] = info
-	return sessionID
+	sessionID := hex.EncodeToString(bytes[:])
+	session.ID = sessionID
+	a.sessions[sessionID] = session
+	return session
 }
 
 // Get returns the session for the given sessionID.
-func (a *ServerSessions) Get(sessionID string) (*ServerSession, bool) {
+func (a *ServerSessions) Read(id string) (*ServerSession, bool) {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
-	info, ok := a.sessions[sessionID]
+	info, ok := a.sessions[id]
 	return &info, ok
 }
 
-// Remove removes the session for the given sessionID.
-func (a *ServerSessions) Remove(sessionID string) {
+// Update adds a new session to the serverSessions.
+func (a *ServerSessions) Update(info ServerSession) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	delete(a.sessions, sessionID)
+	session := a.sessions[info.ID]
+	session.AvatarURL = info.AvatarURL
+	session.Name = info.Name
+	a.sessions[info.ID] = session
+	return
+}
+
+// Delete removes the session with the given sessionID.
+func (a *ServerSessions) Delete(id string) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	delete(a.sessions, id)
 }

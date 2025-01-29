@@ -7,26 +7,39 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-func TestServerSessions_Update(t *testing.T) {
+func TestServerSessions_Create(t *testing.T) {
 	sessions := security.NewServerSessions()
-	id := sessions.Update(security.ServerSession{AvatarURL: "avatar_url", Name: "name"})
+	session := sessions.Create()
+	id := session.ID
 	assert.That(t, "id is correct", len(id), 64)
 }
 
-func TestServerSessions_Get(t *testing.T) {
+func TestServerSessions_Read(t *testing.T) {
 	sessions := security.NewServerSessions()
-	session := security.ServerSession{AvatarURL: "avatar_url", Name: "name"}
-	id := sessions.Update(session)
-	session.ID = id
-	current, found := sessions.Get(id)
+	session := sessions.Create()
+	id := session.ID
+	current, found := sessions.Read(id)
 	assert.That(t, "session must be found", found, true)
 	assert.That(t, "session is correct", *current, session)
 }
 
-func TestServerSessions_Remove(t *testing.T) {
+func TestServerSessions_Update(t *testing.T) {
 	sessions := security.NewServerSessions()
-	id := sessions.Update(security.ServerSession{AvatarURL: "avatar_url", Name: "name"})
-	sessions.Remove(id)
-	_, found := sessions.Get(id)
+	session := sessions.Create()
+	id := session.ID
+	session.AvatarURL = "avatar_url"
+	session.Name = "name"
+	sessions.Update(session)
+	current, found := sessions.Read(id)
+	assert.That(t, "session must be found", found, true)
+	assert.That(t, "session is correct", *current, session)
+}
+
+func TestServerSessions_Delete(t *testing.T) {
+	sessions := security.NewServerSessions()
+	session := sessions.Create()
+	id := session.ID
+	sessions.Delete(id)
+	_, found := sessions.Read(id)
 	assert.That(t, "session must not be found", found, false)
 }
