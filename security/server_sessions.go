@@ -3,13 +3,13 @@ package security
 import (
 	"encoding/hex"
 	"sync"
+	"time"
 )
 
 // ServerSession is a session for a user.
 type ServerSession struct {
-	ID        string `json:"id"`
-	AvatarURL string `json:"avatar_url"`
-	Name      string `json:"name"`
+	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // ServerSessions is a thread-safe map of email addresses to tokens.
@@ -32,6 +32,7 @@ func (a *ServerSessions) Create() (session ServerSession) {
 	bytes := GenerateKey()
 	sessionID := hex.EncodeToString(bytes[:])
 	session.ID = sessionID
+	session.CreatedAt = time.Now()
 	a.sessions[sessionID] = session
 	return session
 }
@@ -40,19 +41,8 @@ func (a *ServerSessions) Create() (session ServerSession) {
 func (a *ServerSessions) Read(id string) (*ServerSession, bool) {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
-	info, ok := a.sessions[id]
-	return &info, ok
-}
-
-// Update adds a new session to the serverSessions.
-func (a *ServerSessions) Update(info ServerSession) {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	session := a.sessions[info.ID]
-	session.AvatarURL = info.AvatarURL
-	session.Name = info.Name
-	a.sessions[info.ID] = session
-	return
+	session, ok := a.sessions[id]
+	return &session, ok
 }
 
 // Delete removes the session with the given sessionID.

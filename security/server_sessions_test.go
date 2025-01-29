@@ -23,18 +23,6 @@ func TestServerSessions_Read(t *testing.T) {
 	assert.That(t, "session is correct", *current, session)
 }
 
-func TestServerSessions_Update(t *testing.T) {
-	sessions := security.NewServerSessions()
-	session := sessions.Create()
-	id := session.ID
-	session.AvatarURL = "avatar_url"
-	session.Name = "name"
-	sessions.Update(session)
-	current, found := sessions.Read(id)
-	assert.That(t, "session must be found", found, true)
-	assert.That(t, "session is correct", *current, session)
-}
-
 func TestServerSessions_Delete(t *testing.T) {
 	sessions := security.NewServerSessions()
 	session := sessions.Create()
