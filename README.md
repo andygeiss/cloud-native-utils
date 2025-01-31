@@ -28,7 +28,7 @@ Go applications.
   `LoadPlugin`. Just provide a symbol name (e.g., a function) to integrate new
   features on-the-fly—no rebuilds or redeploys required.
 - [**`resource`**](resource/): Supplies a generic Access[K, V] interface for CRUD
-  operations on key-value pairs, backed by an in-memory implementation.
+  operations on key-value pairs, backed by an in-memory and JSON file implementation.
 - [**`security`**](security/): Includes encryption and decryption with AES-GCM,
   secure key generation, HMAC hashing, bcrypt-based password handling, and a
   preconfigured secure HTTP(S) server with liveness and readiness probes for
