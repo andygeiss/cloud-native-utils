@@ -8,7 +8,6 @@ import (
 
 // NewServeMux creates a new mux with the liveness check endpoint (/liveness)
 // and the readiness check endpoint (/readiness).
-// It also adds an authentication endpoint (/auth/callback) and a login endpoint (/auth/login).
 // The mux is returned along with a new ServerSessions instance.
 func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverSessions *ServerSessions) {
 	// Create a new mux with liveness and readyness endpoint.
