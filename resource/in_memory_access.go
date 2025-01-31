@@ -6,15 +6,11 @@ import (
 	"github.com/andygeiss/cloud-native-utils/efficiency"
 )
 
-const (
-	ErrorResourceAlreadyExists = "resource already exists"
-	ErrorResourceNotFound      = "resource not found"
-)
-
 type inMemoryAccess[K comparable, V any] struct {
 	sharding efficiency.Sharding[K, V]
 }
 
+// NewInMemoryAccess creates a new in-memory access.
 func NewInMemoryAccess[K comparable, V any](shards int) *inMemoryAccess[K, V] {
 	return &inMemoryAccess[K, V]{
 		sharding: efficiency.NewSharding[K, V](shards),
