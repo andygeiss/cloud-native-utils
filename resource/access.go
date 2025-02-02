@@ -9,6 +9,7 @@ const (
 type Access[K, V any] interface {
 	Create(key K, value V) error
 	Read(key K) (*V, error)
+	ReadAll() ([]V, error)
 	Update(key K, value V) error
 	Delete(key K) error
 }

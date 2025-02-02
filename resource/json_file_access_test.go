@@ -28,6 +28,17 @@ func TestJsonFileAccess_Read(t *testing.T) {
 	assert.That(t, "v must be 42", *v, 42)
 }
 
+func TestJsonFileAccess_ReadAll(t *testing.T) {
+	path := "./json_file_access_read_all.json"
+	defer os.Remove(path)
+	a := resource.NewJsonFileAccess[string, int](path)
+	_ = a.Create("key1", 42)
+	_ = a.Create("key2", 21)
+	m, err := a.ReadAll()
+	assert.That(t, "err must be nil", err, nil)
+	assert.That(t, "m must be 2", len(m), 2)
+}
+
 func TestJsonFileAccess_Update(t *testing.T) {
 	path := "./json_file_access_update.json"
 	defer os.Remove(path)

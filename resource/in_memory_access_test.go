@@ -21,6 +21,14 @@ func TestInMemoryAccess_Read(t *testing.T) {
 	assert.That(t, "v must be 42", *v, 42)
 }
 
+func TestInMemoryAccess_ReadAll(t *testing.T) {
+	a := resource.NewInMemoryAccess[string, int](8)
+	_ = a.Create("key1", 42)
+	_ = a.Create("key2", 21)
+	values, _ := a.ReadAll()
+	assert.That(t, "values must be 42 and 21", values, []int{42, 21})
+}
+
 func TestInMemoryAccess_Update(t *testing.T) {
 	a := resource.NewInMemoryAccess[string, int](8)
 	_ = a.Create("key", 42)

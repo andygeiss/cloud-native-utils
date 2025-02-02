@@ -69,6 +69,31 @@ func (a *JsonFileAccess[K, V]) Read(key K) (*V, error) {
 	return &value, nil
 }
 
+// ReadAll reads all resources.
+func (a *JsonFileAccess[K, V]) ReadAll() ([]V, error) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	// Read data from file.
+	data, err := fromJsonFile[K, V](a.path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure data is not nil.
+	if data == nil {
+		data = make(map[K]V)
+	}
+
+	// Convert data to values.
+	var values []V
+	for _, value := range data {
+		values = append(values, value)
+	}
+
+	return values, nil
+}
+
 // Update updates a resource.
 func (a *JsonFileAccess[K, V]) Update(key K, value V) error {
 	a.mutex.Lock()
