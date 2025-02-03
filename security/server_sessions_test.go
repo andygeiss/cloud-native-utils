@@ -27,8 +27,7 @@ func TestServerSessions_Update(t *testing.T) {
 	sessions := security.NewServerSessions()
 	session := sessions.Create()
 	id := session.ID
-	session.AvatarURL = "avatar_url"
-	session.Name = "name"
+	session.Value = "value"
 	sessions.Update(session)
 	current, found := sessions.Read(id)
 	assert.That(t, "session must be found", found, true)

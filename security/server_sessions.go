@@ -7,9 +7,8 @@ import (
 
 // ServerSession is a session for a user.
 type ServerSession struct {
-	ID        string `json:"id"`
-	AvatarURL string `json:"avatar_url"`
-	Name      string `json:"name"`
+	ID    string `json:"id"`
+	Value string `json:"value"`
 }
 
 // ServerSessions is a thread-safe map of email addresses to tokens.
@@ -26,14 +25,14 @@ func NewServerSessions() *ServerSessions {
 }
 
 // Create adds a new session to the serverSessions.
-func (a *ServerSessions) Create() (session ServerSession) {
+func (a *ServerSessions) Create() (s ServerSession) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 	bytes := GenerateKey()
 	sessionID := hex.EncodeToString(bytes[:])
-	session.ID = sessionID
-	a.sessions[sessionID] = session
-	return session
+	s.ID = sessionID
+	a.sessions[sessionID] = s
+	return s
 }
 
 // Get returns the session for the given sessionID.
@@ -45,13 +44,12 @@ func (a *ServerSessions) Read(id string) (*ServerSession, bool) {
 }
 
 // Update adds a new session to the serverSessions.
-func (a *ServerSessions) Update(info ServerSession) {
+func (a *ServerSessions) Update(s ServerSession) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	session := a.sessions[info.ID]
-	session.AvatarURL = info.AvatarURL
-	session.Name = info.Name
-	a.sessions[info.ID] = session
+	session := a.sessions[s.ID]
+	session.Value = s.Value
+	a.sessions[s.ID] = session
 	return
 }
 
