@@ -11,7 +11,7 @@ type inMemoryAccess[K comparable, V any] struct {
 }
 
 // NewInMemoryAccess creates a new in-memory access.
-func NewInMemoryAccess[K comparable, V any](shards int) *inMemoryAccess[K, V] {
+func NewInMemoryAccess[K comparable, V any]() *inMemoryAccess[K, V] {
 	return &inMemoryAccess[K, V]{
 		kv: make(map[K]V),
 	}
