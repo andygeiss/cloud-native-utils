@@ -26,6 +26,9 @@ func (a *Engine) Parse(patterns ...string) {
 	if err != nil {
 		panic(fmt.Sprintf("templating: could not parse templates: %v", err))
 	}
+	tmpl.Funcs(template.FuncMap{
+		"add_int": func(a, b int) int { return a + b },
+	})
 	a.tmpl = tmpl
 }
 
