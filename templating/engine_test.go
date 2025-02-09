@@ -31,3 +31,11 @@ func TestEngine_Render_Must_Fail(t *testing.T) {
 	err := engine.Render(nil, "not-existing.tmpl", nil)
 	assert.That(t, "engine.Render must fail", err != nil, true)
 }
+
+func TestEngine_Render_Add_Int(t *testing.T) {
+	engine := templating.NewEngine(efs)
+	engine.Parse("testdata/*.tmpl")
+	var result bytes.Buffer
+	engine.Render(&result, "add_int", struct{ A, B int }{A: 1, B: 2})
+	assert.That(t, "engine.Render must succeed", result.String(), "3")
+}

@@ -22,14 +22,14 @@ func NewEngine(efs embed.FS) *Engine {
 
 // Parse parses the templates in the given path.
 func (a *Engine) Parse(patterns ...string) {
-	tmpl, err := template.ParseFS(a.efs, patterns...)
+	// Add custom functions.
+	tmpl := template.New("tmpl").Funcs(template.FuncMap{
+		"add_int": func(a, b int) int { return a + b },
+	})
+	tmpl, err := tmpl.ParseFS(a.efs, patterns...)
 	if err != nil {
 		panic(fmt.Sprintf("templating: could not parse templates: %v", err))
 	}
-	// Add custom functions.
-	tmpl = tmpl.Funcs(template.FuncMap{
-		"add_int": func(a, b int) int { return a + b },
-	})
 	a.tmpl = tmpl
 }
 
