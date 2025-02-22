@@ -10,7 +10,7 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-//go:embed testdata
+//go:embed assets
 var efs embed.FS
 
 func TestServeMux_Is_Not_Nil(t *testing.T) {
@@ -61,7 +61,7 @@ func TestServeMux_Unknown_Route(t *testing.T) {
 func TestServeMux_Has_Static_Assets(t *testing.T) {
 	ctx := context.Background()
 	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/testdata/server.crt", nil)
+	req := httptest.NewRequest("GET", "/assets/server.crt", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	assert.That(t, "status code must be 200", w.Code, 200)

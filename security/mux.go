@@ -16,8 +16,8 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	// Create an in-memory store for the server sessions.
 	serverSessions = NewServerSessions()
 
-	// Add a file server to the mux.
-	mux.Handle("GET /", http.FileServerFS(efs))
+	// Embed the assets into the mux.
+	mux.Handle("GET /assets/", http.FileServerFS(efs))
 
 	// Add a liveness check endpoint to the mux.
 	mux.HandleFunc("GET /liveness", func(w http.ResponseWriter, r *http.Request) {
