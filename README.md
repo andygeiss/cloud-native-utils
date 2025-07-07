@@ -24,7 +24,7 @@ Go applications.
 - [**`efficiency`**](efficiency/): Offers utilities for generating read-only
   channels, merging and splitting streams, concurrent processing of channel items,
   and partitioning key-value stores using shards for scalability and performance.
-- [**`extensibility`**](extensibility/): Dynamically load external Go plugins using
+- [**`extensibility`**](extensibility/): Dynamically loads external Go plugins using
   `LoadPlugin`. Just provide a symbol name (e.g., a function) to integrate new
   features on-the-fly—no rebuilds or redeploys required.
 - [**`resource`**](resource/): Supplies a generic Access[K, V] interface for CRUD

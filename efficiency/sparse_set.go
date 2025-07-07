@@ -4,7 +4,7 @@ package efficiency
 type SparseSet[T comparable] struct {
 	dense  []T
 	sparse []int
-	lastId int
+	lastID int
 	size   int
 }
 
@@ -13,20 +13,20 @@ func NewSparseSet[T comparable](initialSize int) *SparseSet[T] {
 	return &SparseSet[T]{
 		dense:  make([]T, initialSize),
 		sparse: make([]int, initialSize),
-		lastId: 0,
+		lastID: 0,
 		size:   0,
 	}
 }
 
 // Add adds an element to the SparseSet.
 func (a *SparseSet[T]) Add(id int, item T) {
-	if id < 0 {
+	if id < 0 || id > a.size {
 		return
 	}
 	index := a.size
 	a.dense[index] = item
 	a.sparse[id] = index
-	a.lastId = id
+	a.lastID = id
 	a.size++
 }
 
@@ -37,12 +37,12 @@ func (a *SparseSet[T]) Dense() []T {
 
 // Remove removes an element from the SparseSet.
 func (a *SparseSet[T]) Remove(id int) {
-	if id < 0 || id > a.lastId {
+	if id < 0 || id > a.lastID {
 		return
 	}
 	index := a.sparse[id]
 	a.dense[index] = a.dense[a.size-1]
-	a.sparse[a.lastId] = index
+	a.sparse[a.lastID] = index
 	a.size--
 }
 
