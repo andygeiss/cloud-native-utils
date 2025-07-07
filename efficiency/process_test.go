@@ -11,7 +11,7 @@ import (
 
 func TestProcess_Three_Int_Values(t *testing.T) {
 	in := []int{1, 2, 3}
-	inCh := efficiency.Generate[int](in...)
+	inCh := efficiency.Generate(in...)
 	outCh, _ := efficiency.Process(inCh, func(ctx context.Context, in int) (out int, err error) {
 		// Forward the input to the output channel.
 		return in, nil
@@ -25,7 +25,7 @@ func TestProcess_Three_Int_Values(t *testing.T) {
 
 func TestProcess_Ten_Values(t *testing.T) {
 	in := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	inCh := efficiency.Generate[int](in...)
+	inCh := efficiency.Generate(in...)
 	outCh, _ := efficiency.Process(inCh, func(ctx context.Context, in int) (out int, err error) {
 		// Forward the input to the output channel.
 		return in, nil
@@ -39,13 +39,11 @@ func TestProcess_Ten_Values(t *testing.T) {
 
 func TestProcess_Error_Handling(t *testing.T) {
 	in := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	inCh := efficiency.Generate[int](in...)
+	inCh := efficiency.Generate(in...)
 	_, errCh := efficiency.Process(inCh, func(ctx context.Context, in int) (out int, err error) {
 		// Forward an error to the error channel.
 		return 0, errors.New("error")
 	})
-	select {
-	case err := <-errCh:
-		assert.That(t, "err must be correct", err.Error(), "error")
-	}
+	err := <-errCh
+	assert.That(t, "err must be correct", err.Error(), "error")
 }
