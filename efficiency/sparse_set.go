@@ -37,7 +37,7 @@ func (a *SparseSet[T]) Dense() []T {
 
 // Remove removes an element from the SparseSet.
 func (a *SparseSet[T]) Remove(id int) {
-	if id < 0 || id > a.lastID {
+	if id < 0 || id >= len(a.sparse) {
 		return
 	}
 	index := a.sparse[id]
