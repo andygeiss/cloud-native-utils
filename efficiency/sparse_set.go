@@ -37,6 +37,13 @@ func (a *SparseSet[T]) Densed() []T {
 	return a.Dense[:a.Size]
 }
 
+// Deserialize deserializes the SparseSet from a byte slice.
+func (a *SparseSet[T]) Deserialize(in []byte) error {
+	buf := bytes.NewBuffer(in)
+	decoder := gob.NewDecoder(buf)
+	return decoder.Decode(a)
+}
+
 // Remove removes an element from the SparseSet.
 func (a *SparseSet[T]) Remove(id int) {
 	if id < 0 || id >= len(a.Sparse) {

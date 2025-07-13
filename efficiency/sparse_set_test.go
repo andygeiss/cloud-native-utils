@@ -16,6 +16,17 @@ func TestSparseSet_Add(t *testing.T) {
 	assert.That(t, "dense must be [1, 2, 3]", s.Densed(), []int{1, 2, 3})
 }
 
+func TestSparseSet_Deserialize(t *testing.T) {
+	s := efficiency.NewSparseSet[int](1)
+	s.Add(0, 1)
+	bytes := s.Serialize()
+	newS := efficiency.NewSparseSet[int](1)
+	err := newS.Deserialize(bytes)
+	assert.That(t, "error must be nil", err, nil)
+	assert.That(t, "size must be 1", newS.Size, 1)
+	assert.That(t, "dense must be [1]", newS.Densed(), []int{1})
+}
+
 func TestSparseSet_Remove(t *testing.T) {
 	s := efficiency.NewSparseSet[int](10)
 	s.Add(0, 1)
