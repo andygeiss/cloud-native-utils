@@ -1,55 +1,63 @@
 package efficiency
 
+import (
+	"bytes"
+	"encoding/gob"
+)
+
 // SparseSet is a data structure that provides efficient storage and retrieval of elements.
 type SparseSet[T comparable] struct {
-	dense  []T
-	sparse []int
-	size   int
+	Dense  []T
+	Sparse []int
+	Size   int
 }
 
-// NewSparseSet creates a new SparseSet with the given initial size.
+// NewSparseSet creates a new SparseSet with the given initial Size.
 func NewSparseSet[T comparable](initialSize int) *SparseSet[T] {
 	return &SparseSet[T]{
-		dense:  make([]T, initialSize),
-		sparse: make([]int, initialSize),
-		size:   0,
+		Dense:  make([]T, initialSize),
+		Sparse: make([]int, initialSize),
+		Size:   0,
 	}
 }
 
 // Add adds an element to the SparseSet.
 func (a *SparseSet[T]) Add(id int, item T) {
-	if id < 0 || id > a.size {
+	if id < 0 || id > a.Size {
 		return
 	}
-	index := a.size
-	a.dense[index] = item
-	a.sparse[id] = index
-	a.size++
+	index := a.Size
+	a.Dense[index] = item
+	a.Sparse[id] = index
+	a.Size++
 }
 
-// Dense returns the dense representation of the SparseSet.
-func (a *SparseSet[T]) Dense() []T {
-	return a.dense[:a.size]
+// Densed returns the Dense representation of the SparseSet.
+func (a *SparseSet[T]) Densed() []T {
+	return a.Dense[:a.Size]
 }
 
 // Remove removes an element from the SparseSet.
 func (a *SparseSet[T]) Remove(id int) {
-	if id < 0 || id >= len(a.sparse) {
+	if id < 0 || id >= len(a.Sparse) {
 		return
 	}
-	index := a.sparse[id]
-	a.dense[index] = a.dense[a.size-1]
-	// Correct the sparse index of the last element
-	for i := range a.sparse {
-		if a.sparse[i] == a.size-1 {
-			a.sparse[i] = index
+	index := a.Sparse[id]
+	a.Dense[index] = a.Dense[a.Size-1]
+	// Correct the Sparse index of the last element
+	for i := range a.Sparse {
+		if a.Sparse[i] == a.Size-1 {
+			a.Sparse[i] = index
 			break
 		}
 	}
-	a.size--
+	a.Size--
 }
 
-// Size returns the size of the SparseSet.
-func (a *SparseSet[T]) Size() int {
-	return a.size
+// Serialize serializes the SparseSet into a byte slice.
+func (a *SparseSet[T]) Serialize() []byte {
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	_ = encoder.Encode(a)
+	return buf.Bytes()
 }
