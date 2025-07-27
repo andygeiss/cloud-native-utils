@@ -33,13 +33,12 @@ func (a *SparseSet[T]) Densed() []T {
 }
 
 // Get returns the element at the given id.
-func (a *SparseSet[T]) Get(id int) T {
+func (a *SparseSet[T]) Get(id int) *T {
 	if id < 0 || id >= a.Size {
-		var zero T
-		return zero
+		return nil
 	}
 	index := a.Sparse[id]
-	return a.Dense[index]
+	return &a.Dense[index]
 }
 
 // Remove removes an element from the SparseSet.

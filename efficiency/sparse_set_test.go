@@ -21,10 +21,10 @@ func TestSparseSet_Get(t *testing.T) {
 	s.Add(0, 1)
 	s.Add(1, 2)
 	s.Add(2, 3)
-	assert.That(t, "element at index 0 must be 1", s.Get(0), 1)
-	assert.That(t, "element at index 1 must be 2", s.Get(1), 2)
-	assert.That(t, "element at index 2 must be 3", s.Get(2), 3)
-	assert.That(t, "element at index 3 must be 0", s.Get(3), 0)
+	assert.That(t, "element at index 0 must be 1", *s.Get(0), 1)
+	assert.That(t, "element at index 1 must be 2", *s.Get(1), 2)
+	assert.That(t, "element at index 2 must be 3", *s.Get(2), 3)
+	assert.That(t, "element at index 3 must be 0", s.Get(3) == nil, true)
 }
 
 func TestSparseSet_Remove(t *testing.T) {
