@@ -27,6 +27,18 @@ func TestSparseSet_Get(t *testing.T) {
 	assert.That(t, "element at index 3 must be 0", s.Get(3) == nil, true)
 }
 
+func TestSparseSet_Modify(t *testing.T) {
+	type Person struct {
+		name string
+	}
+	s := efficiency.NewSparseSet[Person](1)
+	p := Person{name: "John"}
+	s.Add(0, p)
+	p2 := s.Get(0)
+	p2.name = "Jane"
+	assert.That(t, "element at index 0 must be Jane", p2.name, "Jane")
+}
+
 func TestSparseSet_Remove(t *testing.T) {
 	s := efficiency.NewSparseSet[int](10)
 	s.Add(0, 1)
