@@ -61,3 +61,40 @@ func TestJsonFileAccess_Delete(t *testing.T) {
 	assert.That(t, "err2 must be correct", err2.Error(), resource.ErrorResourceNotFound)
 	assert.That(t, "v must be nil", v == nil, true)
 }
+
+func TestJsonFileAccess_Create_AlreadyExists(t *testing.T) {
+	path := "./json_file_access_create_already_exists.json"
+	defer os.Remove(path)
+	a := resource.NewJsonFileAccess[string, int](path)
+	_ = a.Create("key", 42)
+	err := a.Create("key", 21)
+	assert.That(t, "err must be correct", err.Error(), resource.ErrorResourceAlreadyExists)
+}
+
+func TestJsonFileAccess_Read_ResourceNotFound(t *testing.T) {
+	path := "./json_file_access_read_not_exists.json"
+	defer os.Remove(path)
+	a := resource.NewJsonFileAccess[string, int](path)
+	_ = a.Create("key", 42)
+	v, err := a.Read("key2")
+	assert.That(t, "err must be correct", err.Error(), resource.ErrorResourceNotFound)
+	assert.That(t, "v must be nil", v == nil, true)
+}
+
+func TestJsonFileAccess_Update_ResourceNotFound(t *testing.T) {
+	path := "./json_file_access_update_not_exists.json"
+	defer os.Remove(path)
+	a := resource.NewJsonFileAccess[string, int](path)
+	_ = a.Create("key", 42)
+	err := a.Update("key2", 21)
+	assert.That(t, "err must be correct", err.Error(), resource.ErrorResourceNotFound)
+}
+
+func TestJsonFileAccess_Delete_ResourceNotFound(t *testing.T) {
+	path := "./json_file_access_delete_not_exists.json"
+	defer os.Remove(path)
+	a := resource.NewJsonFileAccess[string, int](path)
+	_ = a.Create("key", 42)
+	err := a.Delete("key2")
+	assert.That(t, "err must be correct", err.Error(), resource.ErrorResourceNotFound)
+}

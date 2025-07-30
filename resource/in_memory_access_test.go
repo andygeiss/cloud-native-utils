@@ -46,3 +46,28 @@ func TestInMemoryAccess_Delete(t *testing.T) {
 	assert.That(t, "err must be nil", err, nil)
 	assert.That(t, "value must be nil", value == nil, true)
 }
+
+func TestInMemoryAccess_Create_AlreadyExists(t *testing.T) {
+	a := resource.NewInMemoryAccess[string, int]()
+	_ = a.Create("key", 42)
+	err := a.Create("key", 21)
+	assert.That(t, "err must be correct", err.Error(), resource.ErrorResourceAlreadyExists)
+}
+
+func TestInMemoryAccess_Read_ResourceNotFound(t *testing.T) {
+	a := resource.NewInMemoryAccess[string, int]()
+	_, err := a.Read("key")
+	assert.That(t, "err must be correct", err.Error(), resource.ErrorResourceNotFound)
+}
+
+func TestInMemoryAccess_Update_ResourceNotFound(t *testing.T) {
+	a := resource.NewInMemoryAccess[string, int]()
+	err := a.Update("key", 21)
+	assert.That(t, "err must be correct", err.Error(), resource.ErrorResourceNotFound)
+}
+
+func TestInMemoryAccess_Delete_ResourceNotFound(t *testing.T) {
+	a := resource.NewInMemoryAccess[string, int]()
+	err := a.Delete("key")
+	assert.That(t, "err must be correct", err.Error(), resource.ErrorResourceNotFound)
+}

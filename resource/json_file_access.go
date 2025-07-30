@@ -111,7 +111,11 @@ func (a *JsonFileAccess[K, V]) Update(key K, value V) error {
 	}
 
 	// Update resource if exists.
-	data[key] = value
+	if _, exists := data[key]; exists {
+		data[key] = value
+	} else {
+		return errors.New(ErrorResourceNotFound)
+	}
 
 	// Write data to file.
 	if err := intoJsonFile[K, V](a.path, data); err != nil {
