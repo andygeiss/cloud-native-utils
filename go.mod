@@ -1,10 +1,10 @@
 module github.com/andygeiss/cloud-native-utils
 
-go 1.24.3
+go 1.24.6
 
-require golang.org/x/crypto v0.38.0
+require golang.org/x/crypto v0.41.0
 
 require (
-	golang.org/x/net v0.40.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 )
