@@ -17,7 +17,7 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	serverSessions = NewServerSessions()
 
 	// Embed the assets into the mux.
-	mux.Handle("GET /assets/", http.FileServerFS(efs))
+	mux.Handle("GET /", http.FileServerFS(efs))
 
 	// Add a liveness check endpoint to the mux.
 	mux.HandleFunc("GET /liveness", func(w http.ResponseWriter, r *http.Request) {
