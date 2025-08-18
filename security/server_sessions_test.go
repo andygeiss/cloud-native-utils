@@ -9,14 +9,14 @@ import (
 
 func TestServerSessions_Create(t *testing.T) {
 	sessions := security.NewServerSessions()
-	session := sessions.Create()
+	session := sessions.Create("the unique id", nil)
 	id := session.ID
-	assert.That(t, "id is correct", len(id), 64)
+	assert.That(t, "id is correct", id, "the unique id")
 }
 
 func TestServerSessions_Read(t *testing.T) {
 	sessions := security.NewServerSessions()
-	session := sessions.Create()
+	session := sessions.Create("the unique id", nil)
 	id := session.ID
 	current, found := sessions.Read(id)
 	assert.That(t, "session must be found", found, true)
@@ -25,9 +25,9 @@ func TestServerSessions_Read(t *testing.T) {
 
 func TestServerSessions_Update(t *testing.T) {
 	sessions := security.NewServerSessions()
-	session := sessions.Create()
+	session := sessions.Create("the unique id", nil)
 	id := session.ID
-	session.Value = "value"
+	session.Data = "value"
 	sessions.Update(session)
 	current, found := sessions.Read(id)
 	assert.That(t, "session must be found", found, true)
@@ -36,7 +36,7 @@ func TestServerSessions_Update(t *testing.T) {
 
 func TestServerSessions_Delete(t *testing.T) {
 	sessions := security.NewServerSessions()
-	session := sessions.Create()
+	session := sessions.Create("the unique id", nil)
 	id := session.ID
 	sessions.Delete(id)
 	_, found := sessions.Read(id)

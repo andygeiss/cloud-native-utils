@@ -1,17 +1,16 @@
 package security
 
 import (
-	"encoding/hex"
 	"sync"
 )
 
 // ServerSession is a session for a user.
 type ServerSession struct {
-	ID    string `json:"id"`
-	Value string `json:"value"`
+	ID   string `json:"id"`
+	Data any    `json:"value"`
 }
 
-// ServerSessions is a thread-safe map of email addresses to tokens.
+// ServerSessions is a thread-safe map of session IDs to sessions.
 type ServerSessions struct {
 	sessions map[string]ServerSession
 	mutex    sync.RWMutex
@@ -25,14 +24,12 @@ func NewServerSessions() *ServerSessions {
 }
 
 // Create adds a new session to the serverSessions.
-func (a *ServerSessions) Create() (s ServerSession) {
+func (a *ServerSessions) Create(id string, data any) (s ServerSession) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
-	bytes := GenerateKey()
-	sessionID := hex.EncodeToString(bytes[:])
-	s.ID = sessionID
-	a.sessions[sessionID] = s
-	return s
+	session := ServerSession{ID: id, Data: data}
+	a.sessions[id] = session
+	return session
 }
 
 // Get returns the session for the given sessionID.
@@ -48,7 +45,7 @@ func (a *ServerSessions) Update(s ServerSession) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 	session := a.sessions[s.ID]
-	session.Value = s.Value
+	session.Data = s.Data
 	a.sessions[s.ID] = session
 	return
 }
