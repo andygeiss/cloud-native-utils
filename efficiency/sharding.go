@@ -26,16 +26,12 @@ func NewSharding[K comparable, V any](num int) Sharding[K, V] {
 	return shards
 }
 
-func (a Sharding[K, V]) getIndex(key K) int {
-	hash := fnv.New32a()
-	hash.Write([]byte(fmt.Sprintf("%v", key)))
-	sum := int(hash.Sum32())
-	return sum % len(a)
-}
-
-func (a Sharding[K, V]) getShard(key K) *Shard[K, V] {
-	index := a.getIndex(key)
-	return &a[index]
+// Delete removes a key-value pair from the appropriate shard.
+func (a Sharding[K, V]) Delete(key K) {
+	shard := a.getShard(key)
+	shard.mutex.Lock()
+	defer shard.mutex.Unlock()
+	delete(shard.items, key)
 }
 
 // Get retrieves a value from the appropriate shard.
@@ -55,10 +51,14 @@ func (a Sharding[K, V]) Put(key K, value V) {
 	shard.items[key] = value
 }
 
-// Delete removes a key-value pair from the appropriate shard.
-func (a Sharding[K, V]) Delete(key K) {
-	shard := a.getShard(key)
-	shard.mutex.Lock()
-	defer shard.mutex.Unlock()
-	delete(shard.items, key)
+func (a Sharding[K, V]) getIndex(key K) int {
+	hash := fnv.New32a()
+	hash.Write([]byte(fmt.Sprintf("%v", key)))
+	sum := int(hash.Sum32())
+	return sum % len(a)
+}
+
+func (a Sharding[K, V]) getShard(key K) *Shard[K, V] {
+	index := a.getIndex(key)
+	return &a[index]
 }
