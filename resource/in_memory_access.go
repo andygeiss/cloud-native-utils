@@ -18,6 +18,9 @@ func NewInMemoryAccess[K comparable, V any]() *inMemoryAccess[K, V] {
 }
 
 func (a *inMemoryAccess[K, V]) Create(key K, value V) error {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
 	// Check if resource already exists.
 	if _, alreadyExists := a.kv[key]; alreadyExists {
 		return errors.New(ErrorResourceAlreadyExists)
@@ -29,6 +32,9 @@ func (a *inMemoryAccess[K, V]) Create(key K, value V) error {
 }
 
 func (a *inMemoryAccess[K, V]) Read(key K) (*V, error) {
+	a.mutex.RLock()
+	defer a.mutex.RUnlock()
+
 	// Check if resource already exists.
 	if val, exists := a.kv[key]; exists {
 		return &val, nil
@@ -38,14 +44,21 @@ func (a *inMemoryAccess[K, V]) Read(key K) (*V, error) {
 }
 
 func (a *inMemoryAccess[K, V]) ReadAll() ([]V, error) {
+	a.mutex.RLock()
+	defer a.mutex.RUnlock()
+
 	var values []V
 	for _, value := range a.kv {
 		values = append(values, value)
 	}
+
 	return values, nil
 }
 
 func (a *inMemoryAccess[K, V]) Update(key K, value V) error {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
 	// Check if resource exists.
 	if _, exists := a.kv[key]; exists {
 		a.kv[key] = value
@@ -56,6 +69,9 @@ func (a *inMemoryAccess[K, V]) Update(key K, value V) error {
 }
 
 func (a *inMemoryAccess[K, V]) Delete(key K) error {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
 	// Check if resource exists.
 	if _, exists := a.kv[key]; exists {
 		delete(a.kv, key)

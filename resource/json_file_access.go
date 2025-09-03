@@ -9,7 +9,7 @@ import (
 
 type JsonFileAccess[K comparable, V any] struct {
 	path  string
-	mutex sync.Mutex
+	mutex sync.RWMutex
 }
 
 // NewJsonFileAccess creates a new json file access.
@@ -51,8 +51,8 @@ func (a *JsonFileAccess[K, V]) Create(key K, value V) error {
 
 // Read reads a resource.
 func (a *JsonFileAccess[K, V]) Read(key K) (*V, error) {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
+	a.mutex.RLock()
+	defer a.mutex.RUnlock()
 
 	// Read data from file.
 	data, err := fromJsonFile[K, V](a.path)
@@ -71,8 +71,8 @@ func (a *JsonFileAccess[K, V]) Read(key K) (*V, error) {
 
 // ReadAll reads all resources.
 func (a *JsonFileAccess[K, V]) ReadAll() ([]V, error) {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
+	a.mutex.RLock()
+	defer a.mutex.RUnlock()
 
 	// Read data from file.
 	data, err := fromJsonFile[K, V](a.path)
