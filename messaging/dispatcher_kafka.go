@@ -1,4 +1,4 @@
-package remote
+package messaging
 
 import (
 	"context"
@@ -6,35 +6,34 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/andygeiss/cloud-native-utils/messaging"
 	kafka "github.com/segmentio/kafka-go"
 )
 
-// dispatcher is able to handle external messaging via Kafka.
-type dispatcher struct {
+// kafkaDispatcher is able to handle external messaging via Kafka.
+type kafkaDispatcher struct {
 	ctx      context.Context
 	err      error
-	handlers map[string][]messaging.HandlerFunc
+	handlers map[string][]HandlerFunc
 	mutex    sync.RWMutex
 }
 
-// NewDispatcher creates a new instance of dispatcher.
-func NewDispatcher(ctx context.Context) messaging.Dispatcher {
-	return &dispatcher{
+// NewKafkaDispatcher creates a new instance of kafkaDispatcher.
+func NewKafkaDispatcher(ctx context.Context) Dispatcher {
+	return &kafkaDispatcher{
 		ctx:      ctx,
-		handlers: make(map[string][]messaging.HandlerFunc),
+		handlers: make(map[string][]HandlerFunc),
 	}
 }
 
-// Error returns the error associated with the dispatcher.
-func (a *dispatcher) Error() error {
+// Error returns the error associated with the kafkaDispatcher.
+func (a *kafkaDispatcher) Error() error {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 	return a.err
 }
 
 // Publish sends a message to the specified topic.
-func (a *dispatcher) Publish(topic string, message messaging.Message) {
+func (a *kafkaDispatcher) Publish(topic string, message Message) {
 	// Skip subscribing if there was an error previously.
 	a.mutex.RLock()
 	if a.err != nil {
@@ -43,7 +42,7 @@ func (a *dispatcher) Publish(topic string, message messaging.Message) {
 	a.mutex.RUnlock()
 
 	// Check if the message type is remote.
-	if message.Type != messaging.MessageTypeRemote {
+	if message.Type != MessageTypeRemote {
 		return
 	}
 
@@ -64,7 +63,7 @@ func (a *dispatcher) Publish(topic string, message messaging.Message) {
 }
 
 // Subscribe registers a handler function for the specified topic.
-func (a *dispatcher) Subscribe(topic string, fn messaging.HandlerFunc) {
+func (a *kafkaDispatcher) Subscribe(topic string, fn HandlerFunc) {
 	// Skip subscribing if there was an error previously.
 	a.mutex.RLock()
 	if a.err != nil {
@@ -108,8 +107,8 @@ func (a *dispatcher) Subscribe(topic string, fn messaging.HandlerFunc) {
 
 			// Call handler functions for this topic.
 			for _, handler := range handlers {
-				if err := handler(messaging.Message{
-					Type: messaging.MessageTypeRemote,
+				if err := handler(Message{
+					Type: MessageTypeRemote,
 					Data: m.Value,
 				}); err != nil {
 					a.mutex.Lock()

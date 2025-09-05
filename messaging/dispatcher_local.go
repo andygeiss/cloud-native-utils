@@ -1,34 +1,32 @@
-package local
+package messaging
 
 import (
 	"sync"
-
-	"github.com/andygeiss/cloud-native-utils/messaging"
 )
 
-// dispatcher is able to handle internal communication.
-type dispatcher struct {
+// localDispatcher is able to handle internal communication.
+type localDispatcher struct {
 	err      error
-	handlers map[string][]messaging.HandlerFunc
+	handlers map[string][]HandlerFunc
 	mutex    sync.RWMutex
 }
 
-// NewDispatcher creates a new instance of localDispatcher.
-func NewDispatcher() messaging.Dispatcher {
-	return &dispatcher{
-		handlers: make(map[string][]messaging.HandlerFunc),
+// NewLocalDispatcher creates a new instance of locallocalDispatcher.
+func NewLocalDispatcher() Dispatcher {
+	return &localDispatcher{
+		handlers: make(map[string][]HandlerFunc),
 	}
 }
 
-// Error returns the error of the dispatcher.
-func (a *dispatcher) Error() error {
+// Error returns the error of the localDispatcher.
+func (a *localDispatcher) Error() error {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 	return a.err
 }
 
 // Publish publishes a message to a topic.
-func (a *dispatcher) Publish(topic string, message messaging.Message) {
+func (a *localDispatcher) Publish(topic string, message Message) {
 	// Skip publishing if there was an error previously.
 	a.mutex.RLock()
 	if a.err != nil {
@@ -37,7 +35,7 @@ func (a *dispatcher) Publish(topic string, message messaging.Message) {
 	a.mutex.RUnlock()
 
 	// Skip publishing if message type is not local.
-	if message.Type != messaging.MessageTypeLocal {
+	if message.Type != MessageTypeLocal {
 		return
 	}
 
@@ -53,7 +51,7 @@ func (a *dispatcher) Publish(topic string, message messaging.Message) {
 }
 
 // Subscribe subscribes to a topic.
-func (a *dispatcher) Subscribe(topic string, fn messaging.HandlerFunc) {
+func (a *localDispatcher) Subscribe(topic string, fn HandlerFunc) {
 	// Skip subscribing if there was an error previously.
 	a.mutex.RLock()
 	if a.err != nil {

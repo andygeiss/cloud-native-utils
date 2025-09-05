@@ -1,4 +1,4 @@
-package remote_test
+package messaging_test
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/andygeiss/cloud-native-utils/assert"
 	"github.com/andygeiss/cloud-native-utils/messaging"
-	"github.com/andygeiss/cloud-native-utils/messaging/remote"
 )
 
 func init() {
@@ -16,14 +15,14 @@ func init() {
 	os.Setenv("KAFKA_CONSUMER_GROUP_ID", "test-group")
 }
 
-func TestDispatcher_Success(t *testing.T) {
+func TestKafkaDispatcher_Success(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	value := 0
 	message := messaging.NewMessage([]byte("Hello, World!"), messaging.MessageTypeRemote)
-	sut := remote.NewDispatcher(context.Background())
+	sut := messaging.NewKafkaDispatcher(context.Background())
 	sut.Subscribe("my-topic", func(msg messaging.Message) error {
 		defer cancel()
 		value = 42
@@ -35,13 +34,13 @@ func TestDispatcher_Success(t *testing.T) {
 	assert.That(t, "value must be 42", value, 42)
 }
 
-func TestDispatcher_Error(t *testing.T) {
+func TestKafkaDispatcher_Error(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	message := messaging.NewMessage([]byte("Hello, World!"), messaging.MessageTypeRemote)
-	sut := remote.NewDispatcher(context.Background())
+	sut := messaging.NewKafkaDispatcher(context.Background())
 	sut.Subscribe("my-topic", func(msg messaging.Message) error {
 		defer cancel()
 		return errors.New("handler error")

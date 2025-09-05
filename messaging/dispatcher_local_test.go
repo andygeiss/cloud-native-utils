@@ -1,4 +1,4 @@
-package local_test
+package messaging_test
 
 import (
 	"errors"
@@ -6,13 +6,12 @@ import (
 
 	"github.com/andygeiss/cloud-native-utils/assert"
 	"github.com/andygeiss/cloud-native-utils/messaging"
-	"github.com/andygeiss/cloud-native-utils/messaging/local"
 )
 
-func TestDispatcher_Success(t *testing.T) {
+func TestLocalDispatcher_Success(t *testing.T) {
 	value := 0
 	message := messaging.NewMessage([]byte("Hello, World!"), messaging.MessageTypeLocal)
-	sut := local.NewDispatcher()
+	sut := messaging.NewLocalDispatcher()
 	sut.Subscribe("my-topic", func(msg messaging.Message) error {
 		value = 42
 		return nil
@@ -22,9 +21,9 @@ func TestDispatcher_Success(t *testing.T) {
 	assert.That(t, "value must be 42", value, 42)
 }
 
-func TestDispatcher_Failure(t *testing.T) {
+func TestLocalDispatcher_Failure(t *testing.T) {
 	message := messaging.NewMessage([]byte("Hello, World!"), messaging.MessageTypeLocal)
-	sut := local.NewDispatcher()
+	sut := messaging.NewLocalDispatcher()
 	sut.Subscribe("my-topic", func(msg messaging.Message) error {
 		return errors.New("error")
 	})
