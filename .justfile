@@ -21,7 +21,7 @@ plugin:
 
 # Test the Go sources (Units).
 test: plugin
-    @go test -v -coverprofile=.coverprofile.out github.com/andygeiss/cloud-native-utils/...
+    @go test -v -short -coverprofile=.coverprofile.out github.com/andygeiss/cloud-native-utils/...
 
 # Test module integration like the Server.
 test-integration:
