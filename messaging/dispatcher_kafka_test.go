@@ -20,18 +20,16 @@ func TestKafkaDispatcher_Success(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	value := 0
 	message := messaging.NewMessage([]byte("Hello, World!"), messaging.MessageTypeRemote)
 	sut := messaging.NewKafkaDispatcher(context.Background())
 	sut.Subscribe("my-topic", func(msg messaging.Message) error {
 		defer cancel()
-		value = 42
+		assert.That(t, "data must be 'Hello, World!'", string(msg.Data), "Hello, World!")
 		return nil
 	})
 	sut.Publish("my-topic", message)
 	<-ctx.Done()
 	assert.That(t, "handler error must be nil", sut.Error(), nil)
-	assert.That(t, "value must be 42", value, 42)
 }
 
 func TestKafkaDispatcher_Error(t *testing.T) {
