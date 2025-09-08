@@ -2,9 +2,11 @@ package messaging
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -51,15 +53,28 @@ func (a *kafkaDispatcher) Publish(topic string, message Message) {
 	defer a.mutex.Unlock()
 
 	w := &kafka.Writer{
-		Addr:     kafka.TCP(strings.Split(os.Getenv("KAFKA_BROKERS"), ",")...),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
+		Addr:                   kafka.TCP(strings.Split(os.Getenv("KAFKA_BROKERS"), ",")...),
+		AllowAutoTopicCreation: true,
+		Topic:                  topic,
+		Balancer:               &kafka.LeastBytes{},
 	}
 	defer w.Close()
 
-	a.err = w.WriteMessages(a.ctx,
-		kafka.Message{Value: message.Data},
-	)
+	// Try writing messages with Auto-Topic-Creation at least 4 times.
+	for range 4 {
+		err := w.WriteMessages(a.ctx, kafka.Message{Value: message.Data})
+
+		if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {
+			time.Sleep(250 * time.Millisecond)
+			continue
+		}
+
+		if err != nil {
+			a.err = err
+		}
+
+		break
+	}
 }
 
 // Subscribe registers a handler function for the specified topic.
