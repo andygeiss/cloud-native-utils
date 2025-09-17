@@ -47,7 +47,6 @@ func (a *ServerSessions) Update(s ServerSession) {
 	session := a.sessions[s.ID]
 	session.Data = s.Data
 	a.sessions[s.ID] = session
-	return
 }
 
 // Delete removes the session with the given sessionID.
