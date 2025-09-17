@@ -61,9 +61,9 @@ func TestServeMux_Unknown_Route(t *testing.T) {
 func TestServeMux_Has_Static_Assets(t *testing.T) {
 	ctx := context.Background()
 	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/assets/server.crt", nil)
+	req := httptest.NewRequest("GET", "/assets/keepalive.txt", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	assert.That(t, "status code must be 200", w.Code, 200)
-	assert.That(t, "body length must be correct", len(w.Body.String()), 1598)
+	assert.That(t, "body must be correct", w.Body.String(), "localhost")
 }

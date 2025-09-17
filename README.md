@@ -33,7 +33,7 @@ Go applications.
   operations on key-value pairs, backed by an in-memory and JSON file implementation.
 - [**`security`**](security/): Includes encryption and decryption with AES-GCM,
   secure id and key generation, HMAC hashing, bcrypt-based password handling, and a
-  preconfigured secure HTTP(S) server with liveness and readiness probes for
+  preconfigured secure HTTPS client and server with liveness and readiness probes for
   robust application security.
 - [**`service`**](service/): Enhances service orchestration by grouping related
   functionality, wrapping functions to support context-aware execution and add
