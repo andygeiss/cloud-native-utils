@@ -16,6 +16,11 @@ func init() {
 }
 
 func TestDispatcherExternal_Publish(t *testing.T) {
+	// Skip this integration test.
+	if testing.Short() {
+		return
+	}
+
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
@@ -28,6 +33,11 @@ func TestDispatcherExternal_Publish(t *testing.T) {
 }
 
 func TestDispatcherExternal_Subscribe(t *testing.T) {
+	// Skip this integration test.
+	if testing.Short() {
+		return
+	}
+
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
@@ -43,6 +53,11 @@ func TestDispatcherExternal_Subscribe(t *testing.T) {
 }
 
 func TestDispatcherExternal_Roundtrip(t *testing.T) {
+	// Skip this integration test.
+	if testing.Short() {
+		return
+	}
+
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
@@ -62,6 +77,11 @@ func TestDispatcherExternal_Roundtrip(t *testing.T) {
 }
 
 func TestDispatcherExternal_Roundtrip_With_Timeout(t *testing.T) {
+	// Skip this integration test.
+	if testing.Short() {
+		return
+	}
+
 	// Arrange
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
