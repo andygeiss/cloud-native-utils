@@ -25,12 +25,6 @@ func mockAlwaysSucceeds() service.Function[int, int] {
 	}()
 }
 
-func mockCancel() service.Function[int, int] {
-	return func(ctx context.Context, in int) (int, error) {
-		return in, ctx.Err()
-	}
-}
-
 func mockSlow(duration time.Duration) service.Function[int, int] {
 	return func(ctx context.Context, in int) (int, error) {
 		select {

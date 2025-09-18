@@ -43,14 +43,14 @@ func (a *internalDispatcher) Publish(ctx context.Context, message Message) error
 	}
 
 	// Wait for all functions to finish.
-	for i := 0; i < len(fns); i++ {
+	for range fns {
 		select {
 		// Handle context cancellation.
 		case <-ctx.Done():
 			return ctx.Err()
 		case err := <-errChan:
 			return err
-		case _ = <-stateChan:
+		case <-stateChan:
 		}
 	}
 

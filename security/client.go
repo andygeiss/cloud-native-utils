@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-// tlsClientConfig creates and returns a *tls.Config configured for mutual TLS authentication.
+// TlsClientConfig creates and returns a *tls.Config configured for mutual TLS authentication.
 // It loads client specific certificates and adds server specific root CA certificates.
-func tlsClientConfig(certFile, keyFile, caFile string) *tls.Config {
+func TlsClientConfig(certFile, keyFile, caFile string) *tls.Config {
 	// Load client specific certificates for mutual TLS authentication.
 	var clientCerts []tls.Certificate
 	if certFile != "" && keyFile != "" {
@@ -70,7 +70,7 @@ func NewClient() *http.Client {
 func NewClientWithTLS(certFile, keyFile, caFile string) *http.Client {
 	client := NewClient()
 	client.Transport = &http.Transport{
-		TLSClientConfig: tlsClientConfig(certFile, keyFile, caFile),
+		TLSClientConfig: TlsClientConfig(certFile, keyFile, caFile),
 	}
 	return client
 }
