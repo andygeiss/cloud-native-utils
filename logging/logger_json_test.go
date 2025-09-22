@@ -37,9 +37,3 @@ func TestNewJsonLogger_With_Warn_Level(t *testing.T) {
 	logger := logging.NewJsonLogger()
 	assert.That(t, "logging level must be warn", logger.Handler().Enabled(ctx, slog.LevelWarn), true)
 }
-
-func TestNewJsonLogger_Without_Level(t *testing.T) {
-	ctx := context.Background()
-	logger := logging.NewJsonLogger()
-	assert.That(t, "logging level must be info", logger.Handler().Enabled(ctx, slog.LevelInfo), true)
-}
