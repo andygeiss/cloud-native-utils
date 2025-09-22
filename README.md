@@ -27,6 +27,8 @@ Go applications.
 - [**`extensibility`**](extensibility/): Dynamically loads external Go plugins using
   `LoadPlugin`. Just provide a symbol name (e.g., a function) to integrate new
   features on-the-fly—no rebuilds or redeploys required.
+- [**`logging`**](logging/): Creates a log record consists of a time, a level, a message, 
+  and a set of key-value pairs, where the keys are strings and the values may be of any type.
 - [**`messaging`**](messaging/): Implements messaging patterns like publish-subscribe
   to decouple local and remote services.
 - [**`resource`**](resource/): Supplies a generic Access[K, V] interface for CRUD
