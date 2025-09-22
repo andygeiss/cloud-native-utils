@@ -4,6 +4,7 @@
 
 # Cloud Native Utils
 
+[![Go Reference](https://pkg.go.dev/badge/badge/andygeiss/cloud-native-utils.svg)](https://pkg.go.dev/badge/andygeiss/cloud-native-utils)
 [![License](https://img.shields.io/github/license/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/blob/master/LICENSE)
 [![Releases](https://img.shields.io/github/v/release/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/andygeiss/cloud-native-utils)](https://goreportcard.com/report/github.com/andygeiss/cloud-native-utils)
