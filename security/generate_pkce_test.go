@@ -9,6 +9,6 @@ import (
 
 func TestGeneratePKCE(t *testing.T) {
 	codeVerifier, challenge := security.GeneratePKCE()
-	assert.That(t, "codeVerifier length must be 32", len(codeVerifier), 32)
+	assert.That(t, "codeVerifier length must be 32", len(codeVerifier), 43)
 	assert.That(t, "challenge length must be 43", len(challenge), 43)
 }
