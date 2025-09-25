@@ -19,6 +19,10 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	// Embed the assets into the mux.
 	mux.Handle("GET /", http.FileServerFS(efs))
 
+	// Add OpenID Connect endpoints to the mux.
+	mux.Handle("GET /auth/callback", IdentityProvider.Callback(serverSessions))
+	mux.Handle("GET /auth/login", IdentityProvider.Login())
+
 	// Add a liveness check endpoint to the mux.
 	mux.HandleFunc("GET /liveness", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
