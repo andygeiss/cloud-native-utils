@@ -133,7 +133,7 @@ func (a *identityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
 		sessions.Delete(sessionId)
 
 		// Redirect the user to the logout URL.
-		http.Redirect(w, r, os.Getenv("LOGOUT_URL"), http.StatusFound)
+		http.Redirect(w, r, os.Getenv("REDIRECT_URL"), http.StatusFound)
 	}
 }
 
