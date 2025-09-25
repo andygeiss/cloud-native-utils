@@ -35,6 +35,7 @@ func NewIdentityProvider() *identityProvider {
 	}
 }
 
+// IdentityProvider is a singleton instance of the identity provider.
 var IdentityProvider = NewIdentityProvider()
 
 // Callback returns a handler function for the identity provider's callback endpoint.
@@ -86,7 +87,7 @@ func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 		// Generate a unique session ID and create a session with the claims as data.
 		sessionId := GenerateID()[:32]
 		sessions.Create(sessionId, claims)
-		redirectUrl := fmt.Sprintf("%s?s=%s", os.Getenv("REDIRECT_URL"), sessionId)
+		redirectUrl := fmt.Sprintf("%s?session_id=%s", os.Getenv("REDIRECT_URL"), sessionId)
 
 		// Redirect the user to the redirect URL.
 		http.Redirect(w, r, redirectUrl, http.StatusFound)
@@ -119,6 +120,20 @@ func (a *identityProvider) Login() http.HandlerFunc {
 
 		// Redirect the user to the authorization URL.
 		http.Redirect(w, r, authUrl, http.StatusFound)
+	}
+}
+
+// Logout handles the logout request.
+func (a *identityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Retrieve the session ID from the request.
+		sessionId := r.URL.Query().Get("session_id")
+
+		// Delete the session from the server.
+		sessions.Delete(sessionId)
+
+		// Redirect the user to the logout URL.
+		http.Redirect(w, r, os.Getenv("LOGOUT_URL"), http.StatusFound)
 	}
 }
 
