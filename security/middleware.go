@@ -19,14 +19,15 @@ const (
 // WithAuth adds authentication information to the context.
 func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Extract the current context.
-		ctx := r.Context()
+		// Create a new context.
+		ctx := context.Background()
 
 		// Retrieve the session ID from the request URL.
 		sessionId := r.URL.Query().Get("session_id")
 
 		// Define the claims
 		var email, issuer, name, subject string
+		var verified bool
 
 		if sessionId != "" {
 			// Retrieve the session by using the session ID.
@@ -36,6 +37,7 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 				issuer = claims.Issuer
 				name = claims.Name
 				subject = claims.Subject
+				verified = claims.Verified
 			}
 		}
 
@@ -43,8 +45,9 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 		ctx = context.WithValue(ctx, ContextEmail, email)
 		ctx = context.WithValue(ctx, ContextIssuer, issuer)
 		ctx = context.WithValue(ctx, ContextName, name)
-		ctx = context.WithValue(ctx, ContextSubject, subject)
 		ctx = context.WithValue(ctx, ContextSessionID, sessionId)
+		ctx = context.WithValue(ctx, ContextSubject, subject)
+		ctx = context.WithValue(ctx, ContextVerified, verified)
 
 		// Call the next http handler with context.
 		next.ServeHTTP(w, r.WithContext(ctx))
