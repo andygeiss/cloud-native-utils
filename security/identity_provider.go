@@ -47,7 +47,7 @@ func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 		state := r.URL.Query().Get("state")
 
 		// Retrieve the code verifier from the state.
-		codeVerifier, err := a.stateCodeVerifiers.Read(state)
+		codeVerifier, _ := a.stateCodeVerifiers.Read(state)
 		if codeVerifier == nil {
 			http.Error(w, "invalid state", http.StatusBadRequest)
 			return
