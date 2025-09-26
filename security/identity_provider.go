@@ -19,6 +19,17 @@ type identityProvider struct {
 	stateCodeVerifiers resource.Access[string, string]
 }
 
+type ContextKey string
+
+const (
+	ContextSessionID ContextKey = "session_id"
+	ContextEmail     ContextKey = "email"
+	ContextIssuer    ContextKey = "issuer"
+	ContextName      ContextKey = "name"
+	ContextSubject   ContextKey = "subject"
+	ContextVerified  ContextKey = "verified"
+)
+
 // IdentityTokenClaims represents the claims of an identity token.
 type IdentityTokenClaims struct {
 	Email    string `json:"email"`
@@ -134,6 +145,36 @@ func (a *identityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
 
 		// Redirect the user to the logout URL.
 		http.Redirect(w, r, os.Getenv("REDIRECT_URL"), http.StatusFound)
+	}
+}
+
+// WithAuth adds authentication information to the context.
+func (a *identityProvider) WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract the current context.
+		ctx := r.Context()
+
+		// Retrieve the session ID from the request URL.
+		sessionId := r.URL.Query().Get("session_id")
+
+		if sessionId != "" {
+			// Retrieve the session by using the session ID.
+			if session, ok := sessions.Read(sessionId); ok {
+				claims, _ := session.Data.(IdentityTokenClaims)
+
+				// Add the claims to the context.
+				ctx = context.WithValue(ctx, ContextEmail, claims.Email)
+				ctx = context.WithValue(ctx, ContextIssuer, claims.Issuer)
+				ctx = context.WithValue(ctx, ContextName, claims.Name)
+				ctx = context.WithValue(ctx, ContextSubject, claims.Subject)
+			}
+
+			// Add the session ID to the context.
+			ctx = context.WithValue(ctx, ContextSessionID, sessionId)
+		}
+
+		// Call the next http handler with context.
+		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
 
