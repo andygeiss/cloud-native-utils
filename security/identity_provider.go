@@ -157,21 +157,26 @@ func (a *identityProvider) WithAuth(sessions *ServerSessions, next http.HandlerF
 		// Retrieve the session ID from the request URL.
 		sessionId := r.URL.Query().Get("session_id")
 
+		// Define the claims
+		var email, issuer, name, subject string
+
 		if sessionId != "" {
 			// Retrieve the session by using the session ID.
 			if session, ok := sessions.Read(sessionId); ok {
 				claims, _ := session.Data.(IdentityTokenClaims)
-
-				// Add the claims to the context.
-				ctx = context.WithValue(ctx, ContextEmail, claims.Email)
-				ctx = context.WithValue(ctx, ContextIssuer, claims.Issuer)
-				ctx = context.WithValue(ctx, ContextName, claims.Name)
-				ctx = context.WithValue(ctx, ContextSubject, claims.Subject)
+				email = claims.Email
+				issuer = claims.Issuer
+				name = claims.Name
+				subject = claims.Subject
 			}
-
-			// Add the session ID to the context.
-			ctx = context.WithValue(ctx, ContextSessionID, sessionId)
 		}
+
+		// Add the authentication informations.
+		ctx = context.WithValue(ctx, ContextEmail, email)
+		ctx = context.WithValue(ctx, ContextIssuer, issuer)
+		ctx = context.WithValue(ctx, ContextName, name)
+		ctx = context.WithValue(ctx, ContextSubject, subject)
+		ctx = context.WithValue(ctx, ContextSessionID, sessionId)
 
 		// Call the next http handler with context.
 		next.ServeHTTP(w, r.WithContext(ctx))
