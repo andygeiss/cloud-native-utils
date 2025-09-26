@@ -17,7 +17,7 @@ const (
 )
 
 // WithAuth adds authentication information to the context.
-func (a *identityProvider) WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc {
+func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract the current context.
 		ctx := r.Context()
