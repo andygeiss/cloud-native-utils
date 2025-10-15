@@ -45,9 +45,7 @@ func (a *externalDispatcher) Publish(ctx context.Context, message Message) error
 	// Use stability patterns to make the function more robust.
 	maxRetries := security.ParseInt("SERVICE_RETRY_MAX", 3)
 	delay := security.ParseDuration("SERVICE_RETRY_DELAY", 5*time.Second)
-	duration := security.ParseDuration("SERVICE_TIMEOUT", 5*time.Second)
 	fn = stability.Retry(fn, maxRetries, delay)
-	fn = stability.Timeout(fn, duration)
 
 	// Execute and ignore the message length for now.
 	_, err := fn(ctx, message)
@@ -72,9 +70,7 @@ func (a *externalDispatcher) Subscribe(ctx context.Context, topic string, fn ser
 		// Use stability patterns to make the function more robust.
 		maxRetries := security.ParseInt("SERVICE_RETRY_MAX", 3)
 		delay := security.ParseDuration("SERVICE_RETRY_DELAY", 5*time.Second)
-		duration := security.ParseDuration("SERVICE_TIMEOUT", 5*time.Second)
 		fn = stability.Retry(fn, maxRetries, delay)
-		fn = stability.Timeout(fn, duration)
 
 		for {
 
