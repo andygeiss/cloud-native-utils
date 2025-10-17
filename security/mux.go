@@ -1,11 +1,12 @@
 package security
 
 import (
+	"compress/gzip"
 	"context"
 	"embed"
 	"net/http"
 
-	"github.com/andygeiss/cloud-native-utils/efficiency"
+	"github.com/klauspost/compress/gzhttp"
 )
 
 // NewServeMux creates a new mux with the liveness check endpoint (/liveness)
@@ -18,8 +19,11 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	// Create an in-memory store for the server sessions.
 	serverSessions = NewServerSessions()
 
+	// Create a compression wrapper.
+	withCompression, _ := gzhttp.NewWrapper(gzhttp.MinSize(2000), gzhttp.CompressionLevel(gzip.BestSpeed))
+
 	// Embed the assets into the mux.
-	mux.Handle("GET /", efficiency.WithCompression(http.FileServerFS(efs)))
+	mux.Handle("GET /", withCompression(http.FileServerFS(efs)))
 
 	// Add OpenID Connect endpoints to the mux.
 	mux.Handle("GET /auth/callback", IdentityProvider.Callback(serverSessions))
