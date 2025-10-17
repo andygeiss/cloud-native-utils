@@ -71,6 +71,7 @@ func (a *gzipResponseWriter) WriteHeader(code int) {
 	h.Del("Content-Length")
 	h.Add("Vary", "Accept-Encoding")
 	a.ResponseWriter.WriteHeader(code)
+	a.wroteHeader = true
 }
 
 // WithCompression ...
