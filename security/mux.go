@@ -20,7 +20,7 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	serverSessions = NewServerSessions()
 
 	// Create a compression wrapper.
-	withCompression, _ := gzhttp.NewWrapper(gzhttp.MinSize(2000), gzhttp.CompressionLevel(gzip.BestSpeed))
+	withCompression, _ := gzhttp.NewWrapper(gzhttp.MinSize(2000), gzhttp.CompressionLevel(gzip.BestCompression))
 
 	// Embed the assets into the mux.
 	mux.Handle("GET /", withCompression(http.FileServerFS(efs)))
