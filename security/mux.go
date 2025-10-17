@@ -4,6 +4,8 @@ import (
 	"context"
 	"embed"
 	"net/http"
+
+	"github.com/andygeiss/cloud-native-utils/efficiency"
 )
 
 // NewServeMux creates a new mux with the liveness check endpoint (/liveness)
@@ -17,7 +19,7 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	serverSessions = NewServerSessions()
 
 	// Embed the assets into the mux.
-	mux.Handle("GET /", http.FileServerFS(efs))
+	mux.Handle("GET /", efficiency.WithCompression(http.FileServerFS(efs)))
 
 	// Add OpenID Connect endpoints to the mux.
 	mux.Handle("GET /auth/callback", IdentityProvider.Callback(serverSessions))
