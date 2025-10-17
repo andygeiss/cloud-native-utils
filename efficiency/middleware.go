@@ -7,14 +7,14 @@ import (
 	"strings"
 )
 
-// gzipResponseWriter
+// gzipResponseWriter compresses the response body using gzip.
 type gzipResponseWriter struct {
 	http.ResponseWriter
 	gzw         *gzip.Writer
 	wroteHeader bool
 }
 
-// newGzipResponseWriter ...
+// newGzipResponseWriter creates a new gzipResponseWriter.
 func newGzipResponseWriter(w http.ResponseWriter) *gzipResponseWriter {
 	return &gzipResponseWriter{
 		ResponseWriter: w,
@@ -22,12 +22,12 @@ func newGzipResponseWriter(w http.ResponseWriter) *gzipResponseWriter {
 	}
 }
 
-// Close ...
+// Close closes the gzipResponseWriter.
 func (a *gzipResponseWriter) Close() error {
 	return a.gzw.Close()
 }
 
-// Flush ...
+// Flush flushes the gzipResponseWriter.
 func (a *gzipResponseWriter) Flush() {
 	_ = a.gzw.Flush()
 	// Call underlying flusher if exists.
@@ -36,7 +36,7 @@ func (a *gzipResponseWriter) Flush() {
 	}
 }
 
-// ReadFrom ...
+// ReadFrom reads from the reader and writes to the gzipResponseWriter.
 func (a *gzipResponseWriter) ReadFrom(r io.Reader) (int64, error) {
 	if !a.wroteHeader {
 		a.WriteHeader(http.StatusOK)
@@ -44,7 +44,7 @@ func (a *gzipResponseWriter) ReadFrom(r io.Reader) (int64, error) {
 	return io.Copy(a.gzw, r)
 }
 
-// Writer ...
+// Writer writes to the gzipResponseWriter.
 func (a *gzipResponseWriter) Write(p []byte) (int, error) {
 	// Set default to 200.
 	if !a.wroteHeader {
@@ -54,9 +54,9 @@ func (a *gzipResponseWriter) Write(p []byte) (int, error) {
 	return a.gzw.Write(p)
 }
 
-// WriteHeader ...
+// WriteHeader writes to the gzipResponseWriter.
 func (a *gzipResponseWriter) WriteHeader(code int) {
-	// Skip
+	// Skip writing header if already written.
 	if a.wroteHeader {
 		return
 	}
@@ -74,7 +74,7 @@ func (a *gzipResponseWriter) WriteHeader(code int) {
 	a.wroteHeader = true
 }
 
-// WithCompression ...
+// WithCompression wraps a handler with gzip compression.
 func WithCompression(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only compress if client accepts it and
