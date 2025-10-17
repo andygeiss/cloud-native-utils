@@ -1,10 +1,11 @@
 package efficiency
 
 import (
-	"compress/gzip"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/klauspost/compress/gzip"
 )
 
 // gzipResponseWriter
