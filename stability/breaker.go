@@ -23,6 +23,7 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 		if ctx.Err() != nil {
 			return out, ctx.Err()
 		}
+
 		// Acquire a read lock to check the breaker state.
 		mutex.RLock()
 		if diff := failureCount - threshold; diff >= 0 {
@@ -34,8 +35,10 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 			}
 		}
 		mutex.RUnlock()
+
 		// Call the underlying service function.
 		res, err := fn(ctx, in)
+
 		// Acquire a write lock to update shared state.
 		mutex.Lock()
 		defer mutex.Unlock()
@@ -44,6 +47,7 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 			failureCount++
 			return out, err
 		}
+
 		// Reset the failure count on a successful call.
 		failureCount = 0
 		return res, nil

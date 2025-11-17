@@ -12,17 +12,20 @@ func Wrap[IN, OUT any](fn func(in IN) (out OUT, err error)) Function[IN, OUT] {
 		result OUT
 		err    error
 	}
+
 	// Return a function that incorporates timeout logic.
 	return func(ctx context.Context, in IN) (out OUT, err error) {
 		if ctx.Err() != nil {
 			return out, ctx.Err()
 		}
-		ch := make(chan response, 1)
+
 		// Execute the function in a separate goroutine.
+		ch := make(chan response, 1)
 		go func() {
 			res, err := fn(in)
 			ch <- response{res, err}
 		}()
+
 		// Wait for either the function to complete or the context to be canceled.
 		select {
 		case res := <-ch:

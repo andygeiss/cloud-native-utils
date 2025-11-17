@@ -19,11 +19,14 @@ func Timeout[IN, OUT any](fn service.Function[IN, OUT], duration time.Duration) 
 		if ctx.Err() != nil {
 			return out, ctx.Err()
 		}
+
 		// Create a child context with a timeout based on the specified duration.
 		withTimeout, cancel := context.WithTimeout(ctx, duration)
 		defer cancel() // Ensure the timeout context is properly cleaned up to avoid resource leaks.
+
 		// Create a channel to capture the result of the function execution.
 		resCh := make(chan result)
+
 		// Run the wrapped function in a separate goroutine.
 		// This allows us to listen for both the function's result and the timeout in parallel.
 		go func() {
@@ -31,6 +34,7 @@ func Timeout[IN, OUT any](fn service.Function[IN, OUT], duration time.Duration) 
 			out, err := fn(withTimeout, in)
 			resCh <- result{out, err}
 		}()
+
 		// Use a select statement to wait for either the function's result or the timeout.
 		select {
 		case res := <-resCh:

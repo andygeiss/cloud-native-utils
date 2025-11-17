@@ -18,11 +18,13 @@ func Retry[IN, OUT any](fn service.Function[IN, OUT], maxRetries int, delay time
 		for retries := 0; ; retries++ {
 			// Call the provided function and capture its result and error.
 			res, err := fn(ctx, in)
+
 			// If the function succeeds (err == nil), or the maximum number of retries has been reached,
 			// return the result and error (if any).
 			if err == nil || retries >= maxRetries {
 				return res, err
 			}
+
 			select {
 			// Wait for the delay duration before retrying.
 			case <-time.After(delay):

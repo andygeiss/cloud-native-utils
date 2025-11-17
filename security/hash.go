@@ -9,6 +9,7 @@ import (
 func Hash(tag string, data []byte) (sum []byte) {
 	hash := hmac.New(sha512.New512_256, []byte(tag))
 	hash.Write(data)
+
 	// Compute and return the HMAC hash.
 	return hash.Sum(nil)
 }

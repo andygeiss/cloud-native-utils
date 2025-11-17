@@ -53,6 +53,7 @@ func Throttle[IN, OUT any](fn service.Function[IN, OUT], maxTokens, refill uint,
 			return out, ErrorThrottleTooManyCalls
 		}
 		tokens--
+
 		// Call the wrapped function and return its result.
 		return fn(ctx, in)
 	}

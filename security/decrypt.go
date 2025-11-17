@@ -14,15 +14,18 @@ func Decrypt(ciphertext []byte, key [32]byte) (plaintext []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// Create a new GCM (Galois/Counter Mode) cipher based on the AES block.
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
 	}
+
 	// Ensure the ciphertext is long enough to include the nonce.
 	if len(ciphertext) < gcm.NonceSize() {
 		return nil, errors.New("malformed ciphertext")
 	}
+
 	// Decrypt the ciphertext using the nonce and the encrypted message.
 	return gcm.Open(nil,
 		ciphertext[:gcm.NonceSize()], // Extract the nonce from the ciphertext.
