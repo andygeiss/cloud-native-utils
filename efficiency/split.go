@@ -4,11 +4,12 @@ package efficiency
 // It returns a slice of `num` output channels, where each channel will receive
 // the same data from the input channel concurrently.
 func Split[T any](in <-chan T, num int) []<-chan T {
-	out := make([]<-chan T, 0)
 	// Iterate `num` times to create the specified number of channels.
+	out := make([]<-chan T, 0)
 	for range num {
 		ch := make(chan T)
 		out = append(out, ch)
+
 		// Start a goroutine to forward data from the input channel to the current output channel.
 		go func(ch chan T) {
 			defer close(ch)

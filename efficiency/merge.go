@@ -9,6 +9,7 @@ func Merge[T any](in ...<-chan T) chan T {
 	out := make(chan T)
 	var wg sync.WaitGroup
 	wg.Add(len(in))
+
 	// Start a goroutine for each input channel.
 	for _, ch := range in {
 		// Forward all values from the input channel to the output channel.
@@ -19,6 +20,7 @@ func Merge[T any](in ...<-chan T) chan T {
 			}
 		}(ch)
 	}
+
 	// Wait for all goroutines to finish.
 	go func() {
 		wg.Wait()

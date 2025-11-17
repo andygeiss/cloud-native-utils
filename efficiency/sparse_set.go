@@ -48,6 +48,7 @@ func (a *SparseSet[T]) Remove(id int) {
 	}
 	index := a.Sparse[id]
 	a.Dense[index] = a.Dense[a.Size-1]
+
 	// Correct the Sparse index of the last element
 	for i := range a.Sparse {
 		if a.Sparse[i] == a.Size-1 {

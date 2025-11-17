@@ -30,6 +30,7 @@ func (a *gzipResponseWriter) Close() error {
 // Flush flushes the gzipResponseWriter.
 func (a *gzipResponseWriter) Flush() {
 	_ = a.gzw.Flush()
+
 	// Call underlying flusher if exists.
 	if f, ok := a.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
@@ -60,11 +61,13 @@ func (a *gzipResponseWriter) WriteHeader(code int) {
 	if a.wroteHeader {
 		return
 	}
+
 	// Do not add a gzip headers for empty resonses like redirects.
 	if code == http.StatusNoContent || code == http.StatusNotModified {
 		a.ResponseWriter.WriteHeader(code)
 		return
 	}
+
 	// Set gzip-specific header.
 	h := a.Header()
 	h.Set("Content-Encoding", "gzip")
@@ -85,9 +88,11 @@ func WithCompression(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
+
 		// Wrap the ResponseWriter.
 		gzw := newGzipResponseWriter(w)
 		defer gzw.Close()
+
 		// Call next handler.
 		next.ServeHTTP(gzw, r)
 	})
