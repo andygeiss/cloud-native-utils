@@ -51,7 +51,7 @@ Go applications.
 
 ## **Getting Started**
 
-The repository [https://github.com/andygeiss/cloud-native-app](cloud-native-app) 
+The repository [cloud-native-app](https://github.com/andygeiss/cloud-native-app)
 offers a concrete application which uses the library’s modules together 
 (rather than only isolated utility examples). 
 
