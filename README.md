@@ -48,3 +48,12 @@ Go applications.
 - [**`templating`**](templating/): Provides an `Engine` for managing templates
   stored in an embedded filesystem. Use `Parse` to load multiple templates (via
   glob patterns), and `Render` to execute them with custom data.
+
+## **Getting Started**
+
+The repository [https://github.com/andygeiss/cloud-native-app](cloud-native-app) 
+offers a concrete application which uses the library’s modules together 
+(rather than only isolated utility examples). 
+
+This should help to bridge the gap between “here’s a helper function” and 
+“here’s how it all fits in a service”.
