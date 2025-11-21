@@ -7,6 +7,7 @@ import (
 	"sync"
 )
 
+// JsonFileAccess is a json file access.
 type JsonFileAccess[K comparable, V any] struct {
 	path  string
 	mutex sync.RWMutex
