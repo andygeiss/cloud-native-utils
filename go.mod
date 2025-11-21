@@ -13,5 +13,4 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
-	golang.org/x/net v0.47.0 // indirect
 )
