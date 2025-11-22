@@ -5,6 +5,7 @@ import (
 	"sync"
 )
 
+// inMemoryAccess is a generic access implementation backed by a mock, in-memory and JSON file.
 type inMemoryAccess[K comparable, V any] struct {
 	kv    map[K]V
 	mutex sync.RWMutex
@@ -17,6 +18,7 @@ func NewInMemoryAccess[K comparable, V any]() *inMemoryAccess[K, V] {
 	}
 }
 
+// Create creates a new resource.
 func (a *inMemoryAccess[K, V]) Create(key K, value V) error {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
@@ -31,6 +33,7 @@ func (a *inMemoryAccess[K, V]) Create(key K, value V) error {
 	return nil
 }
 
+// Read reads a resource.
 func (a *inMemoryAccess[K, V]) Read(key K) (*V, error) {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
@@ -43,6 +46,7 @@ func (a *inMemoryAccess[K, V]) Read(key K) (*V, error) {
 	return nil, errors.New(ErrorResourceNotFound)
 }
 
+// ReadAll reads all resources.
 func (a *inMemoryAccess[K, V]) ReadAll() ([]V, error) {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
@@ -55,6 +59,7 @@ func (a *inMemoryAccess[K, V]) ReadAll() ([]V, error) {
 	return values, nil
 }
 
+// Update updates a resource.
 func (a *inMemoryAccess[K, V]) Update(key K, value V) error {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
@@ -68,6 +73,7 @@ func (a *inMemoryAccess[K, V]) Update(key K, value V) error {
 	return errors.New(ErrorResourceNotFound)
 }
 
+// Delete deletes a resource.
 func (a *inMemoryAccess[K, V]) Delete(key K) error {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
