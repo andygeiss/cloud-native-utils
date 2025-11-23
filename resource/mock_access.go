@@ -5,11 +5,11 @@ package resource
 // Use the builder-pattern to set the mock function pointers for each method.
 // This allows for more flexible and readable test cases.
 type MockAccess[K, V any] struct {
-	CreatePtr  func(key K, value V) error
-	ReadPtr    func(key K) (*V, error)
-	ReadAllPtr func() ([]V, error)
-	UpdatePtr  func(key K, value V) error
-	DeletePtr  func(key K) error
+	CreateFn  func(key K, value V) error
+	ReadFn    func(key K) (*V, error)
+	ReadAllFn func() ([]V, error)
+	UpdateFn  func(key K, value V) error
+	DeleteFn  func(key K) error
 }
 
 // NewMockAccess creates a new instance of MockAccess[K, V].
@@ -19,50 +19,50 @@ func NewMockAccess[K, V any]() *MockAccess[K, V] {
 
 // Create creates a new resource with the given key and value.
 func (a *MockAccess[K, V]) Create(key K, value V) error {
-	return a.CreatePtr(key, value)
+	return a.CreateFn(key, value)
 }
 
 // Read reads a resource with the given key.
 func (a *MockAccess[K, V]) Read(key K) (value *V, err error) {
-	return a.ReadPtr(key)
+	return a.ReadFn(key)
 }
 
 // ReadAll reads all resources.
 func (a *MockAccess[K, V]) ReadAll() (values []V, err error) {
-	return a.ReadAllPtr()
+	return a.ReadAllFn()
 }
 
 // Update updates a resource with the given key and value.
 func (a *MockAccess[K, V]) Update(key K, value V) (err error) {
-	return a.UpdatePtr(key, value)
+	return a.UpdateFn(key, value)
 }
 
 // Delete deletes a resource with the given key.
 func (a *MockAccess[K, V]) Delete(key K) (err error) {
-	return a.DeletePtr(key)
+	return a.DeleteFn(key)
 }
 
 // WithCreatePtr sets the mock function pointer for creating a resource.
 func (a *MockAccess[K, V]) WithCreatePtr(fn func(key K, value V) error) {
-	a.CreatePtr = fn
+	a.CreateFn = fn
 }
 
 // WithReadPtr sets the mock function pointer for reading a resource.
 func (a *MockAccess[K, V]) WithReadPtr(fn func(key K) (*V, error)) {
-	a.ReadPtr = fn
+	a.ReadFn = fn
 }
 
 // WithReadAllPtr sets the mock function pointer for reading all resources.
 func (a *MockAccess[K, V]) WithReadAllPtr(fn func() ([]V, error)) {
-	a.ReadAllPtr = fn
+	a.ReadAllFn = fn
 }
 
 // WithUpdatePtr sets the mock function pointer for updating a resource.
 func (a *MockAccess[K, V]) WithUpdatePtr(fn func(key K, value V) error) {
-	a.UpdatePtr = fn
+	a.UpdateFn = fn
 }
 
 // WithDeletePtr sets the mock function pointer for deleting a resource.
 func (a *MockAccess[K, V]) WithDeletePtr(fn func(key K) error) {
-	a.DeletePtr = fn
+	a.DeleteFn = fn
 }

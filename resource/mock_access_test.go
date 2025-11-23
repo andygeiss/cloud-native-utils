@@ -11,7 +11,7 @@ import (
 func TestMockAccessCreate_OK(t *testing.T) {
 	a := resource.NewMockAccess[int, int]()
 	isCalled := false
-	a.CreatePtr = func(key int, value int) error {
+	a.CreateFn = func(key int, value int) error {
 		isCalled = true
 		return nil
 	}
@@ -23,7 +23,7 @@ func TestMockAccessCreate_OK(t *testing.T) {
 func TestMockAccessCreate_Error(t *testing.T) {
 	a := resource.NewMockAccess[int, int]()
 	isCalled := false
-	a.CreatePtr = func(key int, value int) error {
+	a.CreateFn = func(key int, value int) error {
 		isCalled = true
 		return errors.New("error")
 	}
@@ -35,7 +35,7 @@ func TestMockAccessCreate_Error(t *testing.T) {
 func TestMockAccessRead_OK(t *testing.T) {
 	a := resource.NewMockAccess[int, int]()
 	isCalled := false
-	a.ReadPtr = func(key int) (*int, error) {
+	a.ReadFn = func(key int) (*int, error) {
 		isCalled = true
 		value := 42
 		return &value, nil
@@ -49,7 +49,7 @@ func TestMockAccessRead_OK(t *testing.T) {
 func TestMockAccessRead_Error(t *testing.T) {
 	a := resource.NewMockAccess[int, int]()
 	isCalled := false
-	a.ReadPtr = func(key int) (*int, error) {
+	a.ReadFn = func(key int) (*int, error) {
 		isCalled = true
 		return nil, errors.New("error")
 	}
@@ -63,7 +63,7 @@ func TestMockAccessUpdate_OK(t *testing.T) {
 	a := resource.NewMockAccess[int, int]()
 	isCalled := false
 	val := 0
-	a.UpdatePtr = func(key int, value int) error {
+	a.UpdateFn = func(key int, value int) error {
 		isCalled = true
 		val = value
 		return nil
@@ -77,7 +77,7 @@ func TestMockAccessUpdate_OK(t *testing.T) {
 func TestMockAccessUpdate_Error(t *testing.T) {
 	a := resource.NewMockAccess[int, int]()
 	isCalled := false
-	a.UpdatePtr = func(key int, value int) error {
+	a.UpdateFn = func(key int, value int) error {
 		isCalled = true
 		return errors.New("error")
 	}
@@ -89,7 +89,7 @@ func TestMockAccessUpdate_Error(t *testing.T) {
 func TestMockAccessDelete_OK(t *testing.T) {
 	a := resource.NewMockAccess[int, int]()
 	isCalled := false
-	a.DeletePtr = func(key int) error {
+	a.DeleteFn = func(key int) error {
 		isCalled = true
 		return nil
 	}
@@ -101,7 +101,7 @@ func TestMockAccessDelete_OK(t *testing.T) {
 func TestMockAccessDelete_Error(t *testing.T) {
 	a := resource.NewMockAccess[int, int]()
 	isCalled := false
-	a.DeletePtr = func(key int) error {
+	a.DeleteFn = func(key int) error {
 		isCalled = true
 		return errors.New("error")
 	}
