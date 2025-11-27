@@ -30,8 +30,8 @@ Go applications.
   features on-the-fly—no rebuilds or redeploys required.
 - [**`logging`**](logging/): Creates a log record consists of a time, a level, a message, 
   and a set of key-value pairs, where the keys are strings and the values may be of any type.
-- [**`messaging`**](messaging/): Implements messaging patterns like publish-subscribe
-  to decouple local and remote services.
+- [**`messaging`**](messaging/): Implements a dispatcher for messaging with publish/subscribe, 
+  to decouple local and remote services by using Kafka under the hood as an external dispatcher.
 - [**`resource`**](resource/): Supplies a generic Access[K, V] interface for CRUD
   operations on key-value pairs, backed by a mock, in-memory and JSON file implementation.
 - [**`security`**](security/): Includes encryption and decryption with AES-GCM,
