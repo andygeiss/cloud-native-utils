@@ -32,7 +32,7 @@ func TestIdentityProvider_Callback(t *testing.T) {
 	security.IdentityProvider.Callback(sessions)(w, r)
 
 	// Assert
-	assert.That(t, "status code must be 400", w.Code, 400)
+	assert.That(t, "status code must be 400", w.Code, http.StatusBadRequest)
 }
 
 func TestIdentityProvider_Callback_BadRequest(t *testing.T) {
