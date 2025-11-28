@@ -67,10 +67,10 @@ func TestMockAccessReadAll_OK(t *testing.T) {
 			value := 42
 			return []int{value}, nil
 		})
-	value, err := a.Read(0)
+	value, err := a.ReadAll()
 	assert.That(t, "err must be nil", err, nil)
 	assert.That(t, "read must be called", isCalled, true)
-	assert.That(t, "value must be correct", *value, 42)
+	assert.That(t, "value must be correct", value, []int{42})
 }
 
 func TestMockAccessReadAll_Error(t *testing.T) {
@@ -80,7 +80,7 @@ func TestMockAccessReadAll_Error(t *testing.T) {
 			isCalled = true
 			return nil, errors.New("error")
 		})
-	value, err := a.Read(0)
+	value, err := a.ReadAll()
 	assert.That(t, "err must be correct", err.Error(), "error")
 	assert.That(t, "read must be called", isCalled, true)
 	assert.That(t, "value must be nil", value == nil, true)
