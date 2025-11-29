@@ -19,7 +19,7 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	serverSessions = NewServerSessions()
 
 	// Embed the assets into the mux.
-	mux.Handle("GET /assets/", efficiency.WithCompression(http.FileServerFS(efs)))
+	mux.Handle("/assets/", efficiency.WithCompression(http.FileServerFS(efs)))
 
 	// Add OpenID Connect endpoints to the mux.
 	mux.Handle("GET /auth/callback", IdentityProvider.Callback(serverSessions))
