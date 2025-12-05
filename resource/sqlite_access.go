@@ -1,6 +1,9 @@
 package resource
 
-import "database/sql"
+import (
+	"database/sql"
+	"encoding/json"
+)
 
 // sqliteAccess provides a simple key-value store using SQLite.
 type sqliteAccess[K comparable, V any] struct {
@@ -16,7 +19,9 @@ func NewSqliteAccess[K comparable, V any](db *sql.DB) *sqliteAccess[K, V] {
 
 // Create inserts a new key-value pair into the table.
 func (a *sqliteAccess[K, V]) Create(key K, value V) error {
-	_, err := a.db.Exec("INSERT INTO kv_store (key, value) VALUES (?, ?)", key, value)
+	encoded, _ := json.Marshal(value)
+	valueAsString := string(encoded)
+	_, err := a.db.Exec("INSERT INTO kv_store (key, value) VALUES (?, ?)", key, valueAsString)
 	return err
 }
 
@@ -31,7 +36,12 @@ func (a *sqliteAccess[K, V]) Init() error {
 // Read returns the value associated with the given key.
 func (a *sqliteAccess[K, V]) Read(key K) (V, error) {
 	var value V
-	err := a.db.QueryRow("SELECT value FROM kv_store WHERE key = ?", key).Scan(&value)
+	var valueAsString string
+	err := a.db.QueryRow("SELECT value FROM kv_store WHERE key = ?", key).Scan(&valueAsString)
+	if err != nil {
+		return value, err
+	}
+	err = json.Unmarshal([]byte(valueAsString), &value)
 	return value, err
 }
 
@@ -47,8 +57,13 @@ func (a *sqliteAccess[K, V]) ReadAll() ([]V, error) {
 	// Store all values in a slice.
 	var values []V
 	for rows.Next() {
+		var valueAsString string
+		if err := rows.Scan(&valueAsString); err != nil {
+			return nil, err
+		}
 		var value V
-		if err := rows.Scan(&value); err != nil {
+		err = json.Unmarshal([]byte(valueAsString), &value)
+		if err != nil {
 			return nil, err
 		}
 		values = append(values, value)
@@ -59,7 +74,8 @@ func (a *sqliteAccess[K, V]) ReadAll() ([]V, error) {
 
 // Update updates the value associated with the given key.
 func (a *sqliteAccess[K, V]) Update(key K, value V) error {
-	_, err := a.db.Exec("UPDATE kv_store SET value = ? WHERE key = ?", value, key)
+	valueAsString, _ := json.Marshal(value)
+	_, err := a.db.Exec("UPDATE kv_store SET value = ? WHERE key = ?", valueAsString, key)
 	return err
 }
 
