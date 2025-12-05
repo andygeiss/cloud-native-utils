@@ -33,7 +33,7 @@ Go applications.
 - [**`messaging`**](messaging/): Implements a dispatcher for messaging with publish/subscribe, 
   to decouple local and remote services by using Kafka under the hood as an external dispatcher.
 - [**`resource`**](resource/): Supplies a generic Access[K, V] interface for CRUD
-  operations on key-value pairs, backed by a mock, in-memory and JSON file implementation.
+  operations on key-value pairs, backed by a mock, in-memory, Sqlite, and JSON file implementation.
 - [**`security`**](security/): Includes encryption and decryption with AES-GCM,
   secure id and key generation, HMAC hashing, bcrypt-based password handling, and a
   preconfigured secure HTTPS client and server with liveness and readiness probes for
