@@ -3,6 +3,7 @@ package security
 import (
 	"context"
 	"embed"
+	"io/fs"
 	"net/http"
 
 	"github.com/andygeiss/cloud-native-utils/efficiency"
@@ -18,8 +19,14 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	// Create an in-memory store for the server sessions.
 	serverSessions = NewServerSessions()
 
+	// Chroot into the assets directory for static files.
+	staticFS, err := fs.Sub(efs, "assets")
+	if err != nil {
+		panic(err)
+	}
+
 	// Embed static files into the mux.
-	mux.Handle("/static/", efficiency.WithCompression(http.FileServerFS(efs)))
+	mux.Handle("/static/", efficiency.WithCompression(http.FileServerFS(staticFS)))
 
 	// Add OpenID Connect endpoints to the mux.
 	mux.Handle("GET /auth/callback", IdentityProvider.Callback(serverSessions))

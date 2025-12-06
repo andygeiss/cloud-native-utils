@@ -10,7 +10,7 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-//go:embed static
+//go:embed assets
 var efs embed.FS
 
 func TestServeMux_Is_Not_Nil(t *testing.T) {
