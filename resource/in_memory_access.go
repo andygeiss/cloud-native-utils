@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"context"
 	"errors"
 	"sync"
 )
@@ -19,7 +20,13 @@ func NewInMemoryAccess[K comparable, V any]() *inMemoryAccess[K, V] {
 }
 
 // Create creates a new resource.
-func (a *inMemoryAccess[K, V]) Create(key K, value V) error {
+func (a *inMemoryAccess[K, V]) Create(ctx context.Context, key K, value V) (err error) {
+	// Skip if context is canceled or timed out.
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	// Ensure that only one goroutine can write to the map at a time.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
@@ -34,7 +41,13 @@ func (a *inMemoryAccess[K, V]) Create(key K, value V) error {
 }
 
 // Read reads a resource.
-func (a *inMemoryAccess[K, V]) Read(key K) (*V, error) {
+func (a *inMemoryAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
+	// Skip if context is canceled or timed out.
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+
+	// Ensure that read only access to the map is allowed.
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 
@@ -47,20 +60,31 @@ func (a *inMemoryAccess[K, V]) Read(key K) (*V, error) {
 }
 
 // ReadAll reads all resources.
-func (a *inMemoryAccess[K, V]) ReadAll() ([]V, error) {
+func (a *inMemoryAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
+	// Skip if context is canceled or timed out.
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+
+	// Ensure that read only access to the map is allowed.
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 
-	var values []V
+	// Create a slice to hold the values.
 	for _, value := range a.kv {
 		values = append(values, value)
 	}
-
 	return values, nil
 }
 
 // Update updates a resource.
-func (a *inMemoryAccess[K, V]) Update(key K, value V) error {
+func (a *inMemoryAccess[K, V]) Update(ctx context.Context, key K, value V) (err error) {
+	// Skip if context is canceled or timed out.
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	// Ensure that only one goroutine can write to the map at a time.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
@@ -74,7 +98,13 @@ func (a *inMemoryAccess[K, V]) Update(key K, value V) error {
 }
 
 // Delete deletes a resource.
-func (a *inMemoryAccess[K, V]) Delete(key K) error {
+func (a *inMemoryAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+	// Skip if context is canceled or timed out.
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	// Ensure that only one goroutine can write to the map at a time.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 

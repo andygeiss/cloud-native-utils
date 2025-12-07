@@ -1,25 +1,32 @@
 package resource
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
 	"sync"
 )
 
-// JsonFileAccess is a json file access.
-type JsonFileAccess[K comparable, V any] struct {
+// jsonFileAccess is a json file access.
+type jsonFileAccess[K comparable, V any] struct {
 	path  string
 	mutex sync.RWMutex
 }
 
 // NewJsonFileAccess creates a new json file access.
-func NewJsonFileAccess[K comparable, V any](path string) Access[K, V] {
-	return &JsonFileAccess[K, V]{path: path}
+func NewJsonFileAccess[K comparable, V any](path string) *jsonFileAccess[K, V] {
+	return &jsonFileAccess[K, V]{path: path}
 }
 
 // Create creates a new resource.
-func (a *JsonFileAccess[K, V]) Create(key K, value V) error {
+func (a *jsonFileAccess[K, V]) Create(ctx context.Context, key K, value V) error {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	// Ensure that only one goroutine can write to the map at a time.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
@@ -51,7 +58,13 @@ func (a *JsonFileAccess[K, V]) Create(key K, value V) error {
 }
 
 // Read reads a resource.
-func (a *JsonFileAccess[K, V]) Read(key K) (*V, error) {
+func (a *jsonFileAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	// Ensure that read only access is allowed.
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 
@@ -71,7 +84,13 @@ func (a *JsonFileAccess[K, V]) Read(key K) (*V, error) {
 }
 
 // ReadAll reads all resources.
-func (a *JsonFileAccess[K, V]) ReadAll() ([]V, error) {
+func (a *jsonFileAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	// Ensure that read only access is allowed.
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 
@@ -96,7 +115,13 @@ func (a *JsonFileAccess[K, V]) ReadAll() ([]V, error) {
 }
 
 // Update updates a resource.
-func (a *JsonFileAccess[K, V]) Update(key K, value V) error {
+func (a *jsonFileAccess[K, V]) Update(ctx context.Context, key K, value V) error {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	// Ensure that only one goroutine can write to the file.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
@@ -127,7 +152,13 @@ func (a *JsonFileAccess[K, V]) Update(key K, value V) error {
 }
 
 // Delete deletes a resource.
-func (a *JsonFileAccess[K, V]) Delete(key K) error {
+func (a *jsonFileAccess[K, V]) Delete(ctx context.Context, key K) error {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	// Ensure that only one goroutine can write to the file.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 

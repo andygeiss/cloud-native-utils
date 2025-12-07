@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"sync"
@@ -20,7 +21,12 @@ func NewSqliteAccess[K comparable, V any](db *sql.DB) *sqliteAccess[K, V] {
 }
 
 // Create inserts a new key-value pair into the table.
-func (a *sqliteAccess[K, V]) Create(key K, value V) error {
+func (a *sqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	// Ensure that the table is not modified concurrently.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
@@ -45,52 +51,80 @@ func (a *sqliteAccess[K, V]) Create(key K, value V) error {
 }
 
 // Init initializes the table and index.
-func (a *sqliteAccess[K, V]) Init() error {
+func (a *sqliteAccess[K, V]) Init(ctx context.Context) (err error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	// Ensure that the table is not modified concurrently.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
-	// Drop the table if it exists, create a new one and an index.
-	_, _ = a.db.Exec("DROP TABLE IF EXISTS kv_store;")
-	_, _ = a.db.Exec("CREATE TABLE IF NOT EXISTS kv_store (key TEXT PRIMARY KEY, value TEXT);")
-	_, _ = a.db.Exec("CREATE INDEX IF NOT EXISTS idx_kv_store_key ON kv_store (key);")
+	// Drop the table if it exists.
+	_, err = a.db.ExecContext(ctx, "DROP TABLE IF EXISTS kv_store;")
+	if err != nil {
+		return err
+	}
+
+	// Create the table.
+	_, err = a.db.ExecContext(ctx, "CREATE TABLE IF NOT EXISTS kv_store (key TEXT PRIMARY KEY, value TEXT);")
+	if err != nil {
+		return err
+	}
+
+	// Create the index.
+	_, err = a.db.ExecContext(ctx, "CREATE INDEX IF NOT EXISTS idx_kv_store_key ON kv_store (key);")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // Read returns the value associated with the given key.
-func (a *sqliteAccess[K, V]) Read(key K) (*V, error) {
+func (a *sqliteAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	// Ensure that read operations can be performed concurrently.
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 
 	// Query the value from the table.
-	var value V
 	var valueAsString string
-	err := a.db.QueryRow("SELECT value FROM kv_store WHERE key = ?", key).Scan(&valueAsString)
+	err = a.db.QueryRowContext(ctx, "SELECT value FROM kv_store WHERE key = ?", key).Scan(&valueAsString)
 	if err != nil {
-		return &value, err
+		return nil, err
 	}
 
 	// Unmarshal the value from JSON.
+	var value V
 	err = json.Unmarshal([]byte(valueAsString), &value)
 	return &value, err
 }
 
 // ReadAll returns all values from the table.
-func (a *sqliteAccess[K, V]) ReadAll() ([]V, error) {
+func (a *sqliteAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	// Ensure that read operations can be performed concurrently.
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 
 	// Query all values from the table.
-	rows, err := a.db.Query("SELECT value FROM kv_store")
+	rows, err := a.db.QueryContext(ctx, "SELECT value FROM kv_store")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	// Store all values in a slice.
-	var values []V
 	for rows.Next() {
 		var valueAsString string
 		if err := rows.Scan(&valueAsString); err != nil {
@@ -108,7 +142,12 @@ func (a *sqliteAccess[K, V]) ReadAll() ([]V, error) {
 }
 
 // Update updates the value associated with the given key.
-func (a *sqliteAccess[K, V]) Update(key K, value V) error {
+func (a *sqliteAccess[K, V]) Update(ctx context.Context, key K, value V) (err error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	// Ensure that the table is not modified concurrently.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
@@ -123,7 +162,7 @@ func (a *sqliteAccess[K, V]) Update(key K, value V) error {
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Exec("UPDATE kv_store SET value = ? WHERE key = ?", valueAsString, key)
+	_, err = tx.ExecContext(ctx, "UPDATE kv_store SET value = ? WHERE key = ?", valueAsString, key)
 	if err != nil {
 		return err
 	}
@@ -132,7 +171,12 @@ func (a *sqliteAccess[K, V]) Update(key K, value V) error {
 }
 
 // Delete removes the key-value pair associated with the given key.
-func (a *sqliteAccess[K, V]) Delete(key K) error {
+func (a *sqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	// Ensure that the table is not modified concurrently.
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
@@ -144,7 +188,7 @@ func (a *sqliteAccess[K, V]) Delete(key K) error {
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Exec("DELETE FROM kv_store WHERE key = ?", key)
+	_, err = tx.ExecContext(ctx, "DELETE FROM kv_store WHERE key = ?", key)
 	if err != nil {
 		return err
 	}

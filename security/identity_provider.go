@@ -47,7 +47,7 @@ func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 		state := r.URL.Query().Get("state")
 
 		// Retrieve the code verifier from the state.
-		codeVerifier, _ := a.stateCodeVerifiers.Read(state)
+		codeVerifier, _ := a.stateCodeVerifiers.Read(context.Background(), state)
 		if codeVerifier == nil {
 			http.Error(w, "invalid state", http.StatusBadRequest)
 			return
@@ -110,7 +110,7 @@ func (a *identityProvider) Login() http.HandlerFunc {
 		codeVerifier, challenge := GeneratePKCE()
 
 		// Store the state and code verifier for further use.
-		a.stateCodeVerifiers.Create(state, codeVerifier)
+		a.stateCodeVerifiers.Create(context.Background(), state, codeVerifier)
 
 		// Create the authorization URL with the PKCE parameters.
 		authUrl := a.oauth2Config.AuthCodeURL(state,

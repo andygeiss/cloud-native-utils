@@ -1,15 +1,18 @@
 package resource
 
+import "context"
+
 const (
 	ErrorResourceAlreadyExists = "resource already exists"
 	ErrorResourceNotFound      = "resource not found"
 )
 
 // Access specifies the CRUD operations for a resource using generics.
+// It supports context.Context for cancellation and timeouts.
 type Access[K, V any] interface {
-	Create(key K, value V) error
-	Read(key K) (*V, error)
-	ReadAll() ([]V, error)
-	Update(key K, value V) error
-	Delete(key K) error
+	Create(ctx context.Context, key K, value V) error
+	Read(ctx context.Context, key K) (*V, error)
+	ReadAll(ctx context.Context) ([]V, error)
+	Update(ctx context.Context, key K, value V) error
+	Delete(ctx context.Context, key K) error
 }
