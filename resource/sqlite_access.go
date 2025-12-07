@@ -58,7 +58,7 @@ func (a *sqliteAccess[K, V]) Init() error {
 }
 
 // Read returns the value associated with the given key.
-func (a *sqliteAccess[K, V]) Read(key K) (V, error) {
+func (a *sqliteAccess[K, V]) Read(key K) (*V, error) {
 	// Ensure that read operations can be performed concurrently.
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
@@ -68,12 +68,12 @@ func (a *sqliteAccess[K, V]) Read(key K) (V, error) {
 	var valueAsString string
 	err := a.db.QueryRow("SELECT value FROM kv_store WHERE key = ?", key).Scan(&valueAsString)
 	if err != nil {
-		return value, err
+		return &value, err
 	}
 
 	// Unmarshal the value from JSON.
 	err = json.Unmarshal([]byte(valueAsString), &value)
-	return value, err
+	return &value, err
 }
 
 // ReadAll returns all values from the table.

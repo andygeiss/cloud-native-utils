@@ -45,7 +45,7 @@ func Test_SqliteAccess_Read_Given_Key_Should_Return_Value_Without_Error(t *testi
 	_ = a.Create("key", "value")
 	value, err := a.Read("key")
 	assert.That(t, "err must be nil", err, nil)
-	assert.That(t, "value must be 'value'", value, "value")
+	assert.That(t, "value must be 'value'", *value, "value")
 }
 
 func Test_SqliteAccess_Read_Given_Key_Should_Return_Error_If_Key_Not_Exists(t *testing.T) {
@@ -57,7 +57,7 @@ func Test_SqliteAccess_Read_Given_Key_Should_Return_Error_If_Key_Not_Exists(t *t
 	_ = a.Create("key", "value")
 	value, err := a.Read("key2")
 	assert.That(t, "err must not be nil", err != nil, true)
-	assert.That(t, "value must be empty", value, "")
+	assert.That(t, "value must be empty", *value, "")
 }
 
 func Test_SqliteAccess_ReadAll_Given_Keys_Should_Return_List_Without_Error(t *testing.T) {
@@ -83,7 +83,7 @@ func Test_SqliteAccess_Update_Given_Key_Should_Update_Value_Without_Error(t *tes
 	err := a.Update("key", "value2")
 	value, _ := a.Read("key")
 	assert.That(t, "err must be nil", err, nil)
-	assert.That(t, "value must be 'value2'", value, "value2")
+	assert.That(t, "value must be 'value2'", *value, "value2")
 }
 
 func Test_SqliteAccess_Delete_Given_Key_Should_Delete_Value_Without_Error(t *testing.T) {
@@ -97,5 +97,5 @@ func Test_SqliteAccess_Delete_Given_Key_Should_Delete_Value_Without_Error(t *tes
 	value, err2 := a.Read("key")
 	assert.That(t, "err must be nil", err, nil)
 	assert.That(t, "err2 must not be nil", err2.Error(), "sql: no rows in result set")
-	assert.That(t, "value must be empty", value, "")
+	assert.That(t, "value must be empty", *value, "")
 }
