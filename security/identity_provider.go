@@ -127,10 +127,10 @@ func (a *identityProvider) Login() http.HandlerFunc {
 func (a *identityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Retrieve the session ID from the request.
-		sessionId := r.URL.Query().Get("session_id")
+		sessionID := r.PathValue("session_id")
 
 		// Delete the session from the server.
-		sessions.Delete(sessionId)
+		sessions.Delete(sessionID)
 
 		// Redirect the user to the logout URL.
 		http.Redirect(w, r, os.Getenv("REDIRECT_URL"), http.StatusFound)

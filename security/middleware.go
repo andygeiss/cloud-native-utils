@@ -23,7 +23,7 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 		ctx := context.Background()
 
 		// Retrieve the session ID from the request URL.
-		sessionId := r.URL.Query().Get("session_id")
+		sessionId := r.PathValue("session_id")
 
 		// Define the claims
 		var email, issuer, name, subject string
