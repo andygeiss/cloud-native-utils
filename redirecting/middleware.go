@@ -1,4 +1,4 @@
-package routing
+package redirecting
 
 import (
 	"net/http"

@@ -87,7 +87,7 @@ func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 		// Generate a unique session ID and create a session with the claims as data.
 		sessionId := GenerateID()[:32]
 		sessions.Create(sessionId, claims)
-		redirectUrl := fmt.Sprintf("%s?session_id=%s", os.Getenv("REDIRECT_URL"), sessionId)
+		redirectUrl := fmt.Sprintf("%s/%s/", os.Getenv("REDIRECT_URL"), sessionId)
 
 		// Redirect the user to the redirect URL.
 		http.Redirect(w, r, redirectUrl, http.StatusFound)

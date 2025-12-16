@@ -68,6 +68,7 @@ func TestIdentityProvider_Login(t *testing.T) {
 	assert.That(t, "body has code_challenge", strings.Contains(w.Body.String(), "code_challenge"), true)
 	assert.That(t, "body has code_challenge_method", strings.Contains(w.Body.String(), "code_challenge_method"), true)
 	assert.That(t, "body has redirect_uri", strings.Contains(w.Body.String(), "redirect_uri"), true)
+	assert.That(t, "body has session_id in path", w.Body.String(), "")
 	assert.That(t, "body has scope", strings.Contains(w.Body.String(), "scope"), true)
 	assert.That(t, "body has state", strings.Contains(w.Body.String(), "state"), true)
 }
