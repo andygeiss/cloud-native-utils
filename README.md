@@ -34,7 +34,7 @@ Go applications.
   to decouple local and remote services by using Kafka under the hood as an external dispatcher.
 - [**`resource`**](resource/): Supplies a generic Access[K, V] interface for CRUD
   operations on key-value pairs, backed by a mock, in-memory, Sqlite, and JSON file implementation.
-- [**`routing`**](routing/): Provides utilities for routing HTTP requests.
+- [**`routing`**](routing/): Provides utilities for routing HTTP requests (PRG-pattern).
 - [**`security`**](security/): Includes encryption and decryption with AES-GCM,
   secure id and key generation, HMAC hashing, bcrypt-based password handling, and a
   preconfigured secure HTTPS client and server with liveness and readiness probes for
