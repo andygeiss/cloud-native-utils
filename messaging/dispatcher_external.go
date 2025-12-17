@@ -43,9 +43,9 @@ func (a *externalDispatcher) Publish(ctx context.Context, message Message) error
 	}()
 
 	// Use stability patterns to make the function more robust.
-	maxRetries := security.ParseInt("SERVICE_RETRY_MAX", 3)
-	delay := security.ParseDuration("SERVICE_RETRY_DELAY", 5*time.Second)
-	duration := security.ParseDuration("SERVICE_TIMEOUT", 5*time.Second)
+	maxRetries := security.ParseIntOrDefault("SERVICE_RETRY_MAX", 3)
+	delay := security.ParseDurationOrDefault("SERVICE_RETRY_DELAY", 5*time.Second)
+	duration := security.ParseDurationOrDefault("SERVICE_TIMEOUT", 5*time.Second)
 	fn = stability.Retry(fn, maxRetries, delay)
 	fn = stability.Timeout(fn, duration)
 
@@ -70,9 +70,9 @@ func (a *externalDispatcher) Subscribe(ctx context.Context, topic string, fn ser
 		defer r.Close()
 
 		// Use stability patterns to make the function more robust.
-		maxRetries := security.ParseInt("SERVICE_RETRY_MAX", 3)
-		delay := security.ParseDuration("SERVICE_RETRY_DELAY", 5*time.Second)
-		duration := security.ParseDuration("SERVICE_TIMEOUT", 5*time.Second)
+		maxRetries := security.ParseIntOrDefault("SERVICE_RETRY_MAX", 3)
+		delay := security.ParseDurationOrDefault("SERVICE_RETRY_DELAY", 5*time.Second)
+		duration := security.ParseDurationOrDefault("SERVICE_TIMEOUT", 5*time.Second)
 		fn = stability.Retry(fn, maxRetries, delay)
 		fn = stability.Timeout(fn, duration)
 

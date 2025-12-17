@@ -19,10 +19,10 @@ func NewServer(mux *http.ServeMux) *http.Server {
 	return &http.Server{
 		Addr:              fmt.Sprintf(":%s", port),
 		Handler:           mux,
-		IdleTimeout:       ParseDuration("SERVER_IDLE_TIMEOUT", 5*time.Second),
+		IdleTimeout:       ParseDurationOrDefault("SERVER_IDLE_TIMEOUT", 5*time.Second),
 		MaxHeaderBytes:    1 << 20, // Maximum size of request headers (1 MiB).
-		ReadHeaderTimeout: ParseDuration("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
-		ReadTimeout:       ParseDuration("SERVER_READ_TIMEOUT", 5*time.Second),
-		WriteTimeout:      ParseDuration("SERVER_WRITE_TIMEOUT", 5*time.Second),
+		ReadHeaderTimeout: ParseDurationOrDefault("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
+		ReadTimeout:       ParseDurationOrDefault("SERVER_READ_TIMEOUT", 5*time.Second),
+		WriteTimeout:      ParseDurationOrDefault("SERVER_WRITE_TIMEOUT", 5*time.Second),
 	}
 }
