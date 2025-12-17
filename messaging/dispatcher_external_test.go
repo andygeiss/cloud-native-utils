@@ -15,7 +15,7 @@ func init() {
 	os.Setenv("KAFKA_BROKERS", "localhost:9092,localhost:9093")
 }
 
-func TestDispatcherExternal_Publish(t *testing.T) {
+func Test_ExternalDispatcher_With_PublishMessage_Should_Succeed(t *testing.T) {
 	// Skip this integration test.
 	if testing.Short() {
 		return
@@ -32,27 +32,7 @@ func TestDispatcherExternal_Publish(t *testing.T) {
 	assert.That(t, "err must be nil", err, nil)
 }
 
-func TestDispatcherExternal_Subscribe(t *testing.T) {
-	// Skip this integration test.
-	if testing.Short() {
-		return
-	}
-
-	// Arrange
-	ctx := context.Background()
-	dis := messaging.NewExternalDispatcher()
-	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
-		return messaging.MessageStateCompleted, nil
-	}
-
-	// Act
-	err := dis.Subscribe(ctx, "test", service.Wrap(fn))
-
-	// Assert
-	assert.That(t, "err must be nil", err, nil)
-}
-
-func TestDispatcherExternal_Roundtrip(t *testing.T) {
+func Test_ExternalDispatcher_With_Roundtrip_Should_CallHandler(t *testing.T) {
 	// Skip this integration test.
 	if testing.Short() {
 		return
@@ -76,7 +56,7 @@ func TestDispatcherExternal_Roundtrip(t *testing.T) {
 	assert.That(t, "val must be 42", val, 42)
 }
 
-func TestDispatcherExternal_Roundtrip_With_Timeout(t *testing.T) {
+func Test_ExternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded(t *testing.T) {
 	// Skip this integration test.
 	if testing.Short() {
 		return
@@ -101,4 +81,24 @@ func TestDispatcherExternal_Roundtrip_With_Timeout(t *testing.T) {
 	// Assert
 	assert.That(t, "err must be correct", err, context.DeadlineExceeded)
 	assert.That(t, "val must be 0", val, 0)
+}
+
+func Test_ExternalDispatcher_With_SubscribeHandler_Should_Succeed(t *testing.T) {
+	// Skip this integration test.
+	if testing.Short() {
+		return
+	}
+
+	// Arrange
+	ctx := context.Background()
+	dis := messaging.NewExternalDispatcher()
+	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
+		return messaging.MessageStateCompleted, nil
+	}
+
+	// Act
+	err := dis.Subscribe(ctx, "test", service.Wrap(fn))
+
+	// Assert
+	assert.That(t, "err must be nil", err, nil)
 }

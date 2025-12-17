@@ -13,57 +13,74 @@ import (
 //go:embed assets
 var efs embed.FS
 
-func TestServeMux_Is_Not_Nil(t *testing.T) {
-	ctx := context.Background()
+func Test_NewServeMux_With_CanceledContext_Should_ReturnServiceUnavailable(t *testing.T) {
+	// Arrange
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
 	mux, _ := security.NewServeMux(ctx, efs)
-	assert.That(t, "mux must not be nil", mux != nil, true)
+	req := httptest.NewRequest("GET", "/readiness", nil)
+	w := httptest.NewRecorder()
+	// Act
+	mux.ServeHTTP(w, req)
+	// Assert
+	assert.That(t, "status code must be 503", w.Code, 503)
 }
 
-func TestServeMux_Has_Health_Check(t *testing.T) {
+func Test_NewServeMux_With_LivenessEndpoint_Should_ReturnOK(t *testing.T) {
+	// Arrange
 	ctx := context.Background()
 	mux, _ := security.NewServeMux(ctx, efs)
 	req := httptest.NewRequest("GET", "/liveness", nil)
 	w := httptest.NewRecorder()
+	// Act
 	mux.ServeHTTP(w, req)
+	// Assert
 	assert.That(t, "status code must be 200", w.Code, 200)
 	assert.That(t, "body must be OK", w.Body.String(), "OK")
 }
 
-func TestServeMux_Has_Readiness_Check_When_Context_Active(t *testing.T) {
+func Test_NewServeMux_With_ReadinessEndpoint_Should_ReturnOK(t *testing.T) {
+	// Arrange
 	ctx := context.Background()
 	mux, _ := security.NewServeMux(ctx, efs)
 	req := httptest.NewRequest("GET", "/readiness", nil)
 	w := httptest.NewRecorder()
+	// Act
 	mux.ServeHTTP(w, req)
+	// Assert
 	assert.That(t, "status code must be 200", w.Code, 200)
-	// The body is empty in this example, but you can also check it if needed.
 }
 
-func TestServeMux_Has_Readiness_Check_When_Context_Canceled(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel() // Immediately cancel the context.
-	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/readiness", nil)
-	w := httptest.NewRecorder()
-	mux.ServeHTTP(w, req)
-	assert.That(t, "status code must be 503", w.Code, 503)
-}
-
-func TestServeMux_Unknown_Route(t *testing.T) {
-	ctx := context.Background()
-	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/unknown", nil)
-	w := httptest.NewRecorder()
-	mux.ServeHTTP(w, req)
-	assert.That(t, "status code must be 404", w.Code, 404)
-}
-
-func TestServeMux_Has_Static_Assets(t *testing.T) {
+func Test_NewServeMux_With_StaticAssets_Should_ServeFiles(t *testing.T) {
+	// Arrange
 	ctx := context.Background()
 	mux, _ := security.NewServeMux(ctx, efs)
 	req := httptest.NewRequest("GET", "/static/keepalive.txt", nil)
 	w := httptest.NewRecorder()
+	// Act
 	mux.ServeHTTP(w, req)
+	// Assert
 	assert.That(t, "status code must be 200", w.Code, 200)
 	assert.That(t, "body must be correct", w.Body.String(), "localhost")
+}
+
+func Test_NewServeMux_With_UnknownRoute_Should_Return404(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	mux, _ := security.NewServeMux(ctx, efs)
+	req := httptest.NewRequest("GET", "/unknown", nil)
+	w := httptest.NewRecorder()
+	// Act
+	mux.ServeHTTP(w, req)
+	// Assert
+	assert.That(t, "status code must be 404", w.Code, 404)
+}
+
+func Test_NewServeMux_With_ValidContext_Should_ReturnNonNilMux(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	// Act
+	mux, _ := security.NewServeMux(ctx, efs)
+	// Assert
+	assert.That(t, "mux must not be nil", mux != nil, true)
 }

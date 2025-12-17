@@ -10,7 +10,7 @@ import (
 	"github.com/andygeiss/cloud-native-utils/service"
 )
 
-func TestDispatcherInternal_Publish(t *testing.T) {
+func Test_InternalDispatcher_With_PublishMessage_Should_Succeed(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewInternalDispatcher()
@@ -22,22 +22,7 @@ func TestDispatcherInternal_Publish(t *testing.T) {
 	assert.That(t, "err must be nil", err, nil)
 }
 
-func TestDispatcherInternal_Subscribe(t *testing.T) {
-	// Arrange
-	ctx := context.Background()
-	dis := messaging.NewInternalDispatcher()
-	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
-		return messaging.MessageStateCompleted, nil
-	}
-
-	// Act
-	err := dis.Subscribe(ctx, "test", service.Wrap(fn))
-
-	// Assert
-	assert.That(t, "err must be nil", err, nil)
-}
-
-func TestDispatcherInternal_Roundtrip(t *testing.T) {
+func Test_InternalDispatcher_With_Roundtrip_Should_CallHandler(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewInternalDispatcher()
@@ -56,7 +41,7 @@ func TestDispatcherInternal_Roundtrip(t *testing.T) {
 	assert.That(t, "val must be 42", val, 42)
 }
 
-func TestDispatcherInternal_Roundtrip_With_Timeout(t *testing.T) {
+func Test_InternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded(t *testing.T) {
 	// Arrange
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
@@ -76,4 +61,19 @@ func TestDispatcherInternal_Roundtrip_With_Timeout(t *testing.T) {
 	// Assert
 	assert.That(t, "err must be correct", err, context.DeadlineExceeded)
 	assert.That(t, "val must be 0", val, 0)
+}
+
+func Test_InternalDispatcher_With_SubscribeHandler_Should_Succeed(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	dis := messaging.NewInternalDispatcher()
+	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
+		return messaging.MessageStateCompleted, nil
+	}
+
+	// Act
+	err := dis.Subscribe(ctx, "test", service.Wrap(fn))
+
+	// Assert
+	assert.That(t, "err must be nil", err, nil)
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-func Test_Middleware_WithAuth_Should_Contain_SessionID(t *testing.T) {
+func Test_WithAuth_With_ValidSession_Should_SetSessionIDInContext(t *testing.T) {
 	// Arrange
 	sessions := security.NewServerSessions()
 	sessionID := security.GenerateID()[:32]

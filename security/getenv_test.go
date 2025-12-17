@@ -8,62 +8,50 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-func TestGetenv(t *testing.T) {
-	tests := []struct {
-		name         string
-		envKey       string
-		envValue     string
-		expectedOut  [32]byte
-		shouldReturn bool
-	}{
-		{
-			name:         "Valid 32-byte hex string",
-			envKey:       "TEST_KEY_VALID",
-			envValue:     "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-			expectedOut:  [32]byte{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef},
-			shouldReturn: true,
-		},
-		{
-			name:         "Invalid hex string",
-			envKey:       "TEST_KEY_INVALID_HEX",
-			envValue:     "invalid_hex_string",
-			expectedOut:  [32]byte{},
-			shouldReturn: false,
-		},
-		{
-			name:         "Hex string of incorrect length",
-			envKey:       "TEST_KEY_WRONG_LENGTH",
-			envValue:     "0123456789abcdef",
-			expectedOut:  [32]byte{},
-			shouldReturn: false,
-		},
-		{
-			name:         "Missing environment variable",
-			envKey:       "TEST_KEY_MISSING",
-			envValue:     "",
-			expectedOut:  [32]byte{},
-			shouldReturn: false,
-		},
-	}
+func Test_Getenv_With_InvalidHexString_Should_ReturnEmptyArray(t *testing.T) {
+	// Arrange
+	os.Setenv("TEST_KEY_INVALID_HEX", "invalid_hex_string")
+	defer os.Unsetenv("TEST_KEY_INVALID_HEX")
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Set the environment variable for the test
-			if tt.envValue != "" {
-				os.Setenv(tt.envKey, tt.envValue)
-			} else {
-				os.Unsetenv(tt.envKey)
-			}
+	// Act
+	result := security.Getenv("TEST_KEY_INVALID_HEX")
 
-			// Call the function
-			result := security.Getenv(tt.envKey)
+	// Assert
+	assert.That(t, "result must be an empty array", result, [32]byte{})
+}
 
-			// Check if the result matches the expectation
-			if tt.shouldReturn {
-				assert.That(t, "result must match the expected output", result, tt.expectedOut)
-			} else {
-				assert.That(t, "result must be an empty array", result, [32]byte{})
-			}
-		})
-	}
+func Test_Getenv_With_MissingEnvVar_Should_ReturnEmptyArray(t *testing.T) {
+	// Arrange
+	os.Unsetenv("TEST_KEY_MISSING")
+
+	// Act
+	result := security.Getenv("TEST_KEY_MISSING")
+
+	// Assert
+	assert.That(t, "result must be an empty array", result, [32]byte{})
+}
+
+func Test_Getenv_With_ValidHexString_Should_ReturnByteArray(t *testing.T) {
+	// Arrange
+	os.Setenv("TEST_KEY_VALID", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	defer os.Unsetenv("TEST_KEY_VALID")
+	expected := [32]byte{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef}
+
+	// Act
+	result := security.Getenv("TEST_KEY_VALID")
+
+	// Assert
+	assert.That(t, "result must match the expected output", result, expected)
+}
+
+func Test_Getenv_With_WrongLengthHexString_Should_ReturnEmptyArray(t *testing.T) {
+	// Arrange
+	os.Setenv("TEST_KEY_WRONG_LENGTH", "0123456789abcdef")
+	defer os.Unsetenv("TEST_KEY_WRONG_LENGTH")
+
+	// Act
+	result := security.Getenv("TEST_KEY_WRONG_LENGTH")
+
+	// Assert
+	assert.That(t, "result must be an empty array", result, [32]byte{})
 }

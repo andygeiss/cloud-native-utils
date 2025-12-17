@@ -7,49 +7,73 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-func TestDecrypt(t *testing.T) {
-	key := security.GenerateKey()
-	plaintext := []byte("test decryption data")
-	ciphertext := security.Encrypt(plaintext, key)
-	decrypted, err := security.Decrypt(ciphertext, key)
-	assert.That(t, "err must be nil", err == nil, true)
-	assert.That(t, "decrypted text must match", decrypted, plaintext)
-}
-
-func TestDecrypt_Empty_Plaintext(t *testing.T) {
+func Test_Decrypt_With_EmptyPlaintext_Should_ReturnEmptyResult(t *testing.T) {
+	// Arrange
 	key := security.GenerateKey()
 	plaintext := []byte{}
 	ciphertext := security.Encrypt(plaintext, key)
+
+	// Act
 	decrypted, err := security.Decrypt(ciphertext, key)
+
+	// Assert
 	assert.That(t, "err must be nil", err == nil, true)
 	assert.That(t, "decrypted must be empty", len(decrypted), 0)
 }
 
-func TestDecrypt_Invalid_Key(t *testing.T) {
+func Test_Decrypt_With_InvalidKey_Should_ReturnError(t *testing.T) {
+	// Arrange
 	key := security.GenerateKey()
 	plaintext := []byte("test invalid key case")
 	ciphertext := security.Encrypt(plaintext, key)
 	invalidKey := security.GenerateKey()
+
+	// Act
 	_, err := security.Decrypt(ciphertext, invalidKey)
+
+	// Assert
 	assert.That(t, "err must not be nil", err != nil, true)
 }
 
-func TestDecrypt_Malformed_Ciphertext(t *testing.T) {
+func Test_Decrypt_With_MalformedCiphertext_Should_ReturnError(t *testing.T) {
+	// Arrange
 	key := security.GenerateKey()
 	malformedCiphertext := make([]byte, 5)
+
+	// Act
 	_, err := security.Decrypt(malformedCiphertext, key)
+
+	// Assert
 	assert.That(t, "err must be correct", err.Error(), "malformed ciphertext")
 }
 
-func TestDecrypt_Tampered_Ciphertext(t *testing.T) {
+func Test_Decrypt_With_TamperedCiphertext_Should_ReturnAuthError(t *testing.T) {
+	// Arrange
 	key := security.GenerateKey()
 	plaintext := []byte("auth failure via tamper")
 	ciphertext := security.Encrypt(plaintext, key)
-	// Flip one bit in the ciphertext (after the nonce).
 	tampered := make([]byte, len(ciphertext))
 	copy(tampered, ciphertext)
 	tampered[len(tampered)-1] ^= 0x01
+
+	// Act
 	_, err := security.Decrypt(tampered, key)
+
+	// Assert
 	assert.That(t, "ciphertext must be valid", len(ciphertext) > 16, true)
 	assert.That(t, "err must be correct", err.Error(), "cipher: message authentication failed")
+}
+
+func Test_Decrypt_With_ValidCiphertext_Should_ReturnPlaintext(t *testing.T) {
+	// Arrange
+	key := security.GenerateKey()
+	plaintext := []byte("test decryption data")
+	ciphertext := security.Encrypt(plaintext, key)
+
+	// Act
+	decrypted, err := security.Decrypt(ciphertext, key)
+
+	// Assert
+	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "decrypted text must match", decrypted, plaintext)
 }

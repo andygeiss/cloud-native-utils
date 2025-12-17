@@ -7,29 +7,45 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-func TestPassword(t *testing.T) {
+func Test_IsPasswordValid_With_CorrectPassword_Should_ReturnTrue(t *testing.T) {
+	// Arrange
 	plaintext := []byte("securepassword")
-	hash, err := security.Password(plaintext)
-	assert.That(t, "err must be nil", err == nil, true)
-	assert.That(t, "hashed password must be non-empty", len(hash) > 0, true)
+	hash, _ := security.Password(plaintext)
+	// Act
+	isValid := security.IsPasswordValid(hash, plaintext)
+	// Assert
+	assert.That(t, "password must be valid", isValid, true)
 }
 
-func TestIsPasswordValid(t *testing.T) {
+func Test_IsPasswordValid_With_WrongPassword_Should_ReturnFalse(t *testing.T) {
+	// Arrange
 	plaintext := []byte("securepassword")
 	wrongPassword := []byte("wrongpassword")
-	hash, err := security.Password(plaintext)
-	isValid := security.IsPasswordValid(hash, plaintext)
-	isInvalid := !security.IsPasswordValid(hash, wrongPassword)
-	assert.That(t, "err must be nil", err == nil, true)
-	assert.That(t, "password must be valid", isValid, true)
-	assert.That(t, "password must be invalid", isInvalid, true)
+	hash, _ := security.Password(plaintext)
+	// Act
+	isValid := security.IsPasswordValid(hash, wrongPassword)
+	// Assert
+	assert.That(t, "password must be invalid", isValid, false)
 }
 
-func TestPassword_Consistency(t *testing.T) {
+func Test_Password_With_SamePlaintext_Should_GenerateDifferentHashes(t *testing.T) {
+	// Arrange
 	plaintext := []byte("securepassword")
+	// Act
 	hash1, err1 := security.Password(plaintext)
 	hash2, err2 := security.Password(plaintext)
+	// Assert
 	assert.That(t, "err1 must be nil", err1 == nil, true)
 	assert.That(t, "err2 must be nil", err2 == nil, true)
 	assert.That(t, "hashes must be different", string(hash1) != string(hash2), true)
+}
+
+func Test_Password_With_ValidPlaintext_Should_ReturnHash(t *testing.T) {
+	// Arrange
+	plaintext := []byte("securepassword")
+	// Act
+	hash, err := security.Password(plaintext)
+	// Assert
+	assert.That(t, "err must be nil", err == nil, true)
+	assert.That(t, "hashed password must be non-empty", len(hash) > 0, true)
 }

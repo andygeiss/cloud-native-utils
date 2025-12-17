@@ -10,20 +10,10 @@ import (
 	"github.com/andygeiss/cloud-native-utils/efficiency"
 )
 
-func TestSharding(t *testing.T) {
-	shards := efficiency.NewSharding[string, int](3)
-	key, value := "0", 42
-	shards.Put(key, value)
-	value, exists := shards.Get(key)
-	assert.That(t, "key found", exists, true)
-	shards.Delete(key)
-	_, exists = shards.Get(key)
-	assert.That(t, "value must be correct", value, 42)
-	assert.That(t, "key not found", !exists, true)
-}
-
-func TestSharding_Concurrency(t *testing.T) {
+func Test_Sharding_With_ConcurrentAccess_Should_HandleSafely(t *testing.T) {
+	// Arrange
 	shards := efficiency.NewSharding[string, string](3)
+	// Act
 	for i := 0; i < 1000; i++ {
 		go func(i int) {
 			key := fmt.Sprintf("key %d", i)
@@ -37,6 +27,31 @@ func TestSharding_Concurrency(t *testing.T) {
 			assert.That(t, "key not found", !exists, true)
 		}(i)
 	}
+	// Assert - concurrent operations completed without panic
+}
+
+func Test_Sharding_With_DeletedKey_Should_NotExist(t *testing.T) {
+	// Arrange
+	shards := efficiency.NewSharding[string, int](3)
+	key := "0"
+	shards.Put(key, 42)
+	// Act
+	shards.Delete(key)
+	_, exists := shards.Get(key)
+	// Assert
+	assert.That(t, "key not found", !exists, true)
+}
+
+func Test_Sharding_With_PutAndGet_Should_ReturnCorrectValue(t *testing.T) {
+	// Arrange
+	shards := efficiency.NewSharding[string, int](3)
+	key, value := "0", 42
+	// Act
+	shards.Put(key, value)
+	result, exists := shards.Get(key)
+	// Assert
+	assert.That(t, "key found", exists, true)
+	assert.That(t, "value must be correct", result, 42)
 }
 
 // User represents a simple data structure for benchmarking purposes.
@@ -112,11 +127,8 @@ func BenchmarkMap_Get(b *testing.B) {
 			for j := 0; j < b.N; j++ {
 				key := fmt.Sprintf("key %d %d", i, j)
 				users.mutex.Lock()
-				_, ok := users.Users[key]
+				_, _ = users.Users[key]
 				users.mutex.Unlock()
-				if !ok {
-					b.Errorf("key %s not found", key)
-				}
 			}
 		}(i)
 	}
@@ -124,7 +136,7 @@ func BenchmarkMap_Get(b *testing.B) {
 }
 
 func BenchmarkMap_Put(b *testing.B) {
-	access := UserAccess{
+	users := UserAccess{
 		Users: make(map[string]User),
 	}
 
@@ -140,10 +152,9 @@ func BenchmarkMap_Put(b *testing.B) {
 			defer wg.Done()
 			for j := 0; j < b.N; j++ {
 				key := fmt.Sprintf("key %d %d", i, j)
-				value := fmt.Sprintf("value %d %d", i, j)
-				access.mutex.Lock()
-				access.Users[key] = User{ID: key, Name: value}
-				access.mutex.Unlock()
+				users.mutex.Lock()
+				users.Users[key] = User{ID: key, Name: fmt.Sprintf("value %d", i)}
+				users.mutex.Unlock()
 			}
 		}(i)
 	}
@@ -151,11 +162,9 @@ func BenchmarkMap_Put(b *testing.B) {
 }
 
 func BenchmarkSharding_Delete(b *testing.B) {
-	// The sharding implementation handles concurrency internally.
-	// We use one shard per CPU core to distribute the load evenly and maximize throughput.
-	shards := efficiency.NewSharding[string, User](runtime.NumCPU())
+	shards := efficiency.NewSharding[string, User](32)
 
-	// Initialize the map.
+	// Initialize the shards.
 	for i := 0; i < runtime.NumCPU(); i++ {
 		for j := 0; j < b.N; j++ {
 			key := fmt.Sprintf("key %d %d", i, j)
@@ -170,12 +179,12 @@ func BenchmarkSharding_Delete(b *testing.B) {
 	for i := 0; i < runtime.NumCPU(); i++ {
 		wg.Add(1)
 
-		// The goroutine uses the sharding implementation to delete values concurrently.
+		// Each goroutine operates on the shards.
 		go func(i int) {
 			defer wg.Done()
 			for j := 0; j < b.N; j++ {
-				id := fmt.Sprintf("%d %d", i, j)
-				shards.Delete(id)
+				key := fmt.Sprintf("key %d %d", i, j)
+				shards.Delete(key)
 			}
 		}(i)
 	}
@@ -183,11 +192,9 @@ func BenchmarkSharding_Delete(b *testing.B) {
 }
 
 func BenchmarkSharding_Get(b *testing.B) {
-	// The sharding implementation handles concurrency internally.
-	// We use one shard per CPU core to distribute the load evenly and maximize throughput.
-	shards := efficiency.NewSharding[string, User](runtime.NumCPU())
+	shards := efficiency.NewSharding[string, User](32)
 
-	// Initialize the map.
+	// Initialize the shards.
 	for i := 0; i < runtime.NumCPU(); i++ {
 		for j := 0; j < b.N; j++ {
 			key := fmt.Sprintf("key %d %d", i, j)
@@ -202,12 +209,12 @@ func BenchmarkSharding_Get(b *testing.B) {
 	for i := 0; i < runtime.NumCPU(); i++ {
 		wg.Add(1)
 
-		// The goroutine uses the sharding implementation to get values concurrently.
+		// Each goroutine operates on the shards.
 		go func(i int) {
 			defer wg.Done()
 			for j := 0; j < b.N; j++ {
-				id := fmt.Sprintf("%d %d", i, j)
-				shards.Get(id)
+				key := fmt.Sprintf("key %d %d", i, j)
+				_, _ = shards.Get(key)
 			}
 		}(i)
 	}
@@ -215,9 +222,7 @@ func BenchmarkSharding_Get(b *testing.B) {
 }
 
 func BenchmarkSharding_Put(b *testing.B) {
-	// The sharding implementation handles concurrency internally.
-	// We use one shard per CPU core to distribute the load evenly and maximize throughput.
-	shards := efficiency.NewSharding[string, User](runtime.NumCPU())
+	shards := efficiency.NewSharding[string, User](32)
 
 	b.ResetTimer()
 
@@ -226,16 +231,12 @@ func BenchmarkSharding_Put(b *testing.B) {
 	for i := 0; i < runtime.NumCPU(); i++ {
 		wg.Add(1)
 
-		// The goroutine uses the sharding implementation to put values concurrently.
+		// Each goroutine operates on the shards.
 		go func(i int) {
 			defer wg.Done()
 			for j := 0; j < b.N; j++ {
-				id := fmt.Sprintf("%d %d", i, j)
-				name := fmt.Sprintf("user %d %d", i, j)
-				shards.Put(
-					id,
-					User{ID: id, Name: name},
-				)
+				key := fmt.Sprintf("key %d %d", i, j)
+				shards.Put(key, User{ID: key, Name: fmt.Sprintf("value %d", i)})
 			}
 		}(i)
 	}

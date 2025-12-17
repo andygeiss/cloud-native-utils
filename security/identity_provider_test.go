@@ -18,7 +18,21 @@ func init() {
 	os.Setenv("OIDC_REDIRECT_URL", "http://localhost:8080/auth/callback")
 }
 
-func TestIdentityProvider_Callback(t *testing.T) {
+func Test_IdentityProviderCallback_With_MissingState_Should_ReturnBadRequest(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+	// Arrange
+	sessions := security.NewServerSessions()
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/auth/callback", nil)
+	// Act
+	security.IdentityProvider.Callback(sessions)(w, r)
+	// Assert
+	assert.That(t, "status code must be 400", w.Code, http.StatusBadRequest)
+}
+
+func Test_IdentityProviderCallback_With_ValidSession_Should_ProcessRequest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
 	}
@@ -27,41 +41,21 @@ func TestIdentityProvider_Callback(t *testing.T) {
 	sessions.Create("test-id", "test-data")
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/auth/login", nil)
-
 	// Act
 	security.IdentityProvider.Callback(sessions)(w, r)
-
 	// Assert
 	assert.That(t, "status code must be 400", w.Code, http.StatusBadRequest)
 }
 
-func TestIdentityProvider_Callback_BadRequest(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
-	// Arrange
-	sessions := security.NewServerSessions()
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/auth/callback", nil)
-
-	// Act
-	security.IdentityProvider.Callback(sessions)(w, r)
-
-	// Assert
-	assert.That(t, "status code must be 400", w.Code, http.StatusBadRequest)
-}
-
-func TestIdentityProvider_Login(t *testing.T) {
+func Test_IdentityProviderLogin_With_ValidRequest_Should_RedirectWithOIDCParams(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
 	}
 	// Arrange
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/auth/login", nil)
-
 	// Act
 	security.IdentityProvider.Login()(w, r)
-
 	// Assert
 	assert.That(t, "status code must be 302", w.Code, 302)
 	assert.That(t, "body has client_id", strings.Contains(w.Body.String(), "client_id"), true)
@@ -73,7 +67,7 @@ func TestIdentityProvider_Login(t *testing.T) {
 	assert.That(t, "body has state", strings.Contains(w.Body.String(), "state"), true)
 }
 
-func TestIdentityProvider_Logout(t *testing.T) {
+func Test_IdentityProviderLogout_With_ValidSession_Should_DeleteSessionAndRedirect(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
 	}
@@ -82,11 +76,9 @@ func TestIdentityProvider_Logout(t *testing.T) {
 	sessions.Create("test-id", "test-data")
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/auth/logout?session_id=test-id", nil)
-
 	// Act
 	security.IdentityProvider.Logout(sessions)(w, r)
 	session, exists := sessions.Read("test-id")
-
 	// Assert
 	assert.That(t, "status code must be 302", w.Code, 302)
 	assert.That(t, "session must be nil", session, nil)

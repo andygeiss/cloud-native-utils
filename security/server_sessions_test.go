@@ -7,38 +7,46 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
-func TestServerSessions_Create(t *testing.T) {
+func Test_ServerSessions_With_Create_Should_ReturnSessionWithCorrectID(t *testing.T) {
+	// Arrange
 	sessions := security.NewServerSessions()
+	// Act
 	session := sessions.Create("the unique id", nil)
-	id := session.ID
-	assert.That(t, "id is correct", id, "the unique id")
+	// Assert
+	assert.That(t, "id is correct", session.ID, "the unique id")
 }
 
-func TestServerSessions_Read(t *testing.T) {
+func Test_ServerSessions_With_Delete_Should_RemoveSession(t *testing.T) {
+	// Arrange
 	sessions := security.NewServerSessions()
 	session := sessions.Create("the unique id", nil)
-	id := session.ID
-	current, found := sessions.Read(id)
-	assert.That(t, "session must be found", found, true)
-	assert.That(t, "session is correct", *current, session)
-}
-
-func TestServerSessions_Update(t *testing.T) {
-	sessions := security.NewServerSessions()
-	session := sessions.Create("the unique id", nil)
-	id := session.ID
-	session.Data = "value"
-	sessions.Update(session)
-	current, found := sessions.Read(id)
-	assert.That(t, "session must be found", found, true)
-	assert.That(t, "session is correct", *current, session)
-}
-
-func TestServerSessions_Delete(t *testing.T) {
-	sessions := security.NewServerSessions()
-	session := sessions.Create("the unique id", nil)
-	id := session.ID
-	sessions.Delete(id)
-	_, found := sessions.Read(id)
+	// Act
+	sessions.Delete(session.ID)
+	_, found := sessions.Read(session.ID)
+	// Assert
 	assert.That(t, "session must not be found", found, false)
+}
+
+func Test_ServerSessions_With_Read_Should_ReturnExistingSession(t *testing.T) {
+	// Arrange
+	sessions := security.NewServerSessions()
+	session := sessions.Create("the unique id", nil)
+	// Act
+	current, found := sessions.Read(session.ID)
+	// Assert
+	assert.That(t, "session must be found", found, true)
+	assert.That(t, "session is correct", *current, session)
+}
+
+func Test_ServerSessions_With_Update_Should_ModifySessionData(t *testing.T) {
+	// Arrange
+	sessions := security.NewServerSessions()
+	session := sessions.Create("the unique id", nil)
+	session.Data = "value"
+	// Act
+	sessions.Update(session)
+	current, found := sessions.Read(session.ID)
+	// Assert
+	assert.That(t, "session must be found", found, true)
+	assert.That(t, "session is correct", *current, session)
 }
