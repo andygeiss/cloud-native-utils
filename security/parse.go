@@ -28,6 +28,17 @@ func ParseDurationOrDefault(key string, def time.Duration) time.Duration {
 	return def
 }
 
+// ParseFloatOrDefault parses the value of the environment variable with the given key as a float.
+// If the value is not set or cannot be parsed, the default float is returned.
+func ParseFloatOrDefault(key string, def float64) float64 {
+	if value := os.Getenv(key); value != "" {
+		if duration, err := strconv.ParseFloat(value, 64); err == nil {
+			return duration
+		}
+	}
+	return def
+}
+
 // ParseIntOrDefault parses the value of the environment variable with the given key as an integer.
 // If the value is not set or cannot be parsed, the default integer is returned.
 func ParseIntOrDefault(key string, def int) int {

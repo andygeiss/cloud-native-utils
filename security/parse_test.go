@@ -31,6 +31,17 @@ func TestParseDurationOrDefault_Env_Set(t *testing.T) {
 	assert.That(t, "duration must be 3 seconds", d, 3*time.Second)
 }
 
+func TestParseFloatOrDefault_Env_Not_Set_Uses_Default(t *testing.T) {
+	value := security.ParseFloatOrDefault("CLIENT_RATE", 1.0)
+	assert.That(t, "value must be 1.0", value, 1.0)
+}
+
+func TestParseFloatOrDefault_Env_Set(t *testing.T) {
+	os.Setenv("CLIENT_RATE", "0.5")
+	value := security.ParseFloatOrDefault("CLIENT_RATE", 1.0)
+	assert.That(t, "value must be 0.5", value, 0.5)
+}
+
 func TestParseIntOrDefault_Env_Not_Set_Uses_Default(t *testing.T) {
 	value := security.ParseIntOrDefault("CLIENT_COUNT", 5)
 	assert.That(t, "value must be 5", value, 5)
