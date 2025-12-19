@@ -1,0 +1,7 @@
+nav:
+  availability: "Availability"
+  dashboard: "Dashboard"
+  logout: "Logout"
+
+action:
+  logout: "Log out"
