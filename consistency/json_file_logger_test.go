@@ -95,7 +95,7 @@ func Test_JsonFileLogger_With_ReadEventsSuccess_Should_ReturnEvents(t *testing.T
 		assert.That(t, "key must be correct", event.Key, "1")
 		assert.That(t, "value must be correct", event.Value, "value")
 	case err := <-errorCh:
-		t.Fatalf("unexpected error: %v", err)
+		assert.That(t, "err must be nil", err == nil, true)
 	}
 }
 

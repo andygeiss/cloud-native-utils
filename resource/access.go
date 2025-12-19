@@ -3,8 +3,8 @@ package resource
 import "context"
 
 const (
-	ErrorResourceAlreadyExists = "resource already exists"
-	ErrorResourceNotFound      = "resource not found"
+	ErrorResourceAlreadyExists = "Resource already exists"
+	ErrorResourceNotFound      = "Resource not found"
 )
 
 // Access specifies the CRUD operations for a resource using generics.

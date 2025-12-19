@@ -23,7 +23,7 @@ func Decrypt(ciphertext []byte, key [32]byte) (plaintext []byte, err error) {
 
 	// Ensure the ciphertext is long enough to include the nonce.
 	if len(ciphertext) < gcm.NonceSize() {
-		return nil, errors.New("malformed ciphertext")
+		return nil, errors.New("Malformed ciphertext")
 	}
 
 	// Decrypt the ciphertext using the nonce and the encrypted message.

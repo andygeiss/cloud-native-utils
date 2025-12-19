@@ -1,11 +1,11 @@
 package i18n
 
 import (
-"embed"
-"strings"
-"sync"
+	"embed"
+	"strings"
+	"sync"
 
-"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 )
 
 // Translations holds all loaded translations keyed by language code.
@@ -27,16 +27,13 @@ func (a *Translations) Load(efs embed.FS, lang, path string) error {
 	if err != nil {
 		return err
 	}
-
 	var data map[string]any
 	if err := yaml.Unmarshal(content, &data); err != nil {
 		return err
 	}
-
 	a.mu.Lock()
 	a.data[lang] = data
 	a.mu.Unlock()
-
 	return nil
 }
 
@@ -46,16 +43,13 @@ func (a *Translations) Load(efs embed.FS, lang, path string) error {
 func (a *Translations) T(lang, key string) string {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
-
 	langData, ok := a.data[lang]
 	if !ok {
 		return key
 	}
-
 	// Navigate the nested structure using dot-separated keys
 	parts := strings.Split(key, ".")
 	var current any = langData
-
 	for _, part := range parts {
 		switch v := current.(type) {
 		case map[string]any:
@@ -67,12 +61,10 @@ func (a *Translations) T(lang, key string) string {
 			return key
 		}
 	}
-
 	// Return the final value as string
 	if str, ok := current.(string); ok {
 		return str
 	}
-
 	return key
 }
 

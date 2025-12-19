@@ -50,6 +50,32 @@ func (a *sqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err er
 	return tx.Commit()
 }
 
+// Delete removes the key-value pair associated with the given key.
+func (a *sqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	// Ensure that the table is not modified concurrently.
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	// Ensure that the value is deleted atomically by using a transaction.
+	tx, err := a.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx, "DELETE FROM kv_store WHERE key = ?", key)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 // Init initializes the table and index.
 func (a *sqliteAccess[K, V]) Init(ctx context.Context) (err error) {
 	// Skip if context is canceled or timed out.
@@ -163,32 +189,6 @@ func (a *sqliteAccess[K, V]) Update(ctx context.Context, key K, value V) (err er
 	defer tx.Rollback()
 
 	_, err = tx.ExecContext(ctx, "UPDATE kv_store SET value = ? WHERE key = ?", valueAsString, key)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-// Delete removes the key-value pair associated with the given key.
-func (a *sqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
-	// Skip if context is canceled or timed out.
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-
-	// Ensure that the table is not modified concurrently.
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-
-	// Ensure that the value is deleted atomically by using a transaction.
-	tx, err := a.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	_, err = tx.ExecContext(ctx, "DELETE FROM kv_store WHERE key = ?", key)
 	if err != nil {
 		return err
 	}

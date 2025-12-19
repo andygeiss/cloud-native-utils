@@ -57,14 +57,14 @@ func Test_IdentityProviderLogin_With_ValidRequest_Should_RedirectWithOIDCParams(
 	// Act
 	security.IdentityProvider.Login()(w, r)
 	// Assert
+	location := w.Header().Get("Location")
 	assert.That(t, "status code must be 302", w.Code, 302)
-	assert.That(t, "body has client_id", strings.Contains(w.Body.String(), "client_id"), true)
-	assert.That(t, "body has code_challenge", strings.Contains(w.Body.String(), "code_challenge"), true)
-	assert.That(t, "body has code_challenge_method", strings.Contains(w.Body.String(), "code_challenge_method"), true)
-	assert.That(t, "body has redirect_uri", strings.Contains(w.Body.String(), "redirect_uri"), true)
-	assert.That(t, "body has session_id in path", w.Body.String(), "")
-	assert.That(t, "body has scope", strings.Contains(w.Body.String(), "scope"), true)
-	assert.That(t, "body has state", strings.Contains(w.Body.String(), "state"), true)
+	assert.That(t, "location has client_id", strings.Contains(location, "client_id"), true)
+	assert.That(t, "location has code_challenge", strings.Contains(location, "code_challenge"), true)
+	assert.That(t, "location has code_challenge_method", strings.Contains(location, "code_challenge_method"), true)
+	assert.That(t, "location has redirect_uri", strings.Contains(location, "redirect_uri"), true)
+	assert.That(t, "location has scope", strings.Contains(location, "scope"), true)
+	assert.That(t, "location has state", strings.Contains(location, "state"), true)
 }
 
 func Test_IdentityProviderLogout_With_ValidSession_Should_DeleteSessionAndRedirect(t *testing.T) {
@@ -75,12 +75,12 @@ func Test_IdentityProviderLogout_With_ValidSession_Should_DeleteSessionAndRedire
 	sessions := security.NewServerSessions()
 	sessions.Create("test-id", "test-data")
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/auth/logout?session_id=test-id", nil)
+	r := httptest.NewRequest("GET", "/auth/logout/test-id", nil)
+	r.SetPathValue("session_id", "test-id")
 	// Act
 	security.IdentityProvider.Logout(sessions)(w, r)
-	session, exists := sessions.Read("test-id")
+	_, exists := sessions.Read("test-id")
 	// Assert
 	assert.That(t, "status code must be 302", w.Code, 302)
-	assert.That(t, "session must be nil", session, nil)
 	assert.That(t, "session must be deleted", exists, false)
 }

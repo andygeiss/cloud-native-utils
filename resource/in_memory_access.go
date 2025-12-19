@@ -40,6 +40,26 @@ func (a *inMemoryAccess[K, V]) Create(ctx context.Context, key K, value V) (err 
 	return nil
 }
 
+// Delete deletes a resource.
+func (a *inMemoryAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+	// Skip if context is canceled or timed out.
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	// Ensure that only one goroutine can write to the map at a time.
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	// Check if resource exists.
+	if _, exists := a.kv[key]; exists {
+		delete(a.kv, key)
+		return nil
+	}
+
+	return errors.New(ErrorResourceNotFound)
+}
+
 // Read reads a resource.
 func (a *inMemoryAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
 	// Skip if context is canceled or timed out.
@@ -91,26 +111,6 @@ func (a *inMemoryAccess[K, V]) Update(ctx context.Context, key K, value V) (err 
 	// Check if resource exists.
 	if _, exists := a.kv[key]; exists {
 		a.kv[key] = value
-		return nil
-	}
-
-	return errors.New(ErrorResourceNotFound)
-}
-
-// Delete deletes a resource.
-func (a *inMemoryAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
-	// Skip if context is canceled or timed out.
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-
-	// Ensure that only one goroutine can write to the map at a time.
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-
-	// Check if resource exists.
-	if _, exists := a.kv[key]; exists {
-		delete(a.kv, key)
 		return nil
 	}
 

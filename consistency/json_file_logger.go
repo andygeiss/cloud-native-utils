@@ -10,13 +10,13 @@ import (
 // JsonFileLogger is a file-based implementation of the Logger interface.
 // It writes events to a JSON-formatted file for persistence.
 type JsonFileLogger[K, V any] struct {
+	closeOnce    sync.Once        // Ensures the Close method is called only once.
 	errorCh      chan error       // Channel for propagating errors to the caller.
 	eventCh      chan Event[K, V] // Channel for queuing events to be written.
 	file         string           // Path to the log file.
 	lastSequence uint64           // Sequence number of the last event.
 	mutex        sync.Mutex       // Mutex to protect shared resources.
 	wg           sync.WaitGroup   // WaitGroup for ensuring graceful shutdown.
-	closeOnce    sync.Once        // Ensures the Close method is called only once.
 }
 
 // NewJsonFileLogger initializes a new JsonFileLogger for the given file path.

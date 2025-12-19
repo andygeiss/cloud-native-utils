@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ErrorBreakerServiceUnavailable = errors.New("service unavailable")
+	ErrorBreakerServiceUnavailable = errors.New("Service unavailable")
 )
 
 // Breaker wraps a service function with a circuit breaker mechanism.

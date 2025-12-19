@@ -10,8 +10,8 @@ import (
 
 // jsonFileAccess is a json file access.
 type jsonFileAccess[K comparable, V any] struct {
-	path  string
 	mutex sync.RWMutex
+	path  string
 }
 
 // NewJsonFileAccess creates a new json file access.
@@ -48,6 +48,39 @@ func (a *jsonFileAccess[K, V]) Create(ctx context.Context, key K, value V) error
 
 	// Set resource if not exists.
 	data[key] = value
+
+	// Write data to file.
+	if err := intoJsonFile[K, V](a.path, data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete deletes a resource.
+func (a *jsonFileAccess[K, V]) Delete(ctx context.Context, key K) error {
+	// Skip if context is canceled or timed out.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	// Ensure that only one goroutine can write to the file.
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	// Read data from file.
+	data, err := fromJsonFile[K, V](a.path)
+	if err != nil {
+		return err
+	}
+
+	// Check if resource exists.
+	_, exists := data[key]
+	if !exists {
+		return errors.New(ErrorResourceNotFound)
+	}
+
+	delete(data, key)
 
 	// Write data to file.
 	if err := intoJsonFile[K, V](a.path, data); err != nil {
@@ -142,39 +175,6 @@ func (a *jsonFileAccess[K, V]) Update(ctx context.Context, key K, value V) error
 	} else {
 		return errors.New(ErrorResourceNotFound)
 	}
-
-	// Write data to file.
-	if err := intoJsonFile[K, V](a.path, data); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Delete deletes a resource.
-func (a *jsonFileAccess[K, V]) Delete(ctx context.Context, key K) error {
-	// Skip if context is canceled or timed out.
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-
-	// Ensure that only one goroutine can write to the file.
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-
-	// Read data from file.
-	data, err := fromJsonFile[K, V](a.path)
-	if err != nil {
-		return err
-	}
-
-	// Check if resource exists.
-	_, exists := data[key]
-	if !exists {
-		return errors.New(ErrorResourceNotFound)
-	}
-
-	delete(data, key)
 
 	// Write data to file.
 	if err := intoJsonFile[K, V](a.path, data); err != nil {

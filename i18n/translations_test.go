@@ -1,10 +1,10 @@
 package i18n
 
 import (
-"embed"
-"testing"
+	"embed"
+	"testing"
 
-"github.com/andygeiss/cloud-native-utils/assert"
+	"github.com/andygeiss/cloud-native-utils/assert"
 )
 
 //go:embed testdata

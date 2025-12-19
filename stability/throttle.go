@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ErrorThrottleTooManyCalls = errors.New("too many calls")
+	ErrorThrottleTooManyCalls = errors.New("Too many calls")
 )
 
 // Throttle adds rate-limiting behavior to the provided function (`fn`).

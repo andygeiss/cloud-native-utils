@@ -20,7 +20,7 @@ func Test_Throttle_With_MaxTokensReached_Should_ReturnTooManyCalls(t *testing.T)
 	_, err := fn(context.Background(), 42)
 
 	// Assert
-	assert.That(t, "err must be correct", err.Error(), "too many calls")
+	assert.That(t, "err must be correct", err.Error(), "Too many calls")
 }
 
 func Test_Throttle_With_RefillAfterDuration_Should_AllowNewCalls(t *testing.T) {

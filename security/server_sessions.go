@@ -6,14 +6,14 @@ import (
 
 // ServerSession is a session for a user.
 type ServerSession struct {
-	ID   string `json:"id"`
 	Data any    `json:"value"`
+	ID   string `json:"id"`
 }
 
 // ServerSessions is a thread-safe map of session IDs to sessions.
 type ServerSessions struct {
-	sessions map[string]ServerSession
 	mutex    sync.RWMutex
+	sessions map[string]ServerSession
 }
 
 // NewServerSessions creates a new serverSessions.
@@ -32,7 +32,14 @@ func (a *ServerSessions) Create(id string, data any) (s ServerSession) {
 	return session
 }
 
-// Get returns the session for the given sessionID.
+// Delete removes the session with the given sessionID.
+func (a *ServerSessions) Delete(id string) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	delete(a.sessions, id)
+}
+
+// Read returns the session for the given sessionID.
 func (a *ServerSessions) Read(id string) (*ServerSession, bool) {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
@@ -47,11 +54,4 @@ func (a *ServerSessions) Update(s ServerSession) {
 	session := a.sessions[s.ID]
 	session.Data = s.Data
 	a.sessions[s.ID] = session
-}
-
-// Delete removes the session with the given sessionID.
-func (a *ServerSessions) Delete(id string) {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	delete(a.sessions, id)
 }
