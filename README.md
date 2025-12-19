@@ -17,393 +17,326 @@ security, messaging, and service stability.
 
 ---
 
-## **Installation**
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Assert](#assert)
+  - [Consistency](#consistency)
+  - [Efficiency](#efficiency)
+  - [Extensibility](#extensibility)
+  - [i18n](#i18n)
+  - [Logging](#logging)
+  - [Messaging](#messaging)
+  - [Redirecting](#redirecting)
+  - [Resource](#resource)
+  - [Security](#security)
+  - [Service](#service)
+  - [Stability](#stability)
+  - [Templating](#templating)
+- [Technologies Used](#technologies-used)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Features
+
+- **Assert** - Simple and expressive test assertions with deep equality checks
+- **Consistency** - Transactional log management with event abstractions and file-based persistence
+- **Efficiency** - Channel utilities for generating, merging, splitting streams, and sharded key-value stores
+- **Extensibility** - Dynamic Go plugin loading for on-the-fly feature integration
+- **i18n** - YAML-based internationalization with embedded filesystem support
+- **Logging** - Structured JSON logging with HTTP middleware support
+- **Messaging** - Publish-subscribe patterns for decoupling local and remote services
+- **Redirecting** - HTMX-compatible HTTP redirects for state-changing requests
+- **Resource** - Generic CRUD interface with in-memory, JSON, YAML, and SQLite backends
+- **Security** - AES-GCM encryption, secure key generation, HMAC hashing, bcrypt passwords, OAuth2/OIDC, and secure HTTP servers
+- **Service** - Context-aware function wrappers with lifecycle and signal handling
+- **Stability** - Circuit breakers, retries, throttling, debounce, and timeouts
+- **Templating** - Template engine with embedded filesystem support
+
+---
+
+## Installation
 
 ```bash
 go get github.com/andygeiss/cloud-native-utils
 ```
 
+**Requirements:**
+- Go 1.21 or later
+
 ---
 
-## **Module Features**
+## Usage
 
-### [`assert`](assert/) — Testing Utilities
+### Assert
 
-Simplifies test assertions with a clean, consistent API.
-
-| Function | Description |
-|----------|-------------|
-| `That(t, desc, got, expected)` | Asserts that two values are deeply equal |
+A utility function to assert value equality in tests with clear error messages.
 
 ```go
-import "github.com/andygeiss/cloud-native-utils/assert"
+import (
+    "testing"
+    "github.com/andygeiss/cloud-native-utils/assert"
+)
 
-func Test_Example(t *testing.T) {
-    result := Add(2, 3)
-    assert.That(t, "sum must equal 5", result, 5)
+func TestExample(t *testing.T) {
+    result := 42
+    assert.That(t, "result should be 42", result, 42)
 }
 ```
 
----
+### Consistency
 
-### [`consistency`](consistency/) — Transactional Log Management
-
-Implements write-ahead logging (WAL) patterns for data consistency with event sourcing support.
-
-| Type | Description |
-|------|-------------|
-| `Event[K, V]` | Generic event with key, value, sequence number, and event type |
-| `EventType` | Enum for `EventTypeDelete` and `EventTypePut` operations |
-| `JsonFileLogger[K, V]` | File-based logger with JSON persistence and async writes |
-| `Logger[K, V]` | Interface for transactional logging |
+Transactional log management with events and JSON file-based persistence.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/consistency"
 
-logger := consistency.NewJsonFileLogger[string, Task]("tasks.log")
-defer logger.Close()
+// Create events for logging state changes
+event := consistency.NewEvent(consistency.EventTypeCreate, "user", "123", userData)
 
-logger.Log(consistency.Event[string, Task]{
-    EventType: consistency.EventTypePut,
-    Key:       "task-1",
-    Value:     task,
-})
+// Use JsonFileLogger for persistent event storage
+logger := consistency.NewJsonFileLogger("events.json")
+logger.Log(event)
 ```
 
----
+### Efficiency
 
-### [`efficiency`](efficiency/) — Concurrency & Data Structures
-
-Utilities for concurrent processing, channel operations, and high-performance data structures.
-
-| Function/Type | Description |
-|---------------|-------------|
-| `Generate[T](values...)` | Creates a read-only channel from variadic values |
-| `Merge[T](channels...)` | Combines multiple channels into one |
-| `Split[T](in, num)` | Splits one channel into multiple channels |
-| `Process[IN, OUT](in, fn)` | Concurrent processing with CPU-based worker pool |
-| `Sharding[K, V]` | Thread-safe sharded key-value store |
-| `SparseSet[T]` | Memory-efficient sparse set data structure |
-| `WithCompression(handler)` | HTTP middleware for gzip compression |
+Utilities for concurrent stream processing and data partitioning.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/efficiency"
 
-// Channel pipeline
-ch := efficiency.Generate(1, 2, 3, 4, 5)
-results, errors := efficiency.Process(ch, processFunc)
+// Generate a read-only channel from values
+ch := efficiency.Generate(ctx, 1, 2, 3, 4, 5)
 
-// Sharded storage for high-concurrency scenarios
-shards := efficiency.NewSharding[string, User](16)
-shards.Put("user-1", user)
-user, exists := shards.Get("user-1")
+// Merge multiple channels into one
+merged := efficiency.Merge(ctx, ch1, ch2, ch3)
+
+// Split a channel into multiple outputs
+outputs := efficiency.Split(ctx, input, 3)
+
+// Process items concurrently
+efficiency.Process(ctx, input, func(item int) {
+    // Handle each item
+})
 ```
 
----
+### Extensibility
 
-### [`extensibility`](extensibility/) — Plugin System
-
-Dynamically loads external Go plugins at runtime for hot-swappable features.
-
-| Function | Description |
-|----------|-------------|
-| `LoadPlugin[T](path, symbolName)` | Loads a typed symbol from a `.so` plugin file |
+Dynamically load external Go plugins at runtime.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/extensibility"
 
-fn, err := extensibility.LoadPlugin[func(int) int]("./plugins/math.so", "Double")
-result := fn(21) // 42
+// Load a symbol from a plugin file
+symbol, err := extensibility.LoadPlugin("./plugins/myplugin.so", "MyFunction")
 ```
 
----
+### i18n
 
-### [`i18n`](i18n/) — Internationalization
-
-YAML-based translation management with dot-notation key lookup.
-
-| Type/Method | Description |
-|-------------|-------------|
-| `Translations` | Thread-safe translation store |
-| `Load(efs, lang, path)` | Loads translations from embedded YAML files |
-| `T(lang, key)` | Returns translated string for a dot-separated key |
-| `TMap(lang, keys...)` | Returns a map of translations for template rendering |
+YAML-based internationalization with embedded filesystem support.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/i18n"
 
-translations := i18n.NewTranslations()
-translations.Load(efs, "en", "assets/i18n/en.yaml")
-translations.Load(efs, "de", "assets/i18n/de.yaml")
+//go:embed translations/*.yaml
+var translationsFS embed.FS
 
-title := translations.T("de", "page.home.title")
-tplData := translations.TMap("en", "nav.home", "nav.about", "action.save")
+translations := i18n.NewTranslations()
+translations.Load(translationsFS, "en", "translations/en.yaml")
+translations.Load(translationsFS, "de", "translations/de.yaml")
+
+// Get translated text
+text := translations.Get("en", "greeting.hello")
 ```
 
----
+### Logging
 
-### [`logging`](logging/) — Structured Logging
-
-JSON-based structured logging with configurable log levels and HTTP middleware.
-
-| Function | Description |
-|----------|-------------|
-| `NewJsonLogger()` | Creates a JSON logger (level via `LOGGING_LEVEL` env var) |
-| `WithLogging(logger, handler)` | HTTP middleware that logs requests with duration |
+Structured JSON logging with HTTP middleware.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/logging"
 
-logger := logging.NewJsonLogger() // Reads LOGGING_LEVEL from env
-logger.Info("server started", "port", 8080)
+// Create a JSON logger
+logger := logging.NewJsonLogger(os.Stdout)
 
-// HTTP middleware
-http.Handle("/api", logging.WithLogging(logger, handler))
+// Use middleware for HTTP request logging
+handler := logging.Middleware(logger)(yourHandler)
 ```
 
----
+### Messaging
 
-### [`messaging`](messaging/) — Pub/Sub Messaging
-
-Decouples services using publish/subscribe patterns with Kafka or in-memory dispatchers.
-
-| Type | Description |
-|------|-------------|
-| `Dispatcher` | Interface with `Publish` and `Subscribe` methods |
-| `NewExternalDispatcher()` | Kafka-backed dispatcher (uses `KAFKA_BROKERS` env var) |
-| `NewInternalDispatcher()` | In-memory dispatcher for local/test scenarios |
-| `Message` | Message struct with topic, data, and state |
+Publish-subscribe patterns for decoupling services.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/messaging"
 
-// Production: Kafka
-dispatcher := messaging.NewExternalDispatcher()
-
-// Development/Testing: In-memory
+// Create a dispatcher for internal messaging
 dispatcher := messaging.NewInternalDispatcher()
 
-// Subscribe
-dispatcher.Subscribe(ctx, "orders", func(ctx context.Context, msg messaging.Message) (messaging.MessageState, error) {
-    return messaging.MessageStateCompleted, nil
+// Subscribe to a topic
+dispatcher.Subscribe("user.created", func(msg messaging.Message) {
+    // Handle message
 })
 
-// Publish
-dispatcher.Publish(ctx, messaging.NewMessage("orders", orderData))
+// Publish a message
+dispatcher.Publish("user.created", payload)
 ```
 
----
+### Redirecting
 
-### [`redirecting`](redirecting/) — PRG Pattern & HTMX Support
-
-Implements Post/Redirect/Get pattern with automatic HTMX compatibility.
-
-| Function | Description |
-|----------|-------------|
-| `Redirect(w, r, target)` | HTMX-aware redirect (HX-Redirect or 303 See Other) |
-| `RedirectWithMessage(w, r, target, key, value)` | Redirect with query parameter |
-| `WithPRG(handler)` | Middleware that auto-converts redirects for HTMX |
+HTMX-compatible HTTP redirects for POST/PUT/DELETE requests.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/redirecting"
 
-func CreateHandler(w http.ResponseWriter, r *http.Request) {
-    redirecting.Redirect(w, r, "/items") // Works with both HTMX and standard requests
-}
-
-// Or use middleware
-mux.Handle("/", redirecting.WithPRG(handler))
+// Wrap handlers to redirect state-changing requests to GET endpoints
+handler := redirecting.Middleware("/success")(yourHandler)
 ```
 
----
+### Resource
 
-### [`resource`](resource/) — Generic Data Access
-
-Unified CRUD interface with multiple storage backends.
-
-| Type | Description |
-|------|-------------|
-| `Access[K, V]` | Generic interface: `Create`, `Read`, `ReadAll`, `Update`, `Delete` |
-| `NewInMemoryAccess[K, V]()` | Thread-safe in-memory implementation |
-| `NewSqliteAccess[K, V](db)` | SQLite-backed implementation |
-| `NewJsonFileAccess[K, V](path)` | JSON file persistence |
-| `NewYamlFileAccess[K, V](path)` | YAML file persistence |
-| `NewMockAccess[K, V]()` | Test mock with builder pattern |
+Generic CRUD interface with multiple backend implementations.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/resource"
 
 // In-memory storage
-store := resource.NewInMemoryAccess[string, Task]()
+store := resource.NewInMemoryAccess[string, User]()
+
+// JSON file storage
+store := resource.NewJsonFileAccess[string, User]("users.json")
+
+// SQLite storage
+store := resource.NewSqliteAccess[string, User](db, "users")
 
 // CRUD operations
-store.Create(ctx, "task-1", task)
-task, err := store.Read(ctx, "task-1")
-tasks, err := store.ReadAll(ctx)
-store.Update(ctx, "task-1", updatedTask)
-store.Delete(ctx, "task-1")
-
-// Mock for testing
-mock := resource.NewMockAccess[string, Task]().
-    WithReadFn(func(ctx context.Context, key string) (*Task, error) {
-        return &Task{ID: key}, nil
-    })
+store.Create(ctx, "user-1", user)
+user, err := store.Read(ctx, "user-1")
+store.Update(ctx, "user-1", updatedUser)
+store.Delete(ctx, "user-1")
+users, err := store.List(ctx)
 ```
 
----
+### Security
 
-### [`security`](security/) — Cryptography & HTTP Security
-
-Comprehensive security utilities for encryption, authentication, and secure HTTP handling.
-
-| Category | Functions |
-|----------|-----------|
-| **Encryption** | `Encrypt(plaintext, key)`, `Decrypt(ciphertext, key)` — AES-256-GCM |
-| **Key Generation** | `GenerateKey()` — 256-bit key, `GenerateID()` — hex-encoded ID |
-| **PKCE** | `GeneratePKCE()` — OAuth 2.0 code verifier and challenge |
-| **Hashing** | `Hash(tag, data)` — HMAC-SHA512/256 |
-| **Password** | `Password(plaintext)`, `IsPasswordValid(hash, plaintext)` — bcrypt |
-| **Env Parsing** | `ParseStringOrDefault`, `ParseIntOrDefault`, `ParseBoolOrDefault`, `ParseDurationOrDefault`, `ParseFloatOrDefault` |
-| **HTTP Server** | `NewServer(mux)` — Configured with timeouts from env vars |
-| **HTTP Client** | `NewClient()`, `NewClientWithTLS(cert, key, ca)` — Secure clients |
-| **ServeMux** | `NewServeMux(ctx, efs)` — Pre-configured with `/liveness`, `/readiness`, `/static/`, and OIDC endpoints |
-| **Sessions** | `ServerSessions` — Thread-safe session management |
-| **Auth Middleware** | `WithAuth(sessions, handler)` — Extracts session/claims into context |
-| **OIDC** | `IdentityProvider` — Complete OpenID Connect login/logout/callback flow |
+Comprehensive security utilities for cloud-native applications.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/security"
 
-// Encryption
+// AES-GCM encryption/decryption
 key := security.GenerateKey()
-ciphertext := security.Encrypt([]byte("secret"), key)
-plaintext, _ := security.Decrypt(ciphertext, key)
+encrypted := security.Encrypt(key, plaintext)
+decrypted := security.Decrypt(key, encrypted)
 
-// Configuration
-port := security.ParseIntOrDefault("PORT", 8080)
-timeout := security.ParseDurationOrDefault("TIMEOUT", 5*time.Second)
+// Password hashing with bcrypt
+hash := security.HashPassword(password)
+valid := security.VerifyPassword(hash, password)
 
-// HTTP Server with health probes and OIDC
-mux, sessions := security.NewServeMux(ctx, efs)
-server := security.NewServer(mux)
-server.ListenAndServe()
+// Generate secure IDs
+id := security.GenerateID()
+
+// PKCE for OAuth2
+verifier, challenge := security.GeneratePKCE()
+
+// Secure HTTP server with health probes
+server := security.NewServer(":8443", handler)
 ```
 
----
+### Service
 
-### [`service`](service/) — Lifecycle & Context Management
-
-Cloud-native service orchestration with signal handling and context-aware functions.
-
-| Type/Function | Description |
-|---------------|-------------|
-| `Function[IN, OUT]` | Generic function type with context support |
-| `Context()` | Creates context that listens for OS signals (SIGTERM, SIGINT, etc.) |
-| `RegisterOnContextDone(ctx, fn)` | Registers cleanup function for graceful shutdown |
-| `Wrap[IN, OUT](fn)` | Converts simple function to context-aware function |
+Context-aware function wrappers with lifecycle management.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/service"
 
-func main() {
-    ctx, cancel := service.Context()
-    defer cancel()
+// Wrap a function with context support
+fn := service.Wrap(func(ctx context.Context) error {
+    // Your service logic
+    return nil
+})
 
-    server := startServer()
-
-    // Register graceful shutdown
-    service.RegisterOnContextDone(ctx, func() {
-        server.Shutdown(context.Background())
-    })
-
-    server.ListenAndServe()
-}
+// Register cleanup on context cancellation
+service.RegisterOnContextDone(ctx, func() {
+    // Cleanup logic
+})
 ```
 
----
+### Stability
 
-### [`stability`](stability/) — Resilience Patterns
-
-Production-ready stability patterns for fault-tolerant services.
-
-| Function | Description |
-|----------|-------------|
-| `Breaker[IN, OUT](fn, threshold)` | Circuit breaker with exponential backoff |
-| `Retry[IN, OUT](fn, maxRetries, delay)` | Automatic retry with configurable delay |
-| `Throttle[IN, OUT](fn, maxTokens, refill, duration)` | Token bucket rate limiting |
-| `Debounce[IN, OUT](fn, duration)` | Coalesces rapid calls into single execution |
-| `Timeout[IN, OUT](fn, duration)` | Enforces execution time limits |
+Patterns for building resilient services.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/stability"
 
-// Wrap function with multiple stability patterns
-fn := fetchData
-fn = stability.Retry(fn, 3, time.Second)           // Retry up to 3 times
-fn = stability.Timeout(fn, 5*time.Second)          // 5 second timeout
-fn = stability.Breaker(fn, 5)                      // Open circuit after 5 failures
-fn = stability.Throttle(fn, 100, 10, time.Second)  // Rate limit: 100 tokens, refill 10/sec
+// Circuit breaker - opens after threshold failures
+fn := stability.Breaker(yourFunc, 3)
 
-result, err := fn(ctx, input)
+// Retry with configurable attempts
+fn := stability.Retry(yourFunc, 5, time.Second)
+
+// Throttle to limit concurrent executions
+fn := stability.Throttle(yourFunc, 10)
+
+// Debounce to delay execution
+fn := stability.Debounce(yourFunc, 500*time.Millisecond)
+
+// Timeout to limit execution time
+fn := stability.Timeout(yourFunc, 5*time.Second)
 ```
 
----
+### Templating
 
-### [`templating`](templating/) — Template Engine
-
-Simple wrapper around Go's `text/template` with embedded filesystem support.
-
-| Type/Method | Description |
-|-------------|-------------|
-| `Engine` | Template engine with embedded FS support |
-| `NewEngine(efs)` | Creates engine with embedded filesystem |
-| `Parse(patterns...)` | Parses templates using glob patterns |
-| `Render(w, name, data)` | Executes named template with data |
+Template engine with embedded filesystem support.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/templating"
 
-//go:embed assets/templates/*
-var efs embed.FS
+//go:embed templates/*.html
+var templatesFS embed.FS
 
-engine := templating.NewEngine(efs)
-engine.Parse("assets/templates/*.tmpl", "assets/templates/**/*.tmpl")
-
-engine.Render(w, "index.tmpl", map[string]any{
-    "Title": "Home",
-    "Items": items,
-})
+engine := templating.NewEngine(templatesFS)
+engine.Parse("templates/*.html")
+engine.Render(w, "page.html", data)
 ```
 
 ---
 
-## **Getting Started**
+## Technologies Used
 
-The repository [cloud-native-app](https://github.com/andygeiss/cloud-native-app)
-provides a complete application scaffold that demonstrates how these modules
-work together in a production-ready service.
-
-```bash
-# Generate a new cloud-native application
-go install github.com/andygeiss/cloud-native-app@latest
-cloud-native-app myservice
-```
+- **Go** (1.25+) - Primary programming language
+- **AES-GCM** - Authenticated encryption
+- **bcrypt** - Password hashing
+- **OAuth2/OIDC** - Authentication protocols
+- **SQLite** - Embedded database support
+- **Kafka** - Message queue integration
+- **YAML** - Configuration and i18n files
 
 ---
 
-## **Dependencies**
+## Contributing
 
-| Dependency | Purpose |
-|------------|---------|
-| `github.com/coreos/go-oidc/v3` | OpenID Connect client |
-| `github.com/segmentio/kafka-go` | Kafka messaging |
-| `golang.org/x/crypto` | bcrypt password hashing |
-| `golang.org/x/oauth2` | OAuth2 client |
-| `gopkg.in/yaml.v3` | YAML parsing for i18n |
-| `modernc.org/sqlite` | Pure-Go SQLite driver |
+Contributions are welcome! Here's how you can help:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+Please ensure your code:
+- Follows Go best practices and idioms
+- Includes tests for new functionality
+- Passes all existing tests (`go test ./...`)
+- Has appropriate documentation
 
 ---
 
-## **License**
+## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
