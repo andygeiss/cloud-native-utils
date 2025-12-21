@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io"
+	"net/http"
 	"text/template"
 )
 
@@ -26,14 +27,24 @@ func (a *Engine) Parse(patterns ...string) {
 	tmpl := template.New("tmpl").Funcs(template.FuncMap{
 		"add_int": func(a, b int) int { return a + b },
 	})
-	tmpl, err := tmpl.ParseFS(a.efs, patterns...)
+	parsed, err := tmpl.ParseFS(a.efs, patterns...)
 	if err != nil {
 		panic(fmt.Sprintf("templating: could not parse templates: %v", err))
 	}
-	a.tmpl = tmpl
+	a.tmpl = parsed
 }
 
 // Render renders the template with the given name and data.
 func (a *Engine) Render(w io.Writer, name string, data any) error {
 	return a.tmpl.ExecuteTemplate(w, name, data)
+}
+
+// View returns an http.HandlerFunc that renders the template with the given name and data.
+func (a *Engine) View(name string, data any) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := a.Render(w, name, data); err != nil {
+			http.Error(w, fmt.Sprintf("templating: render %q: %v", name, err), http.StatusInternalServerError)
+			return
+		}
+	}
 }

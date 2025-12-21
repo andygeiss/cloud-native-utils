@@ -33,7 +33,7 @@ func Test_WithAuth_With_ValidSession_Should_SetSessionIDInContext(t *testing.T) 
 	assert.That(t, "session_id must be correct", sessionID, got)
 }
 
-func Test_WithNoStoreNoReferrer_Should_Set_NoStore_And_NoReferrer(t *testing.T) {
+func Test_WithNoStoreNoReferrer_With_DefaultResponse_Should_Set_NoStore_And_NoReferrer(t *testing.T) {
 	// Arrange
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/ui/test/", nil)

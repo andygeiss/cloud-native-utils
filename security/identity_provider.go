@@ -142,7 +142,7 @@ func (a *identityProvider) setup() (err error) {
 	ctx := context.Background()
 
 	// Initialize the identity provider.
-	provider, err := oidc.NewProvider(ctx, os.Getenv("OIDC_ISSUER"))
+	oidcProvider, err := oidc.NewProvider(ctx, os.Getenv("OIDC_ISSUER"))
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func (a *identityProvider) setup() (err error) {
 	a.oauth2Config = &oauth2.Config{
 		ClientID:     os.Getenv("OIDC_CLIENT_ID"),
 		ClientSecret: os.Getenv("OIDC_CLIENT_SECRET"),
-		Endpoint:     provider.Endpoint(),
+		Endpoint:     oidcProvider.Endpoint(),
 		RedirectURL:  os.Getenv("OIDC_REDIRECT_URL"),
 		Scopes:       []string{oidc.ScopeOpenID, "email", "profile"},
 	}
@@ -162,7 +162,7 @@ func (a *identityProvider) setup() (err error) {
 	}
 
 	// Store the identity provider.
-	a.provider = provider
+	a.provider = oidcProvider
 
 	return nil
 }

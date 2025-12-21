@@ -17,7 +17,7 @@ var (
 // It tracks failures and prevents further calls when a failure threshold is reached.
 func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.Function[IN, OUT] {
 	var failureCount int
-	var lastCall = time.Now()
+	var lastCall = time.Now().UTC()
 	var mutex sync.RWMutex
 	return func(ctx context.Context, in IN) (out OUT, err error) {
 		if ctx.Err() != nil {
@@ -29,7 +29,7 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 		if diff := failureCount - threshold; diff >= 0 {
 			// Calculate the next allowable retry time using exponential backoff.
 			retryAt := lastCall.Add((2 << diff) * time.Second)
-			if !time.Now().After(retryAt) {
+			if !time.Now().UTC().After(retryAt) {
 				mutex.RUnlock()
 				return out, ErrorBreakerServiceUnavailable
 			}
@@ -42,7 +42,7 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 		// Acquire a write lock to update shared state.
 		mutex.Lock()
 		defer mutex.Unlock()
-		lastCall = time.Now()
+		lastCall = time.Now().UTC()
 		if err != nil {
 			failureCount++
 			return out, err
