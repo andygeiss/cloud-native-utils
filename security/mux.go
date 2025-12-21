@@ -31,7 +31,7 @@ func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverS
 	// Add OpenID Connect endpoints to the mux.
 	mux.Handle("GET /auth/callback", IdentityProvider.Callback(serverSessions))
 	mux.Handle("GET /auth/login", IdentityProvider.Login())
-	mux.Handle("GET /auth/logout", IdentityProvider.Logout(serverSessions))
+	mux.Handle("GET /auth/logout/{session_id}", IdentityProvider.Logout(serverSessions))
 
 	// Add a liveness check endpoint to the mux.
 	mux.HandleFunc("GET /liveness", func(w http.ResponseWriter, r *http.Request) {
