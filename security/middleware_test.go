@@ -32,3 +32,22 @@ func Test_WithAuth_With_ValidSession_Should_SetSessionIDInContext(t *testing.T) 
 	assert.That(t, "status code must be 200", w.Code, http.StatusOK)
 	assert.That(t, "session_id must be correct", sessionID, got)
 }
+
+func Test_WithNoStoreNoReferrer_Should_Set_NoStore_And_NoReferrer(t *testing.T) {
+	// Arrange
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/ui/test/", nil)
+	next := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /ui/test/", security.WithNoStoreNoReferrer(next))
+
+	// Act
+	mux.ServeHTTP(w, r)
+
+	// Assert
+	assert.That(t, "status code must be 200", w.Code, http.StatusOK)
+	assert.That(t, "Cache-Control must be no-store", w.Header().Get("Cache-Control"), "no-store")
+	assert.That(t, "Referrer-Policy must be no-referrer", w.Header().Get("Referrer-Policy"), "no-referrer")
+}

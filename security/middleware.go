@@ -53,3 +53,24 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
+
+// WithNoStoreNoReferrer applies response headers that reduce data leakage.
+//
+// It sets:
+// - Cache-Control: no-store
+// - Referrer-Policy: no-referrer
+func WithNoStoreNoReferrer(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("Referrer-Policy", "no-referrer")
+		next.ServeHTTP(w, r)
+	}
+}
+
+// WithAuthenticatedSecurityHeaders applies server-side security headers that MUST
+// be present on authenticated pages.
+//
+// Deprecated: use WithNoStoreNoReferrer.
+func WithAuthenticatedSecurityHeaders(next http.HandlerFunc) http.HandlerFunc {
+	return WithNoStoreNoReferrer(next)
+}
