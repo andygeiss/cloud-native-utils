@@ -4,16 +4,15 @@
 
 # Cloud Native Utils
 
-[![Go Reference](https://pkg.go.dev/badge/badge/andygeiss/cloud-native-utils.svg)](https://pkg.go.dev/badge/andygeiss/cloud-native-utils)
+[![Go Reference](https://pkg.go.dev/badge/github.com/andygeiss/cloud-native-utils.svg)](https://pkg.go.dev/github.com/andygeiss/cloud-native-utils)
 [![License](https://img.shields.io/github/license/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/blob/master/LICENSE)
 [![Releases](https://img.shields.io/github/v/release/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/andygeiss/cloud-native-utils)](https://goreportcard.com/report/github.com/andygeiss/cloud-native-utils)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b4e3a9c4859b47f1bc43613970ec8d12)](https://app.codacy.com/gh/andygeiss/cloud-native-utils/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/b4e3a9c4859b47f1bc43613970ec8d12)](https://app.codacy.com/gh/andygeiss/cloud-native-utils/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
-A collection of high-performance, modular utilities for building cloud-native Go applications.
-This library provides battle-tested patterns for testing, data consistency, concurrency,
-security, messaging, and service stability.
+A collection of modular utilities for building cloud-native Go applications.
+This repository is organized as small, focused Go packages (no monolithic framework), each designed to be used independently.
 
 ---
 
@@ -22,19 +21,22 @@ security, messaging, and service stability.
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Assert](#assert)
-  - [Consistency](#consistency)
-  - [Efficiency](#efficiency)
-  - [Extensibility](#extensibility)
-  - [i18n](#i18n)
-  - [Logging](#logging)
-  - [Messaging](#messaging)
-  - [Redirecting](#redirecting)
-  - [Resource](#resource)
-  - [Security](#security)
-  - [Service](#service)
-  - [Stability](#stability)
-  - [Templating](#templating)
+    - [Assert](#assert)
+    - [Consistency](#consistency)
+    - [Efficiency](#efficiency)
+    - [Extensibility](#extensibility)
+    - [i18n](#i18n)
+    - [Imaging](#imaging)
+    - [Logging](#logging)
+    - [Messaging](#messaging)
+    - [Redirecting](#redirecting)
+    - [Resource](#resource)
+    - [Scheduling](#scheduling)
+    - [Security](#security)
+    - [Service](#service)
+    - [Slices](#slices)
+    - [Stability](#stability)
+    - [Templating](#templating)
 - [Technologies Used](#technologies-used)
 - [Contributing](#contributing)
 - [License](#license)
@@ -43,19 +45,22 @@ security, messaging, and service stability.
 
 ## Features
 
-- **Assert** - Simple and expressive test assertions with deep equality checks
-- **Consistency** - Transactional log management with event abstractions and file-based persistence
-- **Efficiency** - Channel utilities for generating, merging, splitting streams, and sharded key-value stores
-- **Extensibility** - Dynamic Go plugin loading for on-the-fly feature integration
-- **i18n** - YAML-based internationalization with embedded filesystem support
-- **Logging** - Structured JSON logging with HTTP middleware support
-- **Messaging** - Publish-subscribe patterns for decoupling local and remote services
-- **Redirecting** - HTMX-compatible HTTP redirects for state-changing requests
-- **Resource** - Generic CRUD interface with in-memory, JSON, YAML, and SQLite backends
-- **Security** - AES-GCM encryption, secure key generation, HMAC hashing, bcrypt passwords, OAuth2/OIDC, and secure HTTP servers
-- **Service** - Context-aware function wrappers with lifecycle and signal handling
-- **Stability** - Circuit breakers, retries, throttling, debounce, and timeouts
-- **Templating** - Template engine with embedded filesystem support
+- **Assert** - Minimal test assertions (`assert.That`)
+- **Consistency** - Transactional event log with JSON file persistence (`JsonFileLogger`)
+- **Efficiency** - Channel helpers (`Generate`, `Merge`, `Split`, `Process`) and HTTP gzip (`WithCompression`)
+- **Extensibility** - Dynamic plugin loading (`LoadPlugin`)
+- **i18n** - Date/money formatting and YAML translations from `embed.FS` (`Translations`)
+- **Imaging** - QR code generation (including Data URL output)
+- **Logging** - Structured JSON logging via `log/slog`, plus an HTTP handler wrapper (`WithLogging`)
+- **Messaging** - Publish/subscribe dispatcher (in-memory or Kafka-backed)
+- **Redirecting** - PRG + HTMX-friendly redirects (`WithPRG`, `Redirect`, `RedirectWithMessage`)
+- **Resource** - Generic CRUD access interface with multiple backends (memory/JSON/YAML/SQLite) and indexing
+- **Scheduling** - Time/day primitives for booking systems (opening hours, slots, orphan gaps)
+- **Security** - AES-GCM encryption, password hashing, env parsing helpers, OIDC identity provider helpers, and a configured HTTP server
+- **Service** - Context helpers (signal-aware), function wrapper, and context-done hooks
+- **Slices** - Generic slice helpers (`Map`, `Filter`, `Unique`, ...)
+- **Stability** - Resilience wrappers for `service.Function` (breaker/retry/throttle/debounce/timeout)
+- **Templating** - HTML templating engine on top of embedded filesystems
 
 ---
 
@@ -66,7 +71,7 @@ go get github.com/andygeiss/cloud-native-utils
 ```
 
 **Requirements:**
-- Go 1.21 or later
+- Go 1.25.4 or later
 
 ---
 
@@ -90,40 +95,60 @@ func TestExample(t *testing.T) {
 
 ### Consistency
 
-Transactional log management with events and JSON file-based persistence.
+Transactional log management with JSON file-based persistence.
 
 ```go
 import "github.com/andygeiss/cloud-native-utils/consistency"
 
-// Create events for logging state changes
-event := consistency.NewEvent(consistency.EventTypeCreate, "user", "123", userData)
+logger := consistency.NewJsonFileLogger[string, []byte]("./data/events.json")
+defer logger.Close()
 
-// Use JsonFileLogger for persistent event storage
-logger := consistency.NewJsonFileLogger("events.json")
-logger.Log(event)
+logger.WritePut("user:123", []byte("created"))
+logger.WriteDelete("user:123")
+
+events, errs := logger.ReadEvents()
+for e := range events {
+    _ = e // handle event
+}
+for err := range errs {
+    if err != nil {
+        // handle error
+    }
+}
 ```
 
 ### Efficiency
 
-Utilities for concurrent stream processing and data partitioning.
+Utilities for concurrent stream processing.
 
 ```go
-import "github.com/andygeiss/cloud-native-utils/efficiency"
+import (
+    "context"
+    "github.com/andygeiss/cloud-native-utils/efficiency"
+)
 
 // Generate a read-only channel from values
-ch := efficiency.Generate(ctx, 1, 2, 3, 4, 5)
+ch := efficiency.Generate(1, 2, 3, 4, 5)
 
 // Merge multiple channels into one
-merged := efficiency.Merge(ctx, ch1, ch2, ch3)
+ch1 := efficiency.Generate(1, 2, 3)
+ch2 := efficiency.Generate(4, 5, 6)
+merged := efficiency.Merge(ch1, ch2)
+_ = merged
 
-// Split a channel into multiple outputs
-outputs := efficiency.Split(ctx, input, 3)
+// Split a channel into multiple outputs (fan-out / work distribution)
+input := efficiency.Generate(10, 11, 12, 13, 14)
+workers := efficiency.Split(input, 3)
+_ = workers
 
-// Process items concurrently
-efficiency.Process(ctx, input, func(item int) {
-    // Handle each item
-})
+// Process items concurrently (worker count is based on NumCPU)
+fn := func(ctx context.Context, in int) (int, error) { return in * 2, nil }
+out, errCh := efficiency.Process(ch, fn)
+_ = out
+_ = errCh
 ```
+
+Note: `Split` distributes items across outputs (it does not broadcast each item to every output).
 
 ### Extensibility
 
@@ -133,8 +158,12 @@ Dynamically load external Go plugins at runtime.
 import "github.com/andygeiss/cloud-native-utils/extensibility"
 
 // Load a symbol from a plugin file
-symbol, err := extensibility.LoadPlugin("./plugins/myplugin.so", "MyFunction")
+symbol, err := extensibility.LoadPlugin[func(string) string]("./plugins/myplugin.so", "MyFunction")
+_ = symbol
+_ = err
 ```
+
+Note: Go plugins are platform-dependent (and not supported on all OS/architectures).
 
 ### i18n
 
@@ -147,11 +176,25 @@ import "github.com/andygeiss/cloud-native-utils/i18n"
 var translationsFS embed.FS
 
 translations := i18n.NewTranslations()
-translations.Load(translationsFS, "en", "translations/en.yaml")
-translations.Load(translationsFS, "de", "translations/de.yaml")
+_ = translations.Load(translationsFS, "en", "translations/en.yaml")
+_ = translations.Load(translationsFS, "de", "translations/de.yaml")
 
 // Get translated text
-text := translations.Get("en", "greeting.hello")
+text := translations.T("en", "greeting.hello")
+```
+
+Date/money helpers are available as standalone functions too (e.g. `FormatDateISO`, `FormatMoney`).
+
+### Imaging
+
+QR code generation utilities.
+
+```go
+import "github.com/andygeiss/cloud-native-utils/imaging"
+
+dataURL, err := imaging.GenerateQRCodeDataURL("https://example.com")
+_ = dataURL
+_ = err
 ```
 
 ### Logging
@@ -161,11 +204,11 @@ Structured JSON logging with HTTP middleware.
 ```go
 import "github.com/andygeiss/cloud-native-utils/logging"
 
-// Create a JSON logger
-logger := logging.NewJsonLogger(os.Stdout)
+// Create a JSON logger (level configured via LOGGING_LEVEL)
+logger := logging.NewJsonLogger()
 
-// Use middleware for HTTP request logging
-handler := logging.Middleware(logger)(yourHandler)
+// Wrap a handler func to emit structured request logs
+handler := logging.WithLogging(logger, yourHandler)
 ```
 
 ### Messaging
@@ -179,13 +222,15 @@ import "github.com/andygeiss/cloud-native-utils/messaging"
 dispatcher := messaging.NewInternalDispatcher()
 
 // Subscribe to a topic
-dispatcher.Subscribe("user.created", func(msg messaging.Message) {
-    // Handle message
+_ = dispatcher.Subscribe(ctx, "user.created", func(ctx context.Context, msg messaging.Message) (messaging.MessageState, error) {
+    return messaging.MessageStateCreated, nil
 })
 
 // Publish a message
-dispatcher.Publish("user.created", payload)
+_ = dispatcher.Publish(ctx, messaging.NewMessage("user.created", payload))
 ```
+
+For Kafka-backed messaging, use `messaging.NewExternalDispatcher()` and set `KAFKA_BROKERS`.
 
 ### Redirecting
 
@@ -194,9 +239,11 @@ HTMX-compatible HTTP redirects for POST/PUT/DELETE requests.
 ```go
 import "github.com/andygeiss/cloud-native-utils/redirecting"
 
-// Wrap handlers to redirect state-changing requests to GET endpoints
-handler := redirecting.Middleware("/success")(yourHandler)
+// Wrap a handler tree to translate redirect responses for HTMX (PRG support)
+handler := redirecting.WithPRG(yourHandler)
 ```
+
+For direct redirects, use `redirecting.Redirect` or `redirecting.RedirectWithMessage`.
 
 ### Resource
 
@@ -212,14 +259,34 @@ store := resource.NewInMemoryAccess[string, User]()
 store := resource.NewJsonFileAccess[string, User]("users.json")
 
 // SQLite storage
-store := resource.NewSqliteAccess[string, User](db, "users")
+store := resource.NewSqliteAccess[string, User](db)
 
 // CRUD operations
-store.Create(ctx, "user-1", user)
-user, err := store.Read(ctx, "user-1")
-store.Update(ctx, "user-1", updatedUser)
-store.Delete(ctx, "user-1")
-users, err := store.List(ctx)
+_ = store.Create(ctx, "user-1", user)
+userPtr, err := store.Read(ctx, "user-1")
+_ = userPtr
+_ = store.Update(ctx, "user-1", updatedUser)
+_ = store.Delete(ctx, "user-1")
+users, err := store.ReadAll(ctx)
+_ = users
+_ = err
+```
+
+You can add a secondary index with `resource.NewIndexedAccess`.
+
+### Scheduling
+
+Time and scheduling primitives for booking systems.
+
+```go
+import "github.com/andygeiss/cloud-native-utils/scheduling"
+
+open := scheduling.MustTimeOfDay(9, 0)
+close := scheduling.MustTimeOfDay(17, 0)
+
+day, err := scheduling.NewDayHours(scheduling.Monday, open, close)
+_ = day
+_ = err
 ```
 
 ### Security
@@ -227,16 +294,23 @@ users, err := store.List(ctx)
 Comprehensive security utilities for cloud-native applications.
 
 ```go
-import "github.com/andygeiss/cloud-native-utils/security"
+import (
+    "net/http"
+    "github.com/andygeiss/cloud-native-utils/security"
+)
 
 // AES-GCM encryption/decryption
 key := security.GenerateKey()
-encrypted := security.Encrypt(key, plaintext)
-decrypted := security.Decrypt(key, encrypted)
+ciphertext := security.Encrypt([]byte("secret"), key)
+plaintext, err := security.Decrypt(ciphertext, key)
+_ = plaintext
+_ = err
 
-// Password hashing with bcrypt
-hash := security.HashPassword(password)
-valid := security.VerifyPassword(hash, password)
+// Password hashing + verification
+hash, err := security.Password([]byte("p@ssw0rd"))
+ok := security.IsPasswordValid(hash, []byte("p@ssw0rd"))
+_ = ok
+_ = err
 
 // Generate secure IDs
 id := security.GenerateID()
@@ -244,9 +318,13 @@ id := security.GenerateID()
 // PKCE for OAuth2
 verifier, challenge := security.GeneratePKCE()
 
-// Secure HTTP server with health probes
-server := security.NewServer(":8443", handler)
+// Configured HTTP server (PORT and SERVER_*_TIMEOUT env vars)
+mux := http.NewServeMux()
+server := security.NewServer(mux)
+_ = server
 ```
+
+OIDC helpers are available via the `security.IdentityProvider` singleton (see `Login`, `Callback`, `Logout`).
 
 ### Service
 
@@ -255,16 +333,32 @@ Context-aware function wrappers with lifecycle management.
 ```go
 import "github.com/andygeiss/cloud-native-utils/service"
 
+ctx, cancel := service.Context()
+defer cancel()
+
 // Wrap a function with context support
-fn := service.Wrap(func(ctx context.Context) error {
-    // Your service logic
-    return nil
+fn := service.Wrap(func(in int) (int, error) {
+    return in * 2, nil
 })
 
 // Register cleanup on context cancellation
 service.RegisterOnContextDone(ctx, func() {
     // Cleanup logic
 })
+```
+
+### Slices
+
+Generic helpers for working with slices.
+
+```go
+import "github.com/andygeiss/cloud-native-utils/slices"
+
+nums := []int{1, 2, 2, 3}
+unique := slices.Unique(nums)
+hasTwo := slices.Contains(nums, 2)
+_ = unique
+_ = hasTwo
 ```
 
 ### Stability
@@ -309,7 +403,7 @@ engine.Render(w, "page.html", data)
 
 ## Technologies Used
 
-- **Go** (1.25+) - Primary programming language
+- **Go** (1.25.4+) - Primary programming language
 - **AES-GCM** - Authenticated encryption
 - **bcrypt** - Password hashing
 - **OAuth2/OIDC** - Authentication protocols
@@ -332,7 +426,7 @@ Contributions are welcome! Here's how you can help:
 Please ensure your code:
 - Follows Go best practices and idioms
 - Includes tests for new functionality
-- Passes all existing tests (`go test ./...`)
+- Runs cleanly with `go test ./...`
 - Has appropriate documentation
 
 ---
