@@ -8,19 +8,19 @@ import (
 	"sync"
 )
 
-// jsonFileAccess is a json file access.
-type jsonFileAccess[K comparable, V any] struct {
+// JsonFileAccess is a json file access.
+type JsonFileAccess[K comparable, V any] struct {
 	mutex sync.RWMutex
 	path  string
 }
 
 // NewJsonFileAccess creates a new json file access.
-func NewJsonFileAccess[K comparable, V any](path string) *jsonFileAccess[K, V] {
-	return &jsonFileAccess[K, V]{path: path}
+func NewJsonFileAccess[K comparable, V any](path string) *JsonFileAccess[K, V] {
+	return &JsonFileAccess[K, V]{path: path}
 }
 
 // Create creates a new resource.
-func (a *jsonFileAccess[K, V]) Create(ctx context.Context, key K, value V) error {
+func (a *JsonFileAccess[K, V]) Create(ctx context.Context, key K, value V) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -58,7 +58,7 @@ func (a *jsonFileAccess[K, V]) Create(ctx context.Context, key K, value V) error
 }
 
 // Delete deletes a resource.
-func (a *jsonFileAccess[K, V]) Delete(ctx context.Context, key K) error {
+func (a *JsonFileAccess[K, V]) Delete(ctx context.Context, key K) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -91,7 +91,7 @@ func (a *jsonFileAccess[K, V]) Delete(ctx context.Context, key K) error {
 }
 
 // Read reads a resource.
-func (a *jsonFileAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
+func (a *JsonFileAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func (a *jsonFileAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
 }
 
 // ReadAll reads all resources.
-func (a *jsonFileAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
+func (a *JsonFileAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func (a *jsonFileAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
 }
 
 // Update updates a resource.
-func (a *jsonFileAccess[K, V]) Update(ctx context.Context, key K, value V) error {
+func (a *JsonFileAccess[K, V]) Update(ctx context.Context, key K, value V) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err

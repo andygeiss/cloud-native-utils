@@ -9,19 +9,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// yamlFileAccess is a yaml file access.
-type yamlFileAccess[K comparable, V any] struct {
+// YamlFileAccess is a yaml file access.
+type YamlFileAccess[K comparable, V any] struct {
 	mutex sync.RWMutex
 	path  string
 }
 
 // NewYamlFileAccess creates a new yaml file access.
-func NewYamlFileAccess[K comparable, V any](path string) *yamlFileAccess[K, V] {
-	return &yamlFileAccess[K, V]{path: path}
+func NewYamlFileAccess[K comparable, V any](path string) *YamlFileAccess[K, V] {
+	return &YamlFileAccess[K, V]{path: path}
 }
 
 // Create creates a new resource.
-func (a *yamlFileAccess[K, V]) Create(ctx context.Context, key K, value V) error {
+func (a *YamlFileAccess[K, V]) Create(ctx context.Context, key K, value V) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -59,7 +59,7 @@ func (a *yamlFileAccess[K, V]) Create(ctx context.Context, key K, value V) error
 }
 
 // Delete deletes a resource.
-func (a *yamlFileAccess[K, V]) Delete(ctx context.Context, key K) error {
+func (a *YamlFileAccess[K, V]) Delete(ctx context.Context, key K) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -92,7 +92,7 @@ func (a *yamlFileAccess[K, V]) Delete(ctx context.Context, key K) error {
 }
 
 // Read reads a resource.
-func (a *yamlFileAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
+func (a *YamlFileAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (a *yamlFileAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
 }
 
 // ReadAll reads all resources.
-func (a *yamlFileAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
+func (a *YamlFileAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func (a *yamlFileAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
 }
 
 // Update updates a resource.
-func (a *yamlFileAccess[K, V]) Update(ctx context.Context, key K, value V) error {
+func (a *YamlFileAccess[K, V]) Update(ctx context.Context, key K, value V) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err

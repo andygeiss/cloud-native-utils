@@ -6,21 +6,21 @@ import (
 	"sync"
 )
 
-// inMemoryAccess is a generic access implementation backed by a mock, in-memory and JSON file.
-type inMemoryAccess[K comparable, V any] struct {
+// InMemoryAccess is a generic access implementation backed by a mock, in-memory and JSON file.
+type InMemoryAccess[K comparable, V any] struct {
 	kv    map[K]V
 	mutex sync.RWMutex
 }
 
 // NewInMemoryAccess creates a new in-memory access.
-func NewInMemoryAccess[K comparable, V any]() *inMemoryAccess[K, V] {
-	return &inMemoryAccess[K, V]{
+func NewInMemoryAccess[K comparable, V any]() *InMemoryAccess[K, V] {
+	return &InMemoryAccess[K, V]{
 		kv: make(map[K]V),
 	}
 }
 
 // Create creates a new resource.
-func (a *inMemoryAccess[K, V]) Create(ctx context.Context, key K, value V) (err error) {
+func (a *InMemoryAccess[K, V]) Create(ctx context.Context, key K, value V) (err error) {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return ctx.Err()
@@ -41,7 +41,7 @@ func (a *inMemoryAccess[K, V]) Create(ctx context.Context, key K, value V) (err 
 }
 
 // Delete deletes a resource.
-func (a *inMemoryAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+func (a *InMemoryAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return ctx.Err()
@@ -61,7 +61,7 @@ func (a *inMemoryAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
 }
 
 // Read reads a resource.
-func (a *inMemoryAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
+func (a *InMemoryAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -80,7 +80,7 @@ func (a *inMemoryAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err err
 }
 
 // ReadAll reads all resources.
-func (a *inMemoryAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
+func (a *InMemoryAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -98,7 +98,7 @@ func (a *inMemoryAccess[K, V]) ReadAll(ctx context.Context) (values []V, err err
 }
 
 // Update updates a resource.
-func (a *inMemoryAccess[K, V]) Update(ctx context.Context, key K, value V) (err error) {
+func (a *InMemoryAccess[K, V]) Update(ctx context.Context, key K, value V) (err error) {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return ctx.Err()

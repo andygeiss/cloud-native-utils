@@ -7,21 +7,21 @@ import (
 	"sync"
 )
 
-// sqliteAccess provides a simple key-value store using SQLite.
-type sqliteAccess[K comparable, V any] struct {
+// SqliteAccess provides a simple key-value store using SQLite.
+type SqliteAccess[K comparable, V any] struct {
 	db    *sql.DB
 	mutex sync.RWMutex
 }
 
-// NewSqliteAccess creates a new instance of sqliteAccess.
-func NewSqliteAccess[K comparable, V any](db *sql.DB) *sqliteAccess[K, V] {
-	return &sqliteAccess[K, V]{
+// NewSqliteAccess creates a new instance of SqliteAccess.
+func NewSqliteAccess[K comparable, V any](db *sql.DB) *SqliteAccess[K, V] {
+	return &SqliteAccess[K, V]{
 		db: db,
 	}
 }
 
 // Create inserts a new key-value pair into the table.
-func (a *sqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err error) {
+func (a *SqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -51,7 +51,7 @@ func (a *sqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err er
 }
 
 // Delete removes the key-value pair associated with the given key.
-func (a *sqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+func (a *SqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -77,7 +77,7 @@ func (a *sqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
 }
 
 // Init initializes the table and index.
-func (a *sqliteAccess[K, V]) Init(ctx context.Context) (err error) {
+func (a *SqliteAccess[K, V]) Init(ctx context.Context) (err error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -109,7 +109,7 @@ func (a *sqliteAccess[K, V]) Init(ctx context.Context) (err error) {
 }
 
 // Read returns the value associated with the given key.
-func (a *sqliteAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
+func (a *SqliteAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -133,7 +133,7 @@ func (a *sqliteAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error
 }
 
 // ReadAll returns all values from the table.
-func (a *sqliteAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
+func (a *SqliteAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ func (a *sqliteAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error
 }
 
 // Update updates the value associated with the given key.
-func (a *sqliteAccess[K, V]) Update(ctx context.Context, key K, value V) (err error) {
+func (a *SqliteAccess[K, V]) Update(ctx context.Context, key K, value V) (err error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
