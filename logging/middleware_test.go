@@ -161,4 +161,3 @@ func Test_WithLoggingCustom_With_EmptySanitizer_Should_Not_Mask_Anything(t *test
 	logOutput := buf.String()
 	assert.That(t, "log must contain raw user_id when no sanitization configured", strings.Contains(logOutput, "secret-id-123"), true)
 }
-
