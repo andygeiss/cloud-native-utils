@@ -1,21 +1,21 @@
 package templating
 
 import (
-	"embed"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"text/template"
 )
 
 // Engine is a simple wrapper around the Go templating engine.
 type Engine struct {
-	efs  embed.FS
+	efs  fs.FS
 	tmpl *template.Template
 }
 
 // NewEngine creates a new templating engine.
-func NewEngine(efs embed.FS) *Engine {
+func NewEngine(efs fs.FS) *Engine {
 	return &Engine{
 		efs: efs,
 	}

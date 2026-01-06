@@ -2,7 +2,6 @@ package security
 
 import (
 	"context"
-	"embed"
 	"io/fs"
 	"net/http"
 
@@ -12,7 +11,7 @@ import (
 // NewServeMux creates a new mux with the liveness check endpoint (/liveness)
 // and the readiness check endpoint (/readiness).
 // The mux is returned along with a new ServerSessions instance.
-func NewServeMux(ctx context.Context, efs embed.FS) (mux *http.ServeMux, serverSessions *ServerSessions) {
+func NewServeMux(ctx context.Context, efs fs.FS) (mux *http.ServeMux, serverSessions *ServerSessions) {
 	// Create a new mux with liveness and readyness endpoint.
 	mux = http.NewServeMux()
 
