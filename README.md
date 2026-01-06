@@ -44,7 +44,6 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 | **consistency** | Transactional event log with JSON file persistence |
 | **efficiency** | Channel helpers (`Generate`, `Merge`, `Split`, `Process`) and gzip middleware |
 | **extensibility** | Dynamic Go plugin loading |
-| **i18n** | Internationalization (translations, date/money formatting) |
 | **imaging** | QR code generation |
 | **logging** | Structured JSON logging via `log/slog` with HTTP middleware |
 | **messaging** | Publish-subscribe dispatcher (in-memory or Kafka-backed) |
@@ -181,7 +180,6 @@ cloud-native-utils/
 ├── consistency/     # Event logging
 ├── efficiency/      # Channel helpers, compression
 ├── extensibility/   # Plugin loading
-├── i18n/            # Internationalization
 ├── imaging/         # QR code generation
 ├── logging/         # Structured logging
 ├── messaging/       # Pub-sub dispatchers

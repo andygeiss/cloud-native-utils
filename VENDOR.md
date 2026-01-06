@@ -228,12 +228,10 @@ png, _ := gen.PNG("https://example.com")
 - Root package – `yaml.Marshal()`, `yaml.Unmarshal()`
 
 **When to use it**:
-- Loading translation files (`i18n` package)
 - YAML-based resource persistence (`resource.YamlFileAccess`)
 - Configuration files (when JSON is too verbose)
 
 **Integration pattern**:
-- Used in `i18n/translations.go` for loading translation YAML files
 - Used in `resource/yaml_file_access.go` for YAML-based CRUD storage
 - Always use `yaml.v3` (not v2) for improved performance and features
 

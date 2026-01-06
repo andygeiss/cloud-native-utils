@@ -1,7 +1,0 @@
-nav:
-  availability: "Verfügbarkeit"
-  dashboard: "Dashboard"
-  logout: "Abmelden"
-
-action:
-  logout: "Abmelden"

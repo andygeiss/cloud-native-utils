@@ -25,7 +25,7 @@ The library addresses common cloud-native concerns: resilience patterns, structu
 | `github.com/skip2/go-qrcode` | QR code generation | `imaging` |
 | `golang.org/x/crypto` | bcrypt password hashing | `security` |
 | `golang.org/x/oauth2` | OAuth2 client flows | `security` |
-| `gopkg.in/yaml.v3` | YAML parsing | `i18n`, `resource` |
+| `gopkg.in/yaml.v3` | YAML parsing | `resource` |
 | `modernc.org/sqlite` | Pure-Go SQLite driver | `resource` |
 
 ---
@@ -82,7 +82,6 @@ cloud-native-utils/
 ├── consistency/           # Transactional event log, JSON file logger
 ├── efficiency/            # Channel helpers, gzip middleware, sharding
 ├── extensibility/         # Dynamic plugin loading
-├── i18n/                  # Internationalization (translations, date, money)
 ├── imaging/               # QR code generation
 ├── logging/               # Structured JSON logging, HTTP middleware
 ├── messaging/             # Pub-sub dispatcher (internal, Kafka)
@@ -92,7 +91,7 @@ cloud-native-utils/
 ├── service/               # Context helpers, Function type, lifecycle
 ├── slices/                # Generic slice utilities
 ├── stability/             # Resilience patterns (breaker, retry, throttle, debounce, timeout)
-└── templating/            # HTML template engine with embed.FS
+└── templating/            # HTML template engine with fs.FS
 ```
 
 ### Rules for new code
@@ -115,7 +114,7 @@ cloud-native-utils/
 - **Generics where appropriate** – `Access[K, V]`, `Function[IN, OUT]`, slice helpers.
 - **Context-first** – functions that may block accept `context.Context` as the first parameter.
 - **No global state** – prefer constructor functions (`NewX`) returning struct pointers.
-- **Embed-friendly** – templates and translations load from `embed.FS`.
+- **Filesystem-agnostic** – templates (templating.Engine) and static assets (security.NewServeMux) accept `fs.FS`, allowing `embed.FS`, `os.DirFS`, or custom implementations.
 
 ### 5.2 Naming
 
