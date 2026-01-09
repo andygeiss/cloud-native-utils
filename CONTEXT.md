@@ -81,6 +81,7 @@ cloud-native-utils/
 ├── assert/                # Test assertion helpers
 ├── consistency/           # Transactional event log, JSON file logger
 ├── efficiency/            # Channel helpers, gzip middleware, sharding
+├── event/                 # Domain event interfaces (Event, Publisher, Subscriber)
 ├── extensibility/         # Dynamic plugin loading
 ├── imaging/               # QR code generation
 ├── logging/               # Structured JSON logging, HTTP middleware

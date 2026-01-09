@@ -43,6 +43,7 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 | **assert** | Minimal test assertion helper (`assert.That`) |
 | **consistency** | Transactional event log with JSON file persistence |
 | **efficiency** | Channel helpers (`Generate`, `Merge`, `Split`, `Process`) and gzip middleware |
+| **event** | Domain event interfaces (`Event`, `EventPublisher`, `EventSubscriber`) |
 | **extensibility** | Dynamic Go plugin loading |
 | **imaging** | QR code generation |
 | **logging** | Structured JSON logging via `log/slog` with HTTP middleware |
@@ -139,6 +140,28 @@ _ = dispatcher.Publish(ctx, messaging.NewMessage("user.created", payload))
 
 For Kafka-backed messaging, use `messaging.NewExternalDispatcher()` with `KAFKA_BROKERS` environment variable.
 
+### Event (Domain Events)
+
+```go
+import "github.com/andygeiss/cloud-native-utils/event"
+
+// Define a domain event
+type UserCreated struct {
+    UserID string
+}
+
+func (e UserCreated) Topic() string { return "user.created" }
+
+// Use with EventPublisher and EventSubscriber interfaces
+var publisher event.EventPublisher = yourPublisher
+_ = publisher.Publish(ctx, UserCreated{UserID: "123"})
+
+var subscriber event.EventSubscriber = yourSubscriber
+factory := func() event.Event { return &UserCreated{} }
+handler := func(e event.Event) error { /* handle event */ return nil }
+_ = subscriber.Subscribe(ctx, "user.created", factory, handler)
+```
+
 ### Security
 
 ```go
@@ -179,6 +202,7 @@ cloud-native-utils/
 ├── assert/          # Test assertions
 ├── consistency/     # Event logging
 ├── efficiency/      # Channel helpers, compression
+├── event/           # Domain event interfaces
 ├── extensibility/   # Plugin loading
 ├── imaging/         # QR code generation
 ├── logging/         # Structured logging
