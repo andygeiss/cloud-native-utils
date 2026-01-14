@@ -14,10 +14,15 @@ jobs:
         run: curl -o get.sh -Ls https://coverage.codacy.com/get.sh
 
       - name: Set up Just
-        uses: taiki-e/install-action@just
+        uses: taiki-e/install-action@0f9abeadd7b421a211fafd01ed6005a20d796e1e
+        with:
+          tool: just
 
-      - name: Call just test
+      - name: Run tests with coverage
         run: just test
+
+      - name: Export commit SHA
+        run: echo "COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
 
       - name: Call just test
         run: just benchmark
@@ -25,4 +30,5 @@ jobs:
       - name: Upload to Codacy
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        run: bash get.sh report --force-coverage-parser go -r .coverprofile.out
+          COMMIT_SHA: ${{ env.COMMIT_SHA }}
+        run: bash get.sh report --force-coverage-parser go -r coverage.pprof --commit-uuid "$COMMIT_SHA"
