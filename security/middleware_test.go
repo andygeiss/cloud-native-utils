@@ -1,7 +1,6 @@
 package security_test
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,14 +15,15 @@ func Test_WithAuth_With_ValidSession_Should_SetSessionIDInContext(t *testing.T) 
 	sessionID := security.GenerateID()[:32]
 	sessions.Create(sessionID, security.IdentityTokenClaims{Name: "John Doe"})
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", fmt.Sprintf("/ui/%s/", sessionID), nil)
+	r := httptest.NewRequest("GET", "/ui/", nil)
+	r.AddCookie(&http.Cookie{Name: "sid", Value: sessionID})
 	var got string
 	next := func(w http.ResponseWriter, r *http.Request) {
 		got = r.Context().Value(security.ContextSessionID).(string)
 		w.WriteHeader(http.StatusOK)
 	}
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /ui/{session_id}/", security.WithAuth(sessions, next))
+	mux.HandleFunc("GET /ui/", security.WithAuth(sessions, next))
 
 	// Act
 	mux.ServeHTTP(w, r)
