@@ -3,6 +3,7 @@ package security
 import (
 	"context"
 	"net/http"
+	"strings"
 )
 
 type ContextKey string
@@ -51,6 +52,21 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 		ctx = context.WithValue(ctx, ContextSessionID, sessionID)
 		ctx = context.WithValue(ctx, ContextSubject, subject)
 		ctx = context.WithValue(ctx, ContextVerified, verified)
+
+		// Prevent sensitive information leakage via Referer header.
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+
+		// Prevent content type sniffing.
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+
+		// Prevent clickjacking.
+		w.Header().Set("X-Frame-Options", "DENY")
+
+		// Prevent caching of dynamic/sensitive responses.
+		// If you serve static assets from /static, let them be cached.
+		if !strings.HasPrefix(r.URL.Path, "/static/") {
+			w.Header().Set("Cache-Control", "no-store")
+		}
 
 		// Call the next http handler with context.
 		next.ServeHTTP(w, r.WithContext(ctx))
