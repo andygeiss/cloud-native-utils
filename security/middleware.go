@@ -55,6 +55,12 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 		ctx = context.WithValue(ctx, ContextSubject, subject)
 		ctx = context.WithValue(ctx, ContextVerified, verified)
 
+		// Prevent caching of dynamic/sensitive responses.
+		// If you serve static assets from /static, let them be cached.
+		if !strings.HasPrefix(r.URL.Path, "/static/") {
+			w.Header().Set("Cache-Control", "no-store")
+		}
+
 		// Prevent sensitive information leakage via Referer header.
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 
@@ -63,12 +69,6 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 
 		// Prevent clickjacking.
 		w.Header().Set("X-Frame-Options", "DENY")
-
-		// Prevent caching of dynamic/sensitive responses.
-		// If you serve static assets from /static, let them be cached.
-		if !strings.HasPrefix(r.URL.Path, "/static/") {
-			w.Header().Set("Cache-Control", "no-store")
-		}
 
 		// Call the next http handler with context.
 		next.ServeHTTP(w, r.WithContext(ctx))

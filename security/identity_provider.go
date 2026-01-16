@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/andygeiss/cloud-native-utils/resource"
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -88,13 +89,16 @@ func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 		sessionID := GenerateID()[:32]
 		sessions.Create(sessionID, claims)
 
-		// Set secure cookie instead of using sessionID in the URL.
+		// Check if we're running over HTTPS
+		secure := strings.HasPrefix(os.Getenv("REDIRECT_URL"), "https://")
+
+		// Set the session ID as a cookie.
 		cookie := http.Cookie{
 			Name:     "sid",
 			Value:    sessionID,
 			Path:     "/",
 			HttpOnly: true,
-			Secure:   true, // only if using HTTPS
+			Secure:   secure, // Only secure over HTTPS
 			SameSite: http.SameSiteLaxMode,
 		}
 		http.SetCookie(w, &cookie)
