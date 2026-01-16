@@ -8,10 +8,10 @@ import (
 type ContextKey string
 
 const (
-	ContextSessionID ContextKey = "session_id"
 	ContextEmail     ContextKey = "email"
 	ContextIssuer    ContextKey = "issuer"
 	ContextName      ContextKey = "name"
+	ContextSessionID ContextKey = "session_id"
 	ContextSubject   ContextKey = "subject"
 	ContextVerified  ContextKey = "verified"
 )
@@ -22,16 +22,19 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 		// Create a new context.
 		ctx := context.Background()
 
-		// Retrieve the session ID from the request URL.
-		sessionId := r.PathValue("session_id")
+		// Read session ID from cookie.
+		var sessionID string
+		if c, err := r.Cookie("sid"); err == nil {
+			sessionID = c.Value
+		}
 
 		// Define the claims
 		var email, issuer, name, subject string
 		var verified bool
 
-		if sessionId != "" {
+		if sessionID != "" {
 			// Retrieve the session by using the session ID.
-			if session, ok := sessions.Read(sessionId); ok {
+			if session, ok := sessions.Read(sessionID); ok {
 				claims, _ := session.Data.(IdentityTokenClaims)
 				email = claims.Email
 				issuer = claims.Issuer
@@ -45,7 +48,7 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 		ctx = context.WithValue(ctx, ContextEmail, email)
 		ctx = context.WithValue(ctx, ContextIssuer, issuer)
 		ctx = context.WithValue(ctx, ContextName, name)
-		ctx = context.WithValue(ctx, ContextSessionID, sessionId)
+		ctx = context.WithValue(ctx, ContextSessionID, sessionID)
 		ctx = context.WithValue(ctx, ContextSubject, subject)
 		ctx = context.WithValue(ctx, ContextVerified, verified)
 
