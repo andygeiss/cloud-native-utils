@@ -2,8 +2,10 @@ package security
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type ContextKey string
@@ -73,23 +75,18 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 	}
 }
 
-// WithNoStoreNoReferrer applies response headers that reduce data leakage.
-//
-// It sets:
-// - Cache-Control: no-store
-// - Referrer-Policy: no-referrer
-func WithNoStoreNoReferrer(next http.HandlerFunc) http.HandlerFunc {
+// WithLogging logs the request with method, path and duration.
+func WithLogging(logger *slog.Logger, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-store")
-		w.Header().Set("Referrer-Policy", "no-referrer")
-		next.ServeHTTP(w, r)
-	}
-}
+		start := time.Now()
+		next(w, r)
 
-// WithAuthenticatedSecurityHeaders applies server-side security headers that MUST
-// be present on authenticated pages.
-//
-// Deprecated: use WithNoStoreNoReferrer.
-func WithAuthenticatedSecurityHeaders(next http.HandlerFunc) http.HandlerFunc {
-	return WithNoStoreNoReferrer(next)
+		// Log the request with method, path and duration.
+		logger.Info(
+			"http request handled",
+			"method", r.Method,
+			"path", r.RequestURI,
+			"duration", time.Since(start),
+		)
+	}
 }
