@@ -75,8 +75,8 @@ func Test_IdentityProviderLogout_With_ValidSession_Should_DeleteSessionAndRedire
 	sessions := security.NewServerSessions()
 	sessions.Create("test-id", "test-data")
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/auth/logout/test-id", nil)
-	r.SetPathValue("session_id", "test-id")
+	r := httptest.NewRequest("GET", "/auth/logout", nil)
+	r.AddCookie(&http.Cookie{Name: "sid", Value: "test-id"})
 	// Act
 	security.IdentityProvider.Logout(sessions)(w, r)
 	_, exists := sessions.Read("test-id")

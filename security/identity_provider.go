@@ -85,12 +85,23 @@ func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 		}
 
 		// Generate a unique session ID and create a session with the claims as data.
-		sessionId := GenerateID()[:32]
-		sessions.Create(sessionId, claims)
-		redirectUrl := fmt.Sprintf("%s/%s/", os.Getenv("REDIRECT_URL"), sessionId)
+		sessionID := GenerateID()[:32]
+		sessions.Create(sessionID, claims)
 
-		// Redirect the user to the redirect URL.
-		http.Redirect(w, r, redirectUrl, http.StatusFound)
+		// Set secure cookie instead of using sessionID in the URL.
+		cookie := http.Cookie{
+			Name:     "sid",
+			Value:    sessionID,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true, // only if using HTTPS
+			SameSite: http.SameSiteLaxMode,
+		}
+		http.SetCookie(w, &cookie)
+
+		// Redirect without using session ID in URL.
+		redirectURL := os.Getenv("REDIRECT_URL")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
 	}
 }
 
@@ -126,11 +137,23 @@ func (a *identityProvider) Login() http.HandlerFunc {
 // Logout handles the logout request.
 func (a *identityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Retrieve the session ID from the request.
-		sessionID := r.PathValue("session_id")
+		// Retrieve the session ID from the cookie.
+		cookie, err := r.Cookie("sid")
+		if err == nil && cookie != nil {
+			// Delete the session from the server.
+			sessions.Delete(cookie.Value)
+		}
 
-		// Delete the session from the server.
-		sessions.Delete(sessionID)
+		// Clear the session cookie.
+		http.SetCookie(w, &http.Cookie{
+			Name:     "sid",
+			Value:    "",
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteLaxMode,
+			MaxAge:   -1, // Delete the cookie
+		})
 
 		// Redirect the user to the logout URL.
 		http.Redirect(w, r, os.Getenv("REDIRECT_URL"), http.StatusFound)

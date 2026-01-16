@@ -282,6 +282,7 @@ This repository is a **utility library**, not a project template. However, it es
 - **Secrets** – never log secrets; use `security.Getenv*` helpers.
 - **Path sanitization** – use `logging.PathSanitizer` to mask sensitive URL segments.
 - **OIDC** – configure via environment variables; see `security.IdentityProvider`.
+- **Session IDs** – stored in HTTP-only secure cookies (`sid`), not URL paths.
 
 ### Platform assumptions
 

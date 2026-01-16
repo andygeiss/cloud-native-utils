@@ -49,7 +49,9 @@ _ = idToken.Claims(&claims)
 **Cautions**:
 - Requires a valid OIDC provider URL at runtime
 - Network-dependent: provider discovery makes HTTP calls
-- Configure via environment variables: `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`
+- Configure via environment variables: `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URL`
+- Session IDs are stored in HTTP-only secure cookies (`sid`), not URL paths
+- Logout reads session ID from cookie and clears it with `MaxAge: -1`
 
 ---
 
