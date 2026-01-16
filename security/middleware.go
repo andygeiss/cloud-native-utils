@@ -37,13 +37,14 @@ func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc 
 
 		if sessionID != "" {
 			// Retrieve the session by using the session ID.
-			if session, ok := sessions.Read(sessionID); ok {
-				claims, _ := session.Data.(IdentityTokenClaims)
-				email = claims.Email
-				issuer = claims.Issuer
-				name = claims.Name
-				subject = claims.Subject
-				verified = claims.Verified
+			if session, ok := sessions.Read(sessionID); ok && session != nil {
+				if claims, ok := session.Data.(IdentityTokenClaims); ok {
+					email = claims.Email
+					issuer = claims.Issuer
+					name = claims.Name
+					subject = claims.Subject
+					verified = claims.Verified
+				}
 			}
 		}
 
