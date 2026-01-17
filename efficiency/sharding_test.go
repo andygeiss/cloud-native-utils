@@ -13,6 +13,7 @@ import (
 func Test_Sharding_With_ConcurrentAccess_Should_HandleSafely(t *testing.T) {
 	// Arrange
 	shards := efficiency.NewSharding[string, string](3)
+
 	// Act
 	for i := range 1000 {
 		go func(i int) {
@@ -27,6 +28,7 @@ func Test_Sharding_With_ConcurrentAccess_Should_HandleSafely(t *testing.T) {
 			assert.That(t, "key not found", !exists, true)
 		}(i)
 	}
+
 	// Assert - concurrent operations completed without panic
 }
 
@@ -35,9 +37,11 @@ func Test_Sharding_With_DeletedKey_Should_NotExist(t *testing.T) {
 	shards := efficiency.NewSharding[string, int](3)
 	key := "0"
 	shards.Put(key, 42)
+
 	// Act
 	shards.Delete(key)
 	_, exists := shards.Get(key)
+
 	// Assert
 	assert.That(t, "key not found", !exists, true)
 }
@@ -46,9 +50,11 @@ func Test_Sharding_With_PutAndGet_Should_ReturnCorrectValue(t *testing.T) {
 	// Arrange
 	shards := efficiency.NewSharding[string, int](3)
 	key, value := "0", 42
+
 	// Act
 	shards.Put(key, value)
 	result, exists := shards.Get(key)
+
 	// Assert
 	assert.That(t, "key found", exists, true)
 	assert.That(t, "value must be correct", result, 42)

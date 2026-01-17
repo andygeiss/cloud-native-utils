@@ -23,12 +23,15 @@ func Test_IdentityProviderCallback_With_MissingState_Should_ReturnBadRequest(t *
 		t.Skip("skipping integration test in short mode")
 	}
 	setupOIDCEnv(t)
+
 	// Arrange
 	sessions := web.NewServerSessions()
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/auth/callback", nil)
+
 	// Act
 	web.IdentityProvider.Callback(sessions)(w, r)
+
 	// Assert
 	assert.That(t, "status code must be 400", w.Code, http.StatusBadRequest)
 }
@@ -38,13 +41,16 @@ func Test_IdentityProviderCallback_With_ValidSession_Should_ProcessRequest(t *te
 		t.Skip("skipping integration test in short mode")
 	}
 	setupOIDCEnv(t)
+
 	// Arrange
 	sessions := web.NewServerSessions()
 	sessions.Create("test-id", "test-data")
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/auth/login", nil)
+
 	// Act
 	web.IdentityProvider.Callback(sessions)(w, r)
+
 	// Assert
 	assert.That(t, "status code must be 400", w.Code, http.StatusBadRequest)
 }
@@ -54,11 +60,14 @@ func Test_IdentityProviderLogin_With_ValidRequest_Should_RedirectWithOIDCParams(
 		t.Skip("skipping integration test in short mode")
 	}
 	setupOIDCEnv(t)
+
 	// Arrange
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/auth/login", nil)
+
 	// Act
 	web.IdentityProvider.Login()(w, r)
+
 	// Assert
 	location := w.Header().Get("Location")
 	assert.That(t, "status code must be 302", w.Code, 302)
@@ -75,15 +84,18 @@ func Test_IdentityProviderLogout_With_ValidSession_Should_DeleteSessionAndRedire
 		t.Skip("skipping integration test in short mode")
 	}
 	setupOIDCEnv(t)
+
 	// Arrange
 	sessions := web.NewServerSessions()
 	sessions.Create("test-id", "test-data")
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/auth/logout", nil)
 	r.AddCookie(&http.Cookie{Name: "sid", Value: "test-id"})
+
 	// Act
 	web.IdentityProvider.Logout(sessions)(w, r)
 	_, exists := sessions.Read("test-id")
+
 	// Assert
 	assert.That(t, "status code must be 302", w.Code, 302)
 	assert.That(t, "session must be deleted", exists, false)
