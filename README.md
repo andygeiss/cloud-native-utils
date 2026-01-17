@@ -49,7 +49,7 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 | **logging** | Structured JSON logging via `log/slog` |
 | **mcp** | Model Context Protocol server for AI tool integrations (Claude Desktop) |
 | **messaging** | Publish-subscribe dispatcher (in-memory or Kafka-backed) |
-| **resource** | Generic CRUD interface with multiple backends (memory/JSON/YAML/SQLite) |
+| **resource** | Generic CRUD interface with multiple backends (memory/JSON/YAML/SQLite/PostgreSQL) |
 | **security** | AES-GCM encryption, password hashing, HMAC, key generation |
 | **service** | Context helpers, function wrapper, lifecycle management |
 | **slices** | Generic slice utilities (`Map`, `Filter`, `Unique`, etc.) |
@@ -94,6 +94,10 @@ store := resource.NewInMemoryAccess[string, User]()
 
 // JSON file storage
 store := resource.NewJsonFileAccess[string, User]("users.json")
+
+// PostgreSQL storage (requires *sql.DB connection)
+store := resource.NewPostgresAccess[string, User](db)
+_ = store.Init(ctx) // Creates kv_store table and index
 
 // CRUD operations
 _ = store.Create(ctx, "user-1", user)

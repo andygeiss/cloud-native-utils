@@ -206,6 +206,10 @@ store := resource.NewYamlFileAccess[string, User]("users.yaml")
 
 // SQLite implementation
 store := resource.NewSqliteAccess[string, User](db, "users")
+
+// PostgreSQL implementation
+store := resource.NewPostgresAccess[string, User](db)
+_ = store.Init(ctx) // Creates kv_store table and index
 ```
 
 ### 3.3 Adapter Pattern (IndexedAccess)
