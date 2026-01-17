@@ -31,4 +31,4 @@ jobs:
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
           COMMIT_SHA: ${{ env.COMMIT_SHA }}
-        run: bash get.sh report --force-coverage-parser go -r coverage.pprof --commit-uuid "$COMMIT_SHA"
+        run: bash get.sh report --force-coverage-parser go -r .coverage.pprof --commit-uuid "$COMMIT_SHA"
