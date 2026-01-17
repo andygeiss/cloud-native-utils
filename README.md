@@ -43,6 +43,7 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 | **assert** | Minimal test assertion helper (`assert.That`) |
 | **consistency** | Transactional event log with JSON file persistence |
 | **efficiency** | Channel helpers (`Generate`, `Merge`, `Split`, `Process`) and gzip middleware |
+| **env** | Generic environment variable parsing (`env.Get[T]`) |
 | **event** | Domain event interfaces (`Event`, `EventPublisher`, `EventSubscriber`) |
 | **extensibility** | Dynamic Go plugin loading |
 | **logging** | Structured JSON logging via `log/slog` |
@@ -161,6 +162,21 @@ handler := func(e event.Event) error { /* handle event */ return nil }
 _ = subscriber.Subscribe(ctx, "user.created", factory, handler)
 ```
 
+### Env (Environment Variables)
+
+```go
+import "github.com/andygeiss/cloud-native-utils/env"
+
+// Generic environment variable parsing with defaults
+timeout := env.Get("SERVER_TIMEOUT", 5*time.Second)
+maxRetries := env.Get("MAX_RETRIES", 3)
+debug := env.Get("DEBUG", false)
+rate := env.Get("RATE_LIMIT", 1.5)
+name := env.Get("APP_NAME", "my-app")
+```
+
+Supported types: `bool`, `int`, `float64`, `string`, `time.Duration`
+
 ### Security
 
 ```go
@@ -260,6 +276,7 @@ cloud-native-utils/
 ├── assert/          # Test assertions
 ├── consistency/     # Event logging
 ├── efficiency/      # Channel helpers, compression
+├── env/             # Environment variable parsing
 ├── event/           # Domain event interfaces
 ├── extensibility/   # Plugin loading
 ├── logging/         # Structured logging

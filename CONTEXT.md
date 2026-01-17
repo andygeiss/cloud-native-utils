@@ -10,7 +10,7 @@ LICENSE: MIT
 
 CORE_TYPE: type Function[IN, OUT any] func(ctx context.Context, in IN) (out OUT, err error)
 
-PACKAGES: assert, consistency, efficiency, event, extensibility, logging, mcp, messaging, resource, security, service, slices, stability, templating, web
+PACKAGES: assert, consistency, efficiency, env, event, extensibility, logging, mcp, messaging, resource, security, service, slices, stability, templating, web
 
 TOOLING:
 - LINTER: golangci-lint (config: .golangci.yml)
@@ -55,6 +55,7 @@ A modular Go library providing reusable utilities for building cloud-native appl
 | `assert` | Testing | `That()` |
 | `consistency` | Event Sourcing | `Logger[K,V]`, `Event[K,V]`, `JsonFileLogger` |
 | `efficiency` | Performance | `Generate`, `Merge`, `Split`, `Process`, `WithCompression` |
+| `env` | Configuration | `Get[T]` |
 | `event` | Domain Events | `Event`, `EventPublisher`, `EventSubscriber` |
 | `extensibility` | Plugins | `LoadPlugin()` |
 | `logging` | Observability | `NewJsonLogger()` |
@@ -472,8 +473,23 @@ case res := <-ch:
 
 ### 5.4 Environment Configuration
 
-**Pattern:** Environment variables with sensible defaults.
+**Pattern:** Use the `env` package for type-safe environment variable parsing with defaults.
 
+```go
+// FILE: env/env.go
+// Get retrieves an environment variable and parses it to the type of the default value.
+// Supported types: bool, int, float64, string, time.Duration
+func Get[T any](key string, def T) T
+
+// Usage examples
+timeout := env.Get("SERVER_TIMEOUT", 5*time.Second)
+maxRetries := env.Get("MAX_RETRIES", 3)
+debug := env.Get("DEBUG", false)
+rate := env.Get("RATE_LIMIT", 1.5)
+name := env.Get("APP_NAME", "default")
+```
+
+**Server configuration example:**
 ```go
 // FILE: web/server.go
 func NewServer(mux *http.ServeMux) *http.Server {
@@ -482,13 +498,13 @@ func NewServer(mux *http.ServeMux) *http.Server {
         port = "8080"
     }
     return &http.Server{
-        Addr:              fmt.Sprintf(":%s", port),
+        Addr:              ":" + port,
         Handler:           mux,
-        IdleTimeout:       security.ParseDurationOrDefault("SERVER_IDLE_TIMEOUT", 5*time.Second),
+        IdleTimeout:       env.Get("SERVER_IDLE_TIMEOUT", 5*time.Second),
         MaxHeaderBytes:    1 << 20,
-        ReadHeaderTimeout: security.ParseDurationOrDefault("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
-        ReadTimeout:       security.ParseDurationOrDefault("SERVER_READ_TIMEOUT", 5*time.Second),
-        WriteTimeout:      security.ParseDurationOrDefault("SERVER_WRITE_TIMEOUT", 5*time.Second),
+        ReadHeaderTimeout: env.Get("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
+        ReadTimeout:       env.Get("SERVER_READ_TIMEOUT", 5*time.Second),
+        WriteTimeout:      env.Get("SERVER_WRITE_TIMEOUT", 5*time.Second),
     }
 }
 ```
@@ -1059,6 +1075,7 @@ logger.Info("http request handled", "method", r.Method, "path", r.URL.Path, "dur
 | Pub/Sub interface | `messaging/dispatcher.go` |
 | Channel pipeline | `efficiency/process.go`, `efficiency/generate.go` |
 | HTTP middleware | `efficiency/middleware.go` |
+| Environment config | `env/env.go` |
 | Encryption | `security/encrypt.go` |
 | Server factory | `web/server.go` |
 | HTTP middleware | `web/middleware.go` |
