@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/andygeiss/cloud-native-utils/security"
+	"github.com/andygeiss/cloud-native-utils/env"
 	"github.com/andygeiss/cloud-native-utils/service"
 	"github.com/andygeiss/cloud-native-utils/stability"
 	"github.com/segmentio/kafka-go"
@@ -42,9 +42,9 @@ func (a *externalDispatcher) Publish(ctx context.Context, message Message) error
 	}()
 
 	// Use stability patterns to make the function more robust.
-	maxRetries := security.ParseIntOrDefault("SERVICE_RETRY_MAX", 3)
-	delay := security.ParseDurationOrDefault("SERVICE_RETRY_DELAY", 5*time.Second)
-	duration := security.ParseDurationOrDefault("SERVICE_TIMEOUT", 5*time.Second)
+	maxRetries := env.Get("SERVICE_RETRY_MAX", 3)
+	delay := env.Get("SERVICE_RETRY_DELAY", 5*time.Second)
+	duration := env.Get("SERVICE_TIMEOUT", 5*time.Second)
 	fn = stability.Retry(fn, maxRetries, delay)
 	fn = stability.Timeout(fn, duration)
 
@@ -67,9 +67,9 @@ func (a *externalDispatcher) Subscribe(ctx context.Context, topic string, fn ser
 		defer func() { _ = r.Close() }()
 
 		// Use stability patterns to make the function more robust.
-		maxRetries := security.ParseIntOrDefault("SERVICE_RETRY_MAX", 3)
-		delay := security.ParseDurationOrDefault("SERVICE_RETRY_DELAY", 5*time.Second)
-		duration := security.ParseDurationOrDefault("SERVICE_TIMEOUT", 5*time.Second)
+		maxRetries := env.Get("SERVICE_RETRY_MAX", 3)
+		delay := env.Get("SERVICE_RETRY_DELAY", 5*time.Second)
+		duration := env.Get("SERVICE_TIMEOUT", 5*time.Second)
 		fn = stability.Retry(fn, maxRetries, delay)
 		fn = stability.Timeout(fn, duration)
 

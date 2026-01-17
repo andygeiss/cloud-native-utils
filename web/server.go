@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/andygeiss/cloud-native-utils/security"
+	"github.com/andygeiss/cloud-native-utils/env"
 )
 
 // NewServer creates and returns a configured HTTP server.
@@ -20,10 +20,10 @@ func NewServer(mux *http.ServeMux) *http.Server {
 	return &http.Server{
 		Addr:              ":" + port,
 		Handler:           mux,
-		IdleTimeout:       security.ParseDurationOrDefault("SERVER_IDLE_TIMEOUT", 5*time.Second),
+		IdleTimeout:       env.Get("SERVER_IDLE_TIMEOUT", 5*time.Second),
 		MaxHeaderBytes:    1 << 20, // Maximum size of request headers (1 MiB).
-		ReadHeaderTimeout: security.ParseDurationOrDefault("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
-		ReadTimeout:       security.ParseDurationOrDefault("SERVER_READ_TIMEOUT", 5*time.Second),
-		WriteTimeout:      security.ParseDurationOrDefault("SERVER_WRITE_TIMEOUT", 5*time.Second),
+		ReadHeaderTimeout: env.Get("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
+		ReadTimeout:       env.Get("SERVER_READ_TIMEOUT", 5*time.Second),
+		WriteTimeout:      env.Get("SERVER_WRITE_TIMEOUT", 5*time.Second),
 	}
 }

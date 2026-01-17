@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/andygeiss/cloud-native-utils/security"
+	"github.com/andygeiss/cloud-native-utils/env"
 )
 
 // TLSClientConfig creates and returns a *tls.Config configured for mutual TLS authentication.
@@ -64,7 +64,7 @@ func TLSClientConfig(certFile, keyFile, caFile string) *tls.Config {
 func NewClient() *http.Client {
 	// Create a new *http.Client with a default timeout of 5 seconds.
 	return &http.Client{
-		Timeout: security.ParseDurationOrDefault("CLIENT_TIMEOUT", 5*time.Second),
+		Timeout: env.Get("CLIENT_TIMEOUT", 5*time.Second),
 	}
 }
 
