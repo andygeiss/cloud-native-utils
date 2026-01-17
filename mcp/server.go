@@ -43,6 +43,11 @@ func NewServerWithIO(name, version string, reader io.Reader, writer io.Writer) *
 	}
 }
 
+// Name returns the server name.
+func (a *Server) Name() string {
+	return a.name
+}
+
 // RegisterTool registers a tool with the server.
 func (a *Server) RegisterTool(tool Tool) {
 	a.mu.Lock()
@@ -64,6 +69,22 @@ func (a *Server) Serve(ctx context.Context) error {
 			}
 		}
 	}
+}
+
+// Tools returns all registered tools.
+func (a *Server) Tools() []Tool {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	tools := make([]Tool, 0, len(a.tools))
+	for _, t := range a.tools {
+		tools = append(tools, t)
+	}
+	return tools
+}
+
+// Version returns the server version.
+func (a *Server) Version() string {
+	return a.version
 }
 
 // handleRequest reads a single request from the reader.
