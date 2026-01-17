@@ -26,7 +26,7 @@ func Test_NewServeMux_With_CanceledContext_Should_ReturnServiceUnavailable(t *te
 	mux.ServeHTTP(w, req)
 
 	// Assert
-	assert.That(t, "status code must be 503", w.Code, http.StatusInternalServerError)
+	assert.That(t, "status code must be 503", w.Code, http.StatusServiceUnavailable)
 }
 
 func Test_NewServeMux_With_LivenessEndpoint_Should_ReturnOK(t *testing.T) {
