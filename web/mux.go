@@ -32,6 +32,11 @@ func NewServeMux(ctx context.Context, efs fs.FS) (*http.ServeMux, *ServerSession
 	mux.Handle("GET /auth/login", IdentityProvider.Login())
 	mux.Handle("GET /auth/logout/{session_id}", IdentityProvider.Logout(serverSessions))
 
+	// Health endpoint
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
 	// Add a liveness check endpoint to the mux.
 	mux.HandleFunc("GET /liveness", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

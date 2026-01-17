@@ -239,7 +239,7 @@ client := web.NewClient()
 // Create mTLS client
 client := web.NewClientWithTLS(certFile, keyFile, caFile)
 
-// Create mux with OIDC, liveness, readiness endpoints
+// Create mux with OIDC, health, liveness, readiness endpoints
 //go:embed assets
 var efs embed.FS
 mux, sessions := web.NewServeMux(ctx, efs)

@@ -26,7 +26,7 @@ func Test_NewServeMux_With_CanceledContext_Should_ReturnServiceUnavailable(t *te
 	mux.ServeHTTP(w, req)
 
 	// Assert
-	assert.That(t, "status code must be 503", w.Code, 503)
+	assert.That(t, "status code must be 503", w.Code, http.StatusInternalServerError)
 }
 
 func Test_NewServeMux_With_LivenessEndpoint_Should_ReturnOK(t *testing.T) {
@@ -40,7 +40,7 @@ func Test_NewServeMux_With_LivenessEndpoint_Should_ReturnOK(t *testing.T) {
 	mux.ServeHTTP(w, req)
 
 	// Assert
-	assert.That(t, "status code must be 200", w.Code, 200)
+	assert.That(t, "status code must be 200", w.Code, http.StatusOK)
 	assert.That(t, "body must be OK", w.Body.String(), "OK")
 }
 
@@ -55,7 +55,7 @@ func Test_NewServeMux_With_ReadinessEndpoint_Should_ReturnOK(t *testing.T) {
 	mux.ServeHTTP(w, req)
 
 	// Assert
-	assert.That(t, "status code must be 200", w.Code, 200)
+	assert.That(t, "status code must be 200", w.Code, http.StatusOK)
 }
 
 func Test_NewServeMux_With_StaticAssets_Should_ServeFiles(t *testing.T) {
@@ -69,7 +69,7 @@ func Test_NewServeMux_With_StaticAssets_Should_ServeFiles(t *testing.T) {
 	mux.ServeHTTP(w, req)
 
 	// Assert
-	assert.That(t, "status code must be 200", w.Code, 200)
+	assert.That(t, "status code must be 200", w.Code, http.StatusOK)
 	assert.That(t, "body must be correct", w.Body.String(), "localhost\n")
 }
 
@@ -84,7 +84,7 @@ func Test_NewServeMux_With_UnknownRoute_Should_Return404(t *testing.T) {
 	mux.ServeHTTP(w, req)
 
 	// Assert
-	assert.That(t, "status code must be 404", w.Code, 404)
+	assert.That(t, "status code must be 404", w.Code, http.StatusNotFound)
 }
 
 func Test_NewServeMux_With_ValidContext_Should_ReturnNonNilMux(t *testing.T) {
@@ -96,4 +96,18 @@ func Test_NewServeMux_With_ValidContext_Should_ReturnNonNilMux(t *testing.T) {
 
 	// Assert
 	assert.That(t, "mux must not be nil", mux != nil, true)
+}
+
+func Test_NewServeMux_With_HealthEndpoint_Should_Return200(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	mux, _ := web.NewServeMux(ctx, efs)
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	w := httptest.NewRecorder()
+
+	// Act
+	mux.ServeHTTP(w, req)
+
+	// Assert
+	assert.That(t, "status code must be 200", w.Code, http.StatusOK)
 }
