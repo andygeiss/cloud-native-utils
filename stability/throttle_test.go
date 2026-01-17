@@ -14,21 +14,21 @@ func Test_Throttle_With_MaxTokensReached_Should_ReturnTooManyCalls(t *testing.T)
 	fn := stability.Throttle[int](mockSucceedsTimes(10), 3, 1, 100*time.Millisecond)
 
 	// Act
-	fn(context.Background(), 42)
-	fn(context.Background(), 42)
-	fn(context.Background(), 42)
+	_, _ = fn(context.Background(), 42)
+	_, _ = fn(context.Background(), 42)
+	_, _ = fn(context.Background(), 42)
 	_, err := fn(context.Background(), 42)
 
 	// Assert
-	assert.That(t, "err must be correct", err.Error(), "Too many calls")
+	assert.That(t, "err must be correct", err.Error(), "too many calls")
 }
 
 func Test_Throttle_With_RefillAfterDuration_Should_AllowNewCalls(t *testing.T) {
 	// Arrange
 	fn := stability.Throttle[int](mockSucceedsTimes(10), 3, 1, 100*time.Millisecond)
-	fn(context.Background(), 42)
-	fn(context.Background(), 42)
-	fn(context.Background(), 42)
+	_, _ = fn(context.Background(), 42)
+	_, _ = fn(context.Background(), 42)
+	_, _ = fn(context.Background(), 42)
 
 	// Act
 	time.Sleep(150 * time.Millisecond)
@@ -56,7 +56,7 @@ func Test_Throttle_With_TwoCalls_Should_ReturnError(t *testing.T) {
 	fn := stability.Throttle[int](mockSucceedsTimes(1), 3, 3, 100*time.Millisecond)
 
 	// Act
-	fn(context.Background(), 42)
+	_, _ = fn(context.Background(), 42)
 	_, err := fn(context.Background(), 42)
 
 	// Assert

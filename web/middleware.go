@@ -1,4 +1,4 @@
-package security
+package web
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// ContextKey is a type for context keys used in the web package.
 type ContextKey string
 
 const (
@@ -22,8 +23,8 @@ const (
 // WithAuth adds authentication information to the context.
 func WithAuth(sessions *ServerSessions, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Create a new context.
-		ctx := context.Background()
+		// Use the request context.
+		ctx := r.Context()
 
 		// Read session ID from cookie.
 		var sessionID string

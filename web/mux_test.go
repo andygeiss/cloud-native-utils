@@ -1,13 +1,14 @@
-package security_test
+package web_test
 
 import (
 	"context"
 	"embed"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/andygeiss/cloud-native-utils/assert"
-	"github.com/andygeiss/cloud-native-utils/security"
+	"github.com/andygeiss/cloud-native-utils/web"
 )
 
 //go:embed assets
@@ -17,8 +18,8 @@ func Test_NewServeMux_With_CanceledContext_Should_ReturnServiceUnavailable(t *te
 	// Arrange
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/readiness", nil)
+	mux, _ := web.NewServeMux(ctx, efs)
+	req := httptest.NewRequest(http.MethodGet, "/readiness", nil)
 	w := httptest.NewRecorder()
 	// Act
 	mux.ServeHTTP(w, req)
@@ -29,8 +30,8 @@ func Test_NewServeMux_With_CanceledContext_Should_ReturnServiceUnavailable(t *te
 func Test_NewServeMux_With_LivenessEndpoint_Should_ReturnOK(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/liveness", nil)
+	mux, _ := web.NewServeMux(ctx, efs)
+	req := httptest.NewRequest(http.MethodGet, "/liveness", nil)
 	w := httptest.NewRecorder()
 	// Act
 	mux.ServeHTTP(w, req)
@@ -42,8 +43,8 @@ func Test_NewServeMux_With_LivenessEndpoint_Should_ReturnOK(t *testing.T) {
 func Test_NewServeMux_With_ReadinessEndpoint_Should_ReturnOK(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/readiness", nil)
+	mux, _ := web.NewServeMux(ctx, efs)
+	req := httptest.NewRequest(http.MethodGet, "/readiness", nil)
 	w := httptest.NewRecorder()
 	// Act
 	mux.ServeHTTP(w, req)
@@ -54,21 +55,21 @@ func Test_NewServeMux_With_ReadinessEndpoint_Should_ReturnOK(t *testing.T) {
 func Test_NewServeMux_With_StaticAssets_Should_ServeFiles(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/static/keepalive.txt", nil)
+	mux, _ := web.NewServeMux(ctx, efs)
+	req := httptest.NewRequest(http.MethodGet, "/static/keepalive.txt", nil)
 	w := httptest.NewRecorder()
 	// Act
 	mux.ServeHTTP(w, req)
 	// Assert
 	assert.That(t, "status code must be 200", w.Code, 200)
-	assert.That(t, "body must be correct", w.Body.String(), "localhost")
+	assert.That(t, "body must be correct", w.Body.String(), "localhost\n")
 }
 
 func Test_NewServeMux_With_UnknownRoute_Should_Return404(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := security.NewServeMux(ctx, efs)
-	req := httptest.NewRequest("GET", "/unknown", nil)
+	mux, _ := web.NewServeMux(ctx, efs)
+	req := httptest.NewRequest(http.MethodGet, "/unknown", nil)
 	w := httptest.NewRecorder()
 	// Act
 	mux.ServeHTTP(w, req)
@@ -80,7 +81,7 @@ func Test_NewServeMux_With_ValidContext_Should_ReturnNonNilMux(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
 	// Act
-	mux, _ := security.NewServeMux(ctx, efs)
+	mux, _ := web.NewServeMux(ctx, efs)
 	// Assert
 	assert.That(t, "mux must not be nil", mux != nil, true)
 }

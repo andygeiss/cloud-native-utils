@@ -1,10 +1,11 @@
-package security
+package web
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/andygeiss/cloud-native-utils/security"
 )
 
 // NewServer creates and returns a configured HTTP server.
@@ -17,12 +18,12 @@ func NewServer(mux *http.ServeMux) *http.Server {
 		port = "8080"
 	}
 	return &http.Server{
-		Addr:              fmt.Sprintf(":%s", port),
+		Addr:              ":" + port,
 		Handler:           mux,
-		IdleTimeout:       ParseDurationOrDefault("SERVER_IDLE_TIMEOUT", 5*time.Second),
+		IdleTimeout:       security.ParseDurationOrDefault("SERVER_IDLE_TIMEOUT", 5*time.Second),
 		MaxHeaderBytes:    1 << 20, // Maximum size of request headers (1 MiB).
-		ReadHeaderTimeout: ParseDurationOrDefault("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
-		ReadTimeout:       ParseDurationOrDefault("SERVER_READ_TIMEOUT", 5*time.Second),
-		WriteTimeout:      ParseDurationOrDefault("SERVER_WRITE_TIMEOUT", 5*time.Second),
+		ReadHeaderTimeout: security.ParseDurationOrDefault("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
+		ReadTimeout:       security.ParseDurationOrDefault("SERVER_READ_TIMEOUT", 5*time.Second),
+		WriteTimeout:      security.ParseDurationOrDefault("SERVER_WRITE_TIMEOUT", 5*time.Second),
 	}
 }

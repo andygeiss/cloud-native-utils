@@ -45,16 +45,16 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 | **efficiency** | Channel helpers (`Generate`, `Merge`, `Split`, `Process`) and gzip middleware |
 | **event** | Domain event interfaces (`Event`, `EventPublisher`, `EventSubscriber`) |
 | **extensibility** | Dynamic Go plugin loading |
-| **imaging** | QR code generation |
-| **logging** | Structured JSON logging via `log/slog` with HTTP middleware |
+| **logging** | Structured JSON logging via `log/slog` |
+| **mcp** | Model Context Protocol server for AI tool integrations (Claude Desktop) |
 | **messaging** | Publish-subscribe dispatcher (in-memory or Kafka-backed) |
-| **redirecting** | HTMX-compatible PRG redirects |
 | **resource** | Generic CRUD interface with multiple backends (memory/JSON/YAML/SQLite) |
-| **security** | AES-GCM encryption, password hashing, OIDC, HTTP server |
+| **security** | AES-GCM encryption, password hashing, HMAC, key generation |
 | **service** | Context helpers, function wrapper, lifecycle management |
 | **slices** | Generic slice utilities (`Map`, `Filter`, `Unique`, etc.) |
 | **stability** | Resilience wrappers (circuit breaker, retry, throttle, debounce, timeout) |
 | **templating** | HTML template engine with `embed.FS` support |
+| **web** | HTTP server, client, routing, sessions, OIDC, middleware |
 
 ---
 
@@ -125,7 +125,6 @@ fn := stability.Timeout(yourFunc, 5*time.Second)
 import "github.com/andygeiss/cloud-native-utils/logging"
 
 logger := logging.NewJsonLogger()
-handler := logging.WithLogging(logger, yourHandler)
 ```
 
 ### Messaging
@@ -175,9 +174,6 @@ plaintext, _ := security.Decrypt(ciphertext, key)
 // Password hashing
 hash, _ := security.Password([]byte("p@ssw0rd"))
 ok := security.IsPasswordValid(hash, []byte("p@ssw0rd"))
-
-// Configured HTTP server
-server := security.NewServer(mux)
 ```
 
 ### Service (Context & Lifecycle)
@@ -193,6 +189,68 @@ service.RegisterOnContextDone(ctx, func() {
 })
 ```
 
+### MCP (Model Context Protocol Server)
+
+```go
+import (
+    "github.com/andygeiss/cloud-native-utils/mcp"
+    "github.com/andygeiss/cloud-native-utils/service"
+)
+
+// Create MCP server
+server := mcp.NewServer("my-tools", "1.0.0")
+
+// Define tool schema
+schema := mcp.NewObjectSchema(
+    map[string]mcp.Property{
+        "name": mcp.NewStringProperty("Name to greet"),
+    },
+    []string{"name"},
+)
+
+// Register tool with handler
+handler := func(ctx context.Context, params mcp.ToolsCallParams) (mcp.ToolsCallResult, error) {
+    name, _ := params.Arguments["name"].(string)
+    return mcp.ToolsCallResult{
+        Content: []mcp.ContentBlock{mcp.NewTextContent(fmt.Sprintf("Hello, %s!", name))},
+    }, nil
+}
+server.RegisterTool(mcp.NewTool("greet", "Greets by name", schema, handler))
+
+// Start serving (STDIO transport for Claude Desktop)
+ctx, cancel := service.Context()
+defer cancel()
+server.Serve(ctx)
+```
+
+### Web (HTTP Server & Client)
+
+```go
+import "github.com/andygeiss/cloud-native-utils/web"
+
+// Create HTTP server with secure defaults
+mux := http.NewServeMux()
+server := web.NewServer(mux)
+server.ListenAndServe()
+
+// Create HTTP client with timeout
+client := web.NewClient()
+
+// Create mTLS client
+client := web.NewClientWithTLS(certFile, keyFile, caFile)
+
+// Create mux with OIDC, liveness, readiness endpoints
+//go:embed assets
+var efs embed.FS
+mux, sessions := web.NewServeMux(ctx, efs)
+
+// Use authentication middleware
+mux.HandleFunc("GET /protected", web.WithAuth(sessions, func(w http.ResponseWriter, r *http.Request) {
+    email := r.Context().Value(web.ContextEmail).(string)
+    // Handle authenticated request
+}))
+```
+
 ---
 
 ## Project Structure
@@ -204,16 +262,16 @@ cloud-native-utils/
 ├── efficiency/      # Channel helpers, compression
 ├── event/           # Domain event interfaces
 ├── extensibility/   # Plugin loading
-├── imaging/         # QR code generation
 ├── logging/         # Structured logging
+├── mcp/             # MCP server for AI tools
 ├── messaging/       # Pub-sub dispatchers
-├── redirecting/     # HTTP redirects
 ├── resource/        # CRUD backends
-├── security/        # Encryption, auth, server
+├── security/        # Cryptographic primitives
 ├── service/         # Context, lifecycle
 ├── slices/          # Slice utilities
 ├── stability/       # Resilience patterns
-└── templating/      # Template engine
+├── templating/      # Template engine
+└── web/             # HTTP server, client, sessions, OIDC
 ```
 
 For detailed architecture and conventions, see [CONTEXT.md](CONTEXT.md).
@@ -231,7 +289,26 @@ go test -cover ./...
 
 # Run tests verbose
 go test -v ./...
+
+# Using just (recommended)
+just test
 ```
+
+---
+
+## Linting
+
+This project uses [golangci-lint](https://golangci-lint.run/) for code quality checks.
+
+```bash
+# Run linter
+just lint
+
+# Or directly
+golangci-lint run ./...
+```
+
+Configuration is in `.golangci.yml`.
 
 ---
 
@@ -248,7 +325,7 @@ Contributions are welcome:
 Please ensure your code:
 - Follows the conventions in [CONTEXT.md](CONTEXT.md)
 - Includes tests (`*_test.go` files)
-- Passes `go test ./...` and `go vet ./...`
+- Passes `just test` and `just lint`
 
 ---
 

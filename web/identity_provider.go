@@ -1,4 +1,4 @@
-package security
+package web
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/andygeiss/cloud-native-utils/resource"
+	"github.com/andygeiss/cloud-native-utils/security"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )
@@ -37,18 +38,18 @@ func NewIdentityProvider() *identityProvider {
 }
 
 // IdentityProvider is a singleton instance of the identity provider.
-var IdentityProvider = NewIdentityProvider()
+var IdentityProvider = NewIdentityProvider() //nolint:gochecknoglobals // singleton pattern for identity provider
 
 // Callback returns a handler function for the identity provider's callback endpoint.
 func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Retrieve the code and state parameters from the request URL.
-		ctx := context.Background()
+		ctx := r.Context()
 		code := r.URL.Query().Get("code")
 		state := r.URL.Query().Get("state")
 
 		// Retrieve the code verifier from the state.
-		codeVerifier, _ := a.stateCodeVerifiers.Read(context.Background(), state)
+		codeVerifier, _ := a.stateCodeVerifiers.Read(ctx, state)
 		if codeVerifier == nil {
 			http.Error(w, "invalid state", http.StatusBadRequest)
 			return
@@ -86,7 +87,7 @@ func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 		}
 
 		// Generate a unique session ID and create a session with the claims as data.
-		sessionID := GenerateID()[:32]
+		sessionID := security.GenerateID()[:32]
 		sessions.Create(sessionID, claims)
 
 		// Check if we're running over HTTPS
@@ -114,18 +115,18 @@ func (a *identityProvider) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Ensure that the identity provider is properly configured.
 		if a.oauth2Config == nil {
-			if err := a.setup(); err != nil {
+			if err := a.setup(r.Context()); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
 
 		// Generate a unique state identifier and a PKCE code verifier/challenge pair.
-		state := GenerateID()
-		codeVerifier, challenge := GeneratePKCE()
+		state := security.GenerateID()
+		codeVerifier, challenge := security.GeneratePKCE()
 
 		// Store the state and code verifier for further use.
-		a.stateCodeVerifiers.Create(context.Background(), state, codeVerifier)
+		_ = a.stateCodeVerifiers.Create(r.Context(), state, codeVerifier)
 
 		// Create the authorization URL with the PKCE parameters.
 		authUrl := a.oauth2Config.AuthCodeURL(state,
@@ -164,10 +165,7 @@ func (a *identityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
 	}
 }
 
-func (a *identityProvider) setup() (err error) {
-	// Create a new context.
-	ctx := context.Background()
-
+func (a *identityProvider) setup(ctx context.Context) error {
 	// Initialize the identity provider.
 	oidcProvider, err := oidc.NewProvider(ctx, os.Getenv("OIDC_ISSUER"))
 	if err != nil {

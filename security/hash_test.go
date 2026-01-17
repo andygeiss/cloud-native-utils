@@ -8,9 +8,11 @@ import (
 	"github.com/andygeiss/cloud-native-utils/security"
 )
 
+const testTag = "secure-tag"
+
 func Test_Hash_With_DifferentData_Should_ReturnDifferentHashes(t *testing.T) {
 	// Arrange
-	tag := "secure-tag"
+	tag := testTag
 	data1 := []byte("Data 1")
 	data2 := []byte("Data 2")
 
@@ -38,7 +40,7 @@ func Test_Hash_With_DifferentTags_Should_ReturnDifferentHashes(t *testing.T) {
 
 func Test_Hash_With_EmptyData_Should_ReturnNonEmptyHash(t *testing.T) {
 	// Arrange
-	tag := "secure-tag"
+	tag := testTag
 	data := []byte("")
 
 	// Act
@@ -50,7 +52,7 @@ func Test_Hash_With_EmptyData_Should_ReturnNonEmptyHash(t *testing.T) {
 
 func Test_Hash_With_SameInput_Should_ReturnSameHash(t *testing.T) {
 	// Arrange
-	tag := "secure-tag"
+	tag := testTag
 	data := []byte("Test data")
 
 	// Act

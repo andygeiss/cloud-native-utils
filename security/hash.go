@@ -6,7 +6,7 @@ import (
 )
 
 // Hash generates an HMAC hash using the SHA-512/256 algorithm.
-func Hash(tag string, data []byte) (sum []byte) {
+func Hash(tag string, data []byte) []byte {
 	hash := hmac.New(sha512.New512_256, []byte(tag))
 	hash.Write(data)
 

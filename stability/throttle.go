@@ -10,25 +10,26 @@ import (
 )
 
 var (
-	ErrorThrottleTooManyCalls = errors.New("Too many calls")
+	ErrThrottleTooManyCalls = errors.New("too many calls")
 )
 
 // Throttle adds rate-limiting behavior to the provided function (`fn`).
 // The function can only be called up to `maxTokens` times initially,
 // and then tokens are refilled by `refill` every `duration`. If the limit is exceeded,
-// the function returns `ErrorThrottleTooManyCalls`.
+// the function returns `ErrThrottleTooManyCalls`.
 func Throttle[IN, OUT any](fn service.Function[IN, OUT], maxTokens, refill uint, duration time.Duration) service.Function[IN, OUT] {
 	var tokens = maxTokens
 	var once sync.Once
 	var mutex sync.Mutex
-	return func(ctx context.Context, in IN) (out OUT, err error) {
+	return func(ctx context.Context, in IN) (OUT, error) {
+		var zero OUT
 		if ctx.Err() != nil {
-			return out, ctx.Err()
+			return zero, ctx.Err()
 		}
 		// Use `once` to ensure the refill logic runs exactly once, even with multiple callers.
 		once.Do(func() {
 			// Create a ticker to trigger token refills at the specified `duration`.
-			ticker := time.NewTimer(duration)
+			ticker := time.NewTicker(duration)
 			go func() {
 				defer ticker.Stop()
 				for {
@@ -37,11 +38,7 @@ func Throttle[IN, OUT any](fn service.Function[IN, OUT], maxTokens, refill uint,
 						return
 					case <-ticker.C:
 						mutex.Lock()
-						count := tokens + refill
-						if count > maxTokens {
-							count = maxTokens
-						}
-						tokens = count
+						tokens = min(tokens+refill, maxTokens)
 						mutex.Unlock()
 					}
 				}
@@ -50,7 +47,7 @@ func Throttle[IN, OUT any](fn service.Function[IN, OUT], maxTokens, refill uint,
 		mutex.Lock()
 		defer mutex.Unlock()
 		if tokens <= 0 {
-			return out, ErrorThrottleTooManyCalls
+			return zero, ErrThrottleTooManyCalls
 		}
 		tokens--
 

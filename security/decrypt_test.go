@@ -44,7 +44,7 @@ func Test_Decrypt_With_MalformedCiphertext_Should_ReturnError(t *testing.T) {
 	_, err := security.Decrypt(malformedCiphertext, key)
 
 	// Assert
-	assert.That(t, "err must be correct", err.Error(), "Malformed ciphertext")
+	assert.That(t, "err must be correct", err.Error(), "malformed ciphertext")
 }
 
 func Test_Decrypt_With_TamperedCiphertext_Should_ReturnAuthError(t *testing.T) {

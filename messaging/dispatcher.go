@@ -14,9 +14,9 @@ type Dispatcher interface {
 
 // Message is a struct that represents a message.
 type Message struct {
+	Topic string       `json:"topic"`
 	Data  []byte       `json:"data"`
 	State MessageState `json:"state"`
-	Topic string       `json:"topic"`
 }
 
 // NewMessage creates a new message.

@@ -8,7 +8,6 @@ import (
 
 // NewJsonLogger creates a new structured logger in JSON format.
 func NewJsonLogger() *slog.Logger {
-
 	// Configure the level by using the environment.
 	var level slog.Leveler
 

@@ -10,6 +10,7 @@ import (
 // gzipResponseWriter compresses the response body using gzip.
 type gzipResponseWriter struct {
 	http.ResponseWriter
+
 	gzw         *gzip.Writer
 	wroteHeader bool
 }
@@ -45,7 +46,7 @@ func (a *gzipResponseWriter) ReadFrom(r io.Reader) (int64, error) {
 	return io.Copy(a.gzw, r)
 }
 
-// Writer writes to the gzipResponseWriter.
+// Write writes to the gzipResponseWriter.
 func (a *gzipResponseWriter) Write(p []byte) (int, error) {
 	// Set default to 200.
 	if !a.wroteHeader {
@@ -91,7 +92,7 @@ func WithCompression(next http.Handler) http.Handler {
 
 		// Wrap the ResponseWriter.
 		gzw := newGzipResponseWriter(w)
-		defer gzw.Close()
+		defer func() { _ = gzw.Close() }()
 
 		// Call next handler.
 		next.ServeHTTP(gzw, r)

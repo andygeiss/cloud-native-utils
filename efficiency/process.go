@@ -40,10 +40,11 @@ func Process[IN, OUT any](in <-chan IN, fn service.Function[IN, OUT]) (<-chan OU
 		}()
 	}
 
-	// Start a goroutine to close the output channel after all workers finish.
+	// Start a goroutine to close the output and error channels after all workers finish.
 	go func() {
 		wg.Wait()
 		close(out)
+		close(errCh)
 	}()
 	return out, errCh
 }

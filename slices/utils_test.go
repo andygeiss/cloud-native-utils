@@ -1,4 +1,4 @@
-package slices
+package slices //nolint:testpackage // internal package tests
 
 import (
 	"testing"

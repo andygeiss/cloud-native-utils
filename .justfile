@@ -26,3 +26,7 @@ test: plugin
 # Test module integration like the Server.
 test-integration:
     @go test -v --tags=integration ./...
+
+# Lint the Go sources.
+lint:
+    @golangci-lint run ./...

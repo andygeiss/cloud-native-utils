@@ -25,17 +25,17 @@ func (a *MockAccess[K, V]) Create(ctx context.Context, key K, value V) error {
 }
 
 // Delete deletes a resource with the given key.
-func (a *MockAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+func (a *MockAccess[K, V]) Delete(ctx context.Context, key K) error {
 	return a.deleteFn(ctx, key)
 }
 
 // Read reads a resource with the given key.
-func (a *MockAccess[K, V]) Read(ctx context.Context, key K) (value *V, err error) {
+func (a *MockAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
 	return a.readFn(ctx, key)
 }
 
 // ReadAll reads all resources.
-func (a *MockAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
+func (a *MockAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
 	return a.readAllFn(ctx)
 }
 

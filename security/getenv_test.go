@@ -10,8 +10,7 @@ import (
 
 func Test_Getenv_With_InvalidHexString_Should_ReturnEmptyArray(t *testing.T) {
 	// Arrange
-	os.Setenv("TEST_KEY_INVALID_HEX", "invalid_hex_string")
-	defer os.Unsetenv("TEST_KEY_INVALID_HEX")
+	t.Setenv("TEST_KEY_INVALID_HEX", "invalid_hex_string")
 
 	// Act
 	result := security.Getenv("TEST_KEY_INVALID_HEX")
@@ -22,7 +21,7 @@ func Test_Getenv_With_InvalidHexString_Should_ReturnEmptyArray(t *testing.T) {
 
 func Test_Getenv_With_MissingEnvVar_Should_ReturnEmptyArray(t *testing.T) {
 	// Arrange
-	os.Unsetenv("TEST_KEY_MISSING")
+	_ = os.Unsetenv("TEST_KEY_MISSING")
 
 	// Act
 	result := security.Getenv("TEST_KEY_MISSING")
@@ -33,8 +32,7 @@ func Test_Getenv_With_MissingEnvVar_Should_ReturnEmptyArray(t *testing.T) {
 
 func Test_Getenv_With_ValidHexString_Should_ReturnByteArray(t *testing.T) {
 	// Arrange
-	os.Setenv("TEST_KEY_VALID", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
-	defer os.Unsetenv("TEST_KEY_VALID")
+	t.Setenv("TEST_KEY_VALID", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	expected := [32]byte{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef}
 
 	// Act
@@ -46,8 +44,7 @@ func Test_Getenv_With_ValidHexString_Should_ReturnByteArray(t *testing.T) {
 
 func Test_Getenv_With_WrongLengthHexString_Should_ReturnEmptyArray(t *testing.T) {
 	// Arrange
-	os.Setenv("TEST_KEY_WRONG_LENGTH", "0123456789abcdef")
-	defer os.Unsetenv("TEST_KEY_WRONG_LENGTH")
+	t.Setenv("TEST_KEY_WRONG_LENGTH", "0123456789abcdef")
 
 	// Act
 	result := security.Getenv("TEST_KEY_WRONG_LENGTH")

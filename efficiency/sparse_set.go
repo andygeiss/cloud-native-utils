@@ -3,8 +3,8 @@ package efficiency
 // SparseSet is a data structure that provides efficient storage and retrieval of elements.
 type SparseSet[T comparable] struct {
 	Dense  []T
-	Size   int
 	Sparse []int
+	Size   int
 }
 
 // NewSparseSet creates a new SparseSet with the given initial Size.

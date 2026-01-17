@@ -12,8 +12,7 @@ import (
 
 func Test_NewJsonLogger_With_DebugLevel_Should_EnableDebugLogging(t *testing.T) {
 	// Arrange
-	os.Setenv("LOGGING_LEVEL", "DEBUG")
-	defer os.Unsetenv("LOGGING_LEVEL")
+	t.Setenv("LOGGING_LEVEL", "DEBUG")
 	ctx := context.Background()
 
 	// Act
@@ -25,7 +24,7 @@ func Test_NewJsonLogger_With_DebugLevel_Should_EnableDebugLogging(t *testing.T) 
 
 func Test_NewJsonLogger_With_DefaultLevel_Should_EnableInfoLogging(t *testing.T) {
 	// Arrange
-	os.Unsetenv("LOGGING_LEVEL")
+	_ = os.Unsetenv("LOGGING_LEVEL")
 	ctx := context.Background()
 
 	// Act
@@ -38,8 +37,7 @@ func Test_NewJsonLogger_With_DefaultLevel_Should_EnableInfoLogging(t *testing.T)
 
 func Test_NewJsonLogger_With_ErrorLevel_Should_EnableErrorLogging(t *testing.T) {
 	// Arrange
-	os.Setenv("LOGGING_LEVEL", "ERror")
-	defer os.Unsetenv("LOGGING_LEVEL")
+	t.Setenv("LOGGING_LEVEL", "ERror")
 	ctx := context.Background()
 
 	// Act
@@ -51,8 +49,7 @@ func Test_NewJsonLogger_With_ErrorLevel_Should_EnableErrorLogging(t *testing.T) 
 
 func Test_NewJsonLogger_With_InfoLevel_Should_EnableInfoLogging(t *testing.T) {
 	// Arrange
-	os.Setenv("LOGGING_LEVEL", "info")
-	defer os.Unsetenv("LOGGING_LEVEL")
+	t.Setenv("LOGGING_LEVEL", "info")
 	ctx := context.Background()
 
 	// Act
@@ -64,8 +61,7 @@ func Test_NewJsonLogger_With_InfoLevel_Should_EnableInfoLogging(t *testing.T) {
 
 func Test_NewJsonLogger_With_InvalidLevel_Should_DefaultToInfoLogging(t *testing.T) {
 	// Arrange
-	os.Setenv("LOGGING_LEVEL", "INVALID")
-	defer os.Unsetenv("LOGGING_LEVEL")
+	t.Setenv("LOGGING_LEVEL", "INVALID")
 	ctx := context.Background()
 
 	// Act
@@ -78,8 +74,7 @@ func Test_NewJsonLogger_With_InvalidLevel_Should_DefaultToInfoLogging(t *testing
 
 func Test_NewJsonLogger_With_WarnLevel_Should_EnableWarnLogging(t *testing.T) {
 	// Arrange
-	os.Setenv("LOGGING_LEVEL", "Warn")
-	defer os.Unsetenv("LOGGING_LEVEL")
+	t.Setenv("LOGGING_LEVEL", "Warn")
 	ctx := context.Background()
 
 	// Act

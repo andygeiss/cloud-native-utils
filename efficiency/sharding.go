@@ -35,11 +35,11 @@ func (a Sharding[K, V]) Delete(key K) {
 }
 
 // Get retrieves a value from the appropriate shard.
-func (a Sharding[K, V]) Get(key K) (value V, exists bool) {
+func (a Sharding[K, V]) Get(key K) (V, bool) {
 	shard := a.getShard(key)
 	shard.mutex.RLock()
 	defer shard.mutex.RUnlock()
-	value, exists = shard.items[key]
+	value, exists := shard.items[key]
 	return value, exists
 }
 
@@ -53,7 +53,7 @@ func (a Sharding[K, V]) Put(key K, value V) {
 
 func (a Sharding[K, V]) getIndex(key K) int {
 	hash := fnv.New32a()
-	hash.Write([]byte(fmt.Sprintf("%v", key)))
+	_, _ = hash.Write(fmt.Appendf(nil, "%v", key))
 	sum := int(hash.Sum32())
 	return sum % len(a)
 }

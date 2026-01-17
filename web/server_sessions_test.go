@@ -1,15 +1,15 @@
-package security_test
+package web_test
 
 import (
 	"testing"
 
 	"github.com/andygeiss/cloud-native-utils/assert"
-	"github.com/andygeiss/cloud-native-utils/security"
+	"github.com/andygeiss/cloud-native-utils/web"
 )
 
 func Test_ServerSessions_With_Create_Should_ReturnSessionWithCorrectID(t *testing.T) {
 	// Arrange
-	sessions := security.NewServerSessions()
+	sessions := web.NewServerSessions()
 	// Act
 	session := sessions.Create("the unique id", nil)
 	// Assert
@@ -18,7 +18,7 @@ func Test_ServerSessions_With_Create_Should_ReturnSessionWithCorrectID(t *testin
 
 func Test_ServerSessions_With_Delete_Should_RemoveSession(t *testing.T) {
 	// Arrange
-	sessions := security.NewServerSessions()
+	sessions := web.NewServerSessions()
 	session := sessions.Create("the unique id", nil)
 	// Act
 	sessions.Delete(session.ID)
@@ -29,7 +29,7 @@ func Test_ServerSessions_With_Delete_Should_RemoveSession(t *testing.T) {
 
 func Test_ServerSessions_With_Read_Should_ReturnExistingSession(t *testing.T) {
 	// Arrange
-	sessions := security.NewServerSessions()
+	sessions := web.NewServerSessions()
 	session := sessions.Create("the unique id", nil)
 	// Act
 	current, found := sessions.Read(session.ID)
@@ -40,7 +40,7 @@ func Test_ServerSessions_With_Read_Should_ReturnExistingSession(t *testing.T) {
 
 func Test_ServerSessions_With_Update_Should_ModifySessionData(t *testing.T) {
 	// Arrange
-	sessions := security.NewServerSessions()
+	sessions := web.NewServerSessions()
 	session := sessions.Create("the unique id", nil)
 	session.Data = "value"
 	// Act

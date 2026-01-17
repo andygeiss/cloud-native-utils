@@ -8,19 +8,19 @@ import (
 )
 
 func Test_Event_With_DeleteType_Should_HaveCorrectValue(t *testing.T) {
-	// Arrange
+	// Arrange & Act
 	event := consistency.Event[string, int]{
-		Sequence:  1,
-		EventType: consistency.EventTypeDelete,
 		Key:       "testKey",
 		Value:     0,
+		Sequence:  1,
+		EventType: consistency.EventTypeDelete,
 	}
 
-	// Act
-	eventType := event.EventType
-
 	// Assert
-	assert.That(t, "event type must be delete", eventType, consistency.EventTypeDelete)
+	assert.That(t, "event type must be delete", event.EventType, consistency.EventTypeDelete)
+	assert.That(t, "sequence must be 1", event.Sequence, uint64(1))
+	assert.That(t, "key must be testKey", event.Key, "testKey")
+	assert.That(t, "value must be 0", event.Value, 0)
 }
 
 func Test_Event_With_KeyAndValue_Should_StoreCorrectly(t *testing.T) {
@@ -30,31 +30,33 @@ func Test_Event_With_KeyAndValue_Should_StoreCorrectly(t *testing.T) {
 
 	// Act
 	event := consistency.Event[string, int]{
-		Sequence:  1,
-		EventType: consistency.EventTypePut,
 		Key:       key,
 		Value:     value,
+		Sequence:  1,
+		EventType: consistency.EventTypePut,
 	}
 
 	// Assert
 	assert.That(t, "event key must be correct", event.Key, key)
 	assert.That(t, "event value must be correct", event.Value, value)
+	assert.That(t, "sequence must be 1", event.Sequence, uint64(1))
+	assert.That(t, "event type must be put", event.EventType, consistency.EventTypePut)
 }
 
 func Test_Event_With_PutType_Should_HaveCorrectValue(t *testing.T) {
-	// Arrange
+	// Arrange & Act
 	event := consistency.Event[string, int]{
-		Sequence:  1,
-		EventType: consistency.EventTypePut,
 		Key:       "testKey",
 		Value:     42,
+		Sequence:  1,
+		EventType: consistency.EventTypePut,
 	}
 
-	// Act
-	eventType := event.EventType
-
 	// Assert
-	assert.That(t, "event type must be put", eventType, consistency.EventTypePut)
+	assert.That(t, "event type must be put", event.EventType, consistency.EventTypePut)
+	assert.That(t, "sequence must be 1", event.Sequence, uint64(1))
+	assert.That(t, "key must be testKey", event.Key, "testKey")
+	assert.That(t, "value must be 42", event.Value, 42)
 }
 
 func Test_EventType_With_DeleteConstant_Should_BeZero(t *testing.T) {

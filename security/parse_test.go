@@ -1,7 +1,6 @@
 package security_test
 
 import (
-	"os"
 	"testing"
 	"time"
 
@@ -10,11 +9,10 @@ import (
 )
 
 func Test_ParseBoolOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
-	// Arrange
-	os.Unsetenv("CLIENT_ENABLED_TEST")
+	// Arrange - use unique key that won't be set in environment
 
 	// Act
-	value := security.ParseBoolOrDefault("CLIENT_ENABLED_TEST", true)
+	value := security.ParseBoolOrDefault("CLIENT_ENABLED_TEST_NOTSET", true)
 
 	// Assert
 	assert.That(t, "value must be true", value, true)
@@ -22,8 +20,7 @@ func Test_ParseBoolOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
 
 func Test_ParseBoolOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_ENABLED", "false")
-	defer os.Unsetenv("CLIENT_ENABLED")
+	t.Setenv("CLIENT_ENABLED", "false")
 
 	// Act
 	value := security.ParseBoolOrDefault("CLIENT_ENABLED", true)
@@ -34,8 +31,7 @@ func Test_ParseBoolOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T) {
 
 func Test_ParseBoolOrDefault_With_InvalidValue_Should_UseDefault(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_ENABLED_INVALID", "notabool")
-	defer os.Unsetenv("CLIENT_ENABLED_INVALID")
+	t.Setenv("CLIENT_ENABLED_INVALID", "notabool")
 
 	// Act
 	value := security.ParseBoolOrDefault("CLIENT_ENABLED_INVALID", true)
@@ -45,11 +41,10 @@ func Test_ParseBoolOrDefault_With_InvalidValue_Should_UseDefault(t *testing.T) {
 }
 
 func Test_ParseDurationOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
-	// Arrange
-	os.Unsetenv("CLIENT_TIMEOUT_TEST")
+	// Arrange - use unique key that won't be set in environment
 
 	// Act
-	d := security.ParseDurationOrDefault("CLIENT_TIMEOUT_TEST", 5*time.Second)
+	d := security.ParseDurationOrDefault("CLIENT_TIMEOUT_TEST_NOTSET", 5*time.Second)
 
 	// Assert
 	assert.That(t, "duration must be 5 seconds", d, 5*time.Second)
@@ -57,8 +52,7 @@ func Test_ParseDurationOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) 
 
 func Test_ParseDurationOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_TIMEOUT", "3s")
-	defer os.Unsetenv("CLIENT_TIMEOUT")
+	t.Setenv("CLIENT_TIMEOUT", "3s")
 
 	// Act
 	d := security.ParseDurationOrDefault("CLIENT_TIMEOUT", 5*time.Second)
@@ -69,8 +63,7 @@ func Test_ParseDurationOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T)
 
 func Test_ParseDurationOrDefault_With_InvalidValue_Should_UseDefault(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_TIMEOUT_INVALID", "notaduration")
-	defer os.Unsetenv("CLIENT_TIMEOUT_INVALID")
+	t.Setenv("CLIENT_TIMEOUT_INVALID", "notaduration")
 
 	// Act
 	d := security.ParseDurationOrDefault("CLIENT_TIMEOUT_INVALID", 5*time.Second)
@@ -80,11 +73,10 @@ func Test_ParseDurationOrDefault_With_InvalidValue_Should_UseDefault(t *testing.
 }
 
 func Test_ParseFloatOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
-	// Arrange
-	os.Unsetenv("CLIENT_RATE_TEST")
+	// Arrange - use unique key that won't be set in environment
 
 	// Act
-	value := security.ParseFloatOrDefault("CLIENT_RATE_TEST", 1.0)
+	value := security.ParseFloatOrDefault("CLIENT_RATE_TEST_NOTSET", 1.0)
 
 	// Assert
 	assert.That(t, "value must be 1.0", value, 1.0)
@@ -92,8 +84,7 @@ func Test_ParseFloatOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
 
 func Test_ParseFloatOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_RATE", "0.5")
-	defer os.Unsetenv("CLIENT_RATE")
+	t.Setenv("CLIENT_RATE", "0.5")
 
 	// Act
 	value := security.ParseFloatOrDefault("CLIENT_RATE", 1.0)
@@ -104,8 +95,7 @@ func Test_ParseFloatOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T) {
 
 func Test_ParseFloatOrDefault_With_InvalidValue_Should_UseDefault(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_RATE_INVALID", "notafloat")
-	defer os.Unsetenv("CLIENT_RATE_INVALID")
+	t.Setenv("CLIENT_RATE_INVALID", "notafloat")
 
 	// Act
 	value := security.ParseFloatOrDefault("CLIENT_RATE_INVALID", 1.0)
@@ -115,11 +105,10 @@ func Test_ParseFloatOrDefault_With_InvalidValue_Should_UseDefault(t *testing.T) 
 }
 
 func Test_ParseIntOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
-	// Arrange
-	os.Unsetenv("CLIENT_COUNT_TEST")
+	// Arrange - use unique key that won't be set in environment
 
 	// Act
-	value := security.ParseIntOrDefault("CLIENT_COUNT_TEST", 5)
+	value := security.ParseIntOrDefault("CLIENT_COUNT_TEST_NOTSET", 5)
 
 	// Assert
 	assert.That(t, "value must be 5", value, 5)
@@ -127,8 +116,7 @@ func Test_ParseIntOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
 
 func Test_ParseIntOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_COUNT", "3")
-	defer os.Unsetenv("CLIENT_COUNT")
+	t.Setenv("CLIENT_COUNT", "3")
 
 	// Act
 	value := security.ParseIntOrDefault("CLIENT_COUNT", 5)
@@ -139,8 +127,7 @@ func Test_ParseIntOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T) {
 
 func Test_ParseIntOrDefault_With_InvalidValue_Should_UseDefault(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_COUNT_INVALID", "notanint")
-	defer os.Unsetenv("CLIENT_COUNT_INVALID")
+	t.Setenv("CLIENT_COUNT_INVALID", "notanint")
 
 	// Act
 	value := security.ParseIntOrDefault("CLIENT_COUNT_INVALID", 5)
@@ -151,8 +138,7 @@ func Test_ParseIntOrDefault_With_InvalidValue_Should_UseDefault(t *testing.T) {
 
 func Test_ParseStringOrDefault_With_EmptyString_Should_UseDefault(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_NAME_EMPTY", "")
-	defer os.Unsetenv("CLIENT_NAME_EMPTY")
+	t.Setenv("CLIENT_NAME_EMPTY", "")
 
 	// Act
 	value := security.ParseStringOrDefault("CLIENT_NAME_EMPTY", "default")
@@ -162,11 +148,10 @@ func Test_ParseStringOrDefault_With_EmptyString_Should_UseDefault(t *testing.T) 
 }
 
 func Test_ParseStringOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
-	// Arrange
-	os.Unsetenv("CLIENT_NAME_TEST")
+	// Arrange - use unique key that won't be set in environment
 
 	// Act
-	value := security.ParseStringOrDefault("CLIENT_NAME_TEST", "default")
+	value := security.ParseStringOrDefault("CLIENT_NAME_TEST_NOTSET", "default")
 
 	// Assert
 	assert.That(t, "value must be default", value, "default")
@@ -174,8 +159,7 @@ func Test_ParseStringOrDefault_With_EnvNotSet_Should_UseDefault(t *testing.T) {
 
 func Test_ParseStringOrDefault_With_EnvSet_Should_ReturnEnvValue(t *testing.T) {
 	// Arrange
-	os.Setenv("CLIENT_NAME", "test")
-	defer os.Unsetenv("CLIENT_NAME")
+	t.Setenv("CLIENT_NAME", "test")
 
 	// Act
 	value := security.ParseStringOrDefault("CLIENT_NAME", "default")

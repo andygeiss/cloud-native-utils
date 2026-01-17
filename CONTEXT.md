@@ -10,7 +10,12 @@ LICENSE: MIT
 
 CORE_TYPE: type Function[IN, OUT any] func(ctx context.Context, in IN) (out OUT, err error)
 
-PACKAGES: assert, consistency, efficiency, event, extensibility, imaging, logging, messaging, redirecting, resource, security, service, slices, stability, templating
+PACKAGES: assert, consistency, efficiency, event, extensibility, logging, mcp, messaging, resource, security, service, slices, stability, templating, web
+
+TOOLING:
+- LINTER: golangci-lint (config: .golangci.yml)
+- TASK_RUNNER: just (config: .justfile)
+- COMMANDS: just test, just lint, just benchmark
 
 PATTERNS: Decorator, Strategy, Factory, Observer/PubSub, Adapter
 
@@ -38,7 +43,6 @@ A modular Go library providing reusable utilities for building cloud-native appl
 |---------|---------|---------|
 | `github.com/coreos/go-oidc/v3` | v3.17.0 | OIDC authentication |
 | `github.com/segmentio/kafka-go` | v0.4.49 | Kafka messaging |
-| `github.com/skip2/go-qrcode` | v0.0.0 | QR code generation |
 | `golang.org/x/crypto` | v0.46.0 | Cryptographic operations |
 | `golang.org/x/oauth2` | v0.34.0 | OAuth2 flows |
 | `gopkg.in/yaml.v3` | v3.0.1 | YAML parsing |
@@ -53,16 +57,16 @@ A modular Go library providing reusable utilities for building cloud-native appl
 | `efficiency` | Performance | `Generate`, `Merge`, `Split`, `Process`, `WithCompression` |
 | `event` | Domain Events | `Event`, `EventPublisher`, `EventSubscriber` |
 | `extensibility` | Plugins | `LoadPlugin()` |
-| `imaging` | Images | QR code generation |
-| `logging` | Observability | `NewJsonLogger()`, `WithLogging()` |
+| `logging` | Observability | `NewJsonLogger()` |
+| `mcp` | AI Integration | `Server`, `Tool`, `ToolHandler`, `NewServer()` |
 | `messaging` | Pub/Sub | `Dispatcher`, `Message`, `NewMessage()` |
-| `redirecting` | HTTP | `WithPRG()`, `Redirect()` |
 | `resource` | Persistence | `Access[K,V]`, `IndexedAccess[K,V]` |
-| `security` | Auth/Crypto | `Encrypt`, `Decrypt`, `NewServer`, `NewClient` |
+| `security` | Crypto | `Encrypt`, `Decrypt`, `Hash`, `Password`, `GenerateKey` |
 | `service` | Lifecycle | `Function[IN,OUT]`, `Context()`, `Wrap()` |
 | `slices` | Collections | `Map`, `Filter`, `Unique`, `Contains` |
 | `stability` | Resilience | `Retry`, `Breaker`, `Throttle`, `Debounce` |
 | `templating` | Views | `Engine` |
+| `web` | HTTP | `NewServer`, `NewClient`, `NewServeMux`, `WithAuth` |
 
 ---
 
@@ -263,18 +267,18 @@ func NewMessage(topic string, data []byte) Message {
 All complex types use `New*` constructors:
 
 ```go
-// Server factory
-server := security.NewServer(mux)
+// Server factory (web package)
+server := web.NewServer(mux)
 
-// Client factory
-client := security.NewClient()
-client := security.NewClientWithTLS(certFile, keyFile, caFile)
+// Client factory (web package)
+client := web.NewClient()
+client := web.NewClientWithTLS(certFile, keyFile, caFile)
 
 // Message factory
 msg := messaging.NewMessage(topic, data)
 
-// Session store factory
-sessions := security.NewServerSessions()
+// Session store factory (web package)
+sessions := web.NewServerSessions()
 
 // Logger factory
 logger := logging.NewJsonLogger()
@@ -471,7 +475,7 @@ case res := <-ch:
 **Pattern:** Environment variables with sensible defaults.
 
 ```go
-// FILE: security/server.go
+// FILE: web/server.go
 func NewServer(mux *http.ServeMux) *http.Server {
     port := os.Getenv("PORT")
     if port == "" {
@@ -480,11 +484,11 @@ func NewServer(mux *http.ServeMux) *http.Server {
     return &http.Server{
         Addr:              fmt.Sprintf(":%s", port),
         Handler:           mux,
-        IdleTimeout:       ParseDurationOrDefault("SERVER_IDLE_TIMEOUT", 5*time.Second),
+        IdleTimeout:       security.ParseDurationOrDefault("SERVER_IDLE_TIMEOUT", 5*time.Second),
         MaxHeaderBytes:    1 << 20,
-        ReadHeaderTimeout: ParseDurationOrDefault("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
-        ReadTimeout:       ParseDurationOrDefault("SERVER_READ_TIMEOUT", 5*time.Second),
-        WriteTimeout:      ParseDurationOrDefault("SERVER_WRITE_TIMEOUT", 5*time.Second),
+        ReadHeaderTimeout: security.ParseDurationOrDefault("SERVER_READ_HEADER_TIMEOUT", 5*time.Second),
+        ReadTimeout:       security.ParseDurationOrDefault("SERVER_READ_TIMEOUT", 5*time.Second),
+        WriteTimeout:      security.ParseDurationOrDefault("SERVER_WRITE_TIMEOUT", 5*time.Second),
     }
 }
 ```
@@ -493,10 +497,10 @@ func NewServer(mux *http.ServeMux) *http.Server {
 
 | Variable | Default | Package |
 |----------|---------|---------|
-| `PORT` | `8080` | security |
+| `PORT` | `8080` | web |
 | `LOGGING_LEVEL` | `INFO` | logging |
-| `CLIENT_TIMEOUT` | `5s` | security |
-| `SERVER_*_TIMEOUT` | `5s` | security |
+| `CLIENT_TIMEOUT` | `5s` | web |
+| `SERVER_*_TIMEOUT` | `5s` | web |
 | `KAFKA_BROKERS` | - | messaging |
 
 ### 5.5 Package Documentation
@@ -1056,7 +1060,168 @@ logger.Info("http request handled", "method", r.Method, "path", r.URL.Path, "dur
 | Channel pipeline | `efficiency/process.go`, `efficiency/generate.go` |
 | HTTP middleware | `efficiency/middleware.go` |
 | Encryption | `security/encrypt.go` |
-| Server factory | `security/server.go` |
+| Server factory | `web/server.go` |
+| HTTP middleware | `web/middleware.go` |
 | JSON logger | `logging/logger_json.go` |
 | Test assertions | `assert/that.go` |
 | Mock patterns | `stability/mocks_test.go` |
+| MCP server | `mcp/server.go` |
+| MCP tool types | `mcp/tool.go` |
+
+---
+
+## 14. MCP Server Pattern
+
+### 14.1 Creating an MCP Server
+
+```go
+// FILE: mcp/server.go
+server := mcp.NewServer("my-server", "1.0.0")
+
+// Register tools
+server.RegisterTool(tool)
+
+// Start serving (STDIO transport)
+ctx, cancel := service.Context()
+defer cancel()
+server.Serve(ctx)
+```
+
+### 14.2 Tool Definition
+
+```go
+// FILE: mcp/tool.go
+// ToolHandler follows the Function[IN, OUT] pattern
+type ToolHandler service.Function[ToolsCallParams, ToolsCallResult]
+
+// Create a tool with schema and handler
+schema := mcp.NewObjectSchema(
+    map[string]mcp.Property{
+        "name": mcp.NewStringProperty("The name to greet"),
+    },
+    []string{"name"},
+)
+
+handler := func(ctx context.Context, params mcp.ToolsCallParams) (mcp.ToolsCallResult, error) {
+    name, _ := params.Arguments["name"].(string)
+    return mcp.ToolsCallResult{
+        Content: []mcp.ContentBlock{mcp.NewTextContent(fmt.Sprintf("Hello, %s!", name))},
+    }, nil
+}
+
+tool := mcp.NewTool("greet", "Greets someone by name", schema, handler)
+```
+
+### 14.3 Schema Helpers
+
+```go
+// Object schema with properties
+mcp.NewObjectSchema(properties map[string]Property, required []string) InputSchema
+
+// Property types
+mcp.NewStringProperty(description string) Property
+mcp.NewNumberProperty(description string) Property
+mcp.NewBooleanProperty(description string) Property
+```
+
+### 14.4 Response Helpers
+
+```go
+// Text content for tool results
+mcp.NewTextContent(text string) ContentBlock
+
+// JSON-RPC responses
+mcp.NewResponse(id json.RawMessage, result any) Response
+mcp.NewErrorResponse(id json.RawMessage, code int, message string) Response
+```
+
+### 14.5 Composing with Stability Patterns
+
+```go
+// Wrap tool handlers with stability patterns
+handler := stability.Timeout(myHandler, 30*time.Second)
+handler = stability.Retry(handler, 3, time.Second)
+
+tool := mcp.NewTool("my-tool", "Description", schema, handler)
+```
+
+---
+
+## 15. Web Package Pattern
+
+### 15.1 Creating an HTTP Server
+
+```go
+// FILE: web/server.go
+mux := http.NewServeMux()
+server := web.NewServer(mux)
+server.ListenAndServe()
+```
+
+### 15.2 Using NewServeMux with OIDC
+
+```go
+// FILE: web/mux.go
+//go:embed assets
+var efs embed.FS
+
+ctx, cancel := service.Context()
+defer cancel()
+
+mux, sessions := web.NewServeMux(ctx, efs)
+// mux now has /liveness, /readiness, /static/, and /auth/* endpoints
+```
+
+### 15.3 Authentication Middleware
+
+```go
+// FILE: web/middleware.go
+handler := web.WithAuth(sessions, func(w http.ResponseWriter, r *http.Request) {
+    email := r.Context().Value(web.ContextEmail).(string)
+    name := r.Context().Value(web.ContextName).(string)
+    // Use authenticated user info
+})
+mux.HandleFunc("GET /protected", handler)
+```
+
+### 15.4 TLS Client
+
+```go
+// FILE: web/client.go
+client := web.NewClient() // Basic client with timeout
+client := web.NewClientWithTLS(certFile, keyFile, caFile) // mTLS client
+```
+
+---
+
+## 16. Linting
+
+### 16.1 Running the Linter
+
+```bash
+# Using just
+just lint
+
+# Directly
+golangci-lint run ./...
+```
+
+### 16.2 Configuration
+
+The `.golangci.yml` configuration:
+- Uses `default: all` linters
+- Disables overly strict linters (exhaustruct, varnamelen, mnd, etc.)
+- Configures govet with all checks enabled
+- Configures revive to allow missing package comments
+- Configures gosec to allow 0755 directory permissions
+
+### 16.3 Disabled Linters (Rationale)
+
+| Linter | Reason |
+|--------|--------|
+| `exhaustruct` | Too verbose for tests |
+| `varnamelen` | Too strict for idiomatic Go |
+| `mnd` | Magic number detection too noisy |
+| `wrapcheck` | Error wrapping too strict for simple cases |
+| `forbidigo` | Print statements needed for CLI output |
+| `err113` | Error comparison too strict |

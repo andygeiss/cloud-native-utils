@@ -1,5 +1,4 @@
-// Package security includes encryption and decryption with AES-GCM,
-// secure key generation, HMAC hashing, bcrypt-based password handling, and a
-// preconfigured secure HTTP(S) server with liveness and readiness probes for
-// robust application security.
+// Package security provides cryptographic primitives including AES-GCM encryption,
+// password hashing with bcrypt, HMAC hashing, secure key generation, PKCE generation,
+// and environment variable parsing utilities.
 package security

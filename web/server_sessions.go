@@ -1,4 +1,4 @@
-package security
+package web
 
 import (
 	"sync"
@@ -12,8 +12,8 @@ type ServerSession struct {
 
 // ServerSessions is a thread-safe map of session IDs to sessions.
 type ServerSessions struct {
-	mutex    sync.RWMutex
 	sessions map[string]ServerSession
+	mutex    sync.RWMutex
 }
 
 // NewServerSessions creates a new serverSessions.
@@ -24,7 +24,7 @@ func NewServerSessions() *ServerSessions {
 }
 
 // Create adds a new session to the serverSessions.
-func (a *ServerSessions) Create(id string, data any) (s ServerSession) {
+func (a *ServerSessions) Create(id string, data any) ServerSession {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 	session := ServerSession{ID: id, Data: data}

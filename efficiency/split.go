@@ -1,8 +1,9 @@
 package efficiency
 
 // Split takes an input channel `in` and an integer `num`.
-// It returns a slice of `num` output channels, where each channel will receive
-// the same data from the input channel concurrently.
+// It returns a slice of `num` output channels that distribute items from
+// the input channel. Each input item is sent to exactly one output channel,
+// enabling concurrent processing by multiple consumers (fan-out pattern).
 func Split[T any](in <-chan T, num int) []<-chan T {
 	// Iterate `num` times to create the specified number of channels.
 	out := make([]<-chan T, 0)

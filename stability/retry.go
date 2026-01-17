@@ -11,9 +11,10 @@ import (
 // The function will be retried up to `maxRetries` times with a delay of `delay` between retries.
 // If the context is canceled during retries, it stops immediately and returns the context error.
 func Retry[IN, OUT any](fn service.Function[IN, OUT], maxRetries int, delay time.Duration) service.Function[IN, OUT] {
-	return func(ctx context.Context, in IN) (out OUT, err error) {
+	return func(ctx context.Context, in IN) (OUT, error) {
+		var zero OUT
 		if ctx.Err() != nil {
-			return out, ctx.Err()
+			return zero, ctx.Err()
 		}
 		for retries := 0; ; retries++ {
 			// Call the provided function and capture its result and error.
@@ -30,7 +31,7 @@ func Retry[IN, OUT any](fn service.Function[IN, OUT], maxRetries int, delay time
 			case <-time.After(delay):
 			// If the context is canceled during the wait, stop retrying.
 			case <-ctx.Done():
-				return out, ctx.Err()
+				return zero, ctx.Err()
 			}
 		}
 	}

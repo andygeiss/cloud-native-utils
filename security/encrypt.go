@@ -9,7 +9,7 @@ import (
 
 // Encrypt takes an input byte slice (plaintext) and encrypts it using AES-GCM.
 // It returns the encrypted data (ciphertext) and the key used for encryption.
-func Encrypt(plaintext []byte, key [32]byte) (ciphertext []byte) {
+func Encrypt(plaintext []byte, key [32]byte) []byte {
 	// Create a new AES cipher block using the generated key.
 	block, _ := aes.NewCipher(key[:])
 

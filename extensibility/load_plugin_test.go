@@ -30,6 +30,7 @@ func Test_LoadPlugin_With_InvalidSymbol_Should_ReturnError(t *testing.T) {
 func Test_LoadPlugin_With_ValidPlugin_Should_ReturnAdapter(t *testing.T) {
 	// Arrange & Act
 	adapter, err := extensibility.LoadPlugin[TestPort]("testdata/adapter.so", "Adapter")
+	assert.That(t, "err must be nil", err, nil)
 	name, err := adapter.FindByID("1")
 
 	// Assert

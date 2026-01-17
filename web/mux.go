@@ -1,4 +1,4 @@
-package security
+package web
 
 import (
 	"context"
@@ -11,12 +11,12 @@ import (
 // NewServeMux creates a new mux with the liveness check endpoint (/liveness)
 // and the readiness check endpoint (/readiness).
 // The mux is returned along with a new ServerSessions instance.
-func NewServeMux(ctx context.Context, efs fs.FS) (mux *http.ServeMux, serverSessions *ServerSessions) {
+func NewServeMux(ctx context.Context, efs fs.FS) (*http.ServeMux, *ServerSessions) {
 	// Create a new mux with liveness and readyness endpoint.
-	mux = http.NewServeMux()
+	mux := http.NewServeMux()
 
 	// Create an in-memory store for the server sessions.
-	serverSessions = NewServerSessions()
+	serverSessions := NewServerSessions()
 
 	// Chroot into the assets directory for static files.
 	staticFS, err := fs.Sub(efs, "assets")
@@ -35,7 +35,7 @@ func NewServeMux(ctx context.Context, efs fs.FS) (mux *http.ServeMux, serverSess
 	// Add a liveness check endpoint to the mux.
 	mux.HandleFunc("GET /liveness", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, _ = w.Write([]byte("OK"))
 	})
 
 	// Add a readiness check endpoint to the mux.

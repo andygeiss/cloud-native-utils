@@ -22,7 +22,6 @@ func NewExternalDispatcher() Dispatcher {
 
 // Publish publishes a message to the dispatcher.
 func (a *externalDispatcher) Publish(ctx context.Context, message Message) error {
-
 	brokers := strings.Split(os.Getenv("KAFKA_BROKERS"), ",")
 
 	// Create a new kafka writer.
@@ -32,7 +31,7 @@ func (a *externalDispatcher) Publish(ctx context.Context, message Message) error
 		Balancer:               &kafka.LeastBytes{},
 		Topic:                  message.Topic,
 	}
-	defer w.Close()
+	defer func() { _ = w.Close() }()
 
 	// Define a service.Function to write the messages.
 	fn := func() service.Function[Message, int] {
@@ -57,9 +56,7 @@ func (a *externalDispatcher) Publish(ctx context.Context, message Message) error
 
 // Subscribe adds a function to the list of functions that will be called when a message is published to the given topic.
 func (a *externalDispatcher) Subscribe(ctx context.Context, topic string, fn service.Function[Message, MessageState]) error {
-
-	go func() {
-
+	go func(ctx context.Context) {
 		// Create a new kafka reader.
 		r := kafka.NewReader(kafka.ReaderConfig{
 			Brokers:   strings.Split(os.Getenv("KAFKA_BROKERS"), ","),
@@ -67,7 +64,7 @@ func (a *externalDispatcher) Subscribe(ctx context.Context, topic string, fn ser
 			Partition: 0,
 			Topic:     topic,
 		})
-		defer r.Close()
+		defer func() { _ = r.Close() }()
 
 		// Use stability patterns to make the function more robust.
 		maxRetries := security.ParseIntOrDefault("SERVICE_RETRY_MAX", 3)
@@ -77,10 +74,6 @@ func (a *externalDispatcher) Subscribe(ctx context.Context, topic string, fn ser
 		fn = stability.Timeout(fn, duration)
 
 		for {
-
-			// Create a new background context.
-			ctx := context.Background()
-
 			// Read the message from the kafka reader.
 			m, err := r.ReadMessage(ctx)
 			if err != nil {
@@ -96,7 +89,7 @@ func (a *externalDispatcher) Subscribe(ctx context.Context, topic string, fn ser
 
 			_, _ = fn(ctx, msg)
 		}
-	}()
+	}(ctx)
 
 	// Handle ...
 	select {

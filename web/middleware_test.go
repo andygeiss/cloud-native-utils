@@ -1,4 +1,4 @@
-package security_test
+package web_test
 
 import (
 	"net/http"
@@ -7,23 +7,24 @@ import (
 
 	"github.com/andygeiss/cloud-native-utils/assert"
 	"github.com/andygeiss/cloud-native-utils/security"
+	"github.com/andygeiss/cloud-native-utils/web"
 )
 
 func Test_WithAuth_With_ValidSession_Should_SetSessionIDInContext(t *testing.T) {
 	// Arrange
-	sessions := security.NewServerSessions()
+	sessions := web.NewServerSessions()
 	sessionID := security.GenerateID()[:32]
-	sessions.Create(sessionID, security.IdentityTokenClaims{Name: "John Doe"})
+	sessions.Create(sessionID, web.IdentityTokenClaims{Name: "John Doe"})
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/ui/", nil)
+	r := httptest.NewRequest(http.MethodGet, "/ui/", nil)
 	r.AddCookie(&http.Cookie{Name: "sid", Value: sessionID})
 	var got string
 	next := func(w http.ResponseWriter, r *http.Request) {
-		got = r.Context().Value(security.ContextSessionID).(string)
+		got = r.Context().Value(web.ContextSessionID).(string)
 		w.WriteHeader(http.StatusOK)
 	}
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /ui/", security.WithAuth(sessions, next))
+	mux.HandleFunc("GET /ui/", web.WithAuth(sessions, next))
 
 	// Act
 	mux.ServeHTTP(w, r)
@@ -35,9 +36,9 @@ func Test_WithAuth_With_ValidSession_Should_SetSessionIDInContext(t *testing.T) 
 
 func Test_WithAuth_With_ValidSession_Should_SetClaimsInContext(t *testing.T) {
 	// Arrange
-	sessions := security.NewServerSessions()
+	sessions := web.NewServerSessions()
 	sessionID := security.GenerateID()[:32]
-	claims := security.IdentityTokenClaims{
+	claims := web.IdentityTokenClaims{
 		Email:    "john@example.com",
 		Issuer:   "https://issuer.example.com",
 		Name:     "John Doe",
@@ -46,20 +47,20 @@ func Test_WithAuth_With_ValidSession_Should_SetClaimsInContext(t *testing.T) {
 	}
 	sessions.Create(sessionID, claims)
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/ui/", nil)
+	r := httptest.NewRequest(http.MethodGet, "/ui/", nil)
 	r.AddCookie(&http.Cookie{Name: "sid", Value: sessionID})
 	var gotEmail, gotIssuer, gotName, gotSubject string
 	var gotVerified bool
 	next := func(w http.ResponseWriter, r *http.Request) {
-		gotEmail = r.Context().Value(security.ContextEmail).(string)
-		gotIssuer = r.Context().Value(security.ContextIssuer).(string)
-		gotName = r.Context().Value(security.ContextName).(string)
-		gotSubject = r.Context().Value(security.ContextSubject).(string)
-		gotVerified = r.Context().Value(security.ContextVerified).(bool)
+		gotEmail = r.Context().Value(web.ContextEmail).(string)
+		gotIssuer = r.Context().Value(web.ContextIssuer).(string)
+		gotName = r.Context().Value(web.ContextName).(string)
+		gotSubject = r.Context().Value(web.ContextSubject).(string)
+		gotVerified = r.Context().Value(web.ContextVerified).(bool)
 		w.WriteHeader(http.StatusOK)
 	}
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /ui/", security.WithAuth(sessions, next))
+	mux.HandleFunc("GET /ui/", web.WithAuth(sessions, next))
 
 	// Act
 	mux.ServeHTTP(w, r)

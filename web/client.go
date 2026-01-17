@@ -1,4 +1,4 @@
-package security
+package web
 
 import (
 	"crypto/tls"
@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/andygeiss/cloud-native-utils/security"
 )
 
 // TLSClientConfig creates and returns a *tls.Config configured for mutual TLS authentication.
@@ -24,7 +26,7 @@ func TLSClientConfig(certFile, keyFile, caFile string) *tls.Config {
 	var rootCAs *x509.CertPool
 	if caFile != "" {
 		caPool := x509.NewCertPool()
-		caCert, err := os.ReadFile(caFile)
+		caCert, err := os.ReadFile(caFile) //nolint:gosec // caFile is a trusted path from config
 		if err == nil {
 			caPool.AppendCertsFromPEM(caCert)
 			rootCAs = caPool
@@ -62,7 +64,7 @@ func TLSClientConfig(certFile, keyFile, caFile string) *tls.Config {
 func NewClient() *http.Client {
 	// Create a new *http.Client with a default timeout of 5 seconds.
 	return &http.Client{
-		Timeout: ParseDurationOrDefault("CLIENT_TIMEOUT", 5*time.Second),
+		Timeout: security.ParseDurationOrDefault("CLIENT_TIMEOUT", 5*time.Second),
 	}
 }
 

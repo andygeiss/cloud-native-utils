@@ -1,7 +1,6 @@
 //go:build integration
-// +build integration
 
-package security_test
+package web_test
 
 import (
 	"io"
@@ -11,7 +10,7 @@ import (
 	"time"
 
 	"github.com/andygeiss/cloud-native-utils/assert"
-	"github.com/andygeiss/cloud-native-utils/security"
+	"github.com/andygeiss/cloud-native-utils/web"
 )
 
 func Test_ClientWithTLS_With_ValidCertificates_Should_Succeed(t *testing.T) {
@@ -22,18 +21,18 @@ func Test_ClientWithTLS_With_ValidCertificates_Should_Succeed(t *testing.T) {
 	serverCrt := "testdata/server.crt"
 	serverKey := "testdata/server.key"
 
-	client := security.NewClientWithTLS(clientCrt, clientKey, caCrt)
+	client := web.NewClientWithTLS(clientCrt, clientKey, caCrt)
 
-	os.Setenv("PORT", "443")
+	os.Setenv("PORT", "443") //nolint:errcheck,tenv // integration test setup
 
 	go func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("success"))
+			_, _ = w.Write([]byte("success"))
 		})
-		server := security.NewServerWithTLS(mux, "localhost")
-		defer server.Close()
-		server.ListenAndServeTLS(serverCrt, serverKey)
+		server := web.NewServer(mux)
+		defer func() { _ = server.Close() }()
+		_ = server.ListenAndServeTLS(serverCrt, serverKey)
 	}()
 
 	time.Sleep(2 * time.Second)
@@ -44,7 +43,7 @@ func Test_ClientWithTLS_With_ValidCertificates_Should_Succeed(t *testing.T) {
 	// Assert
 	assert.That(t, "get request must not fail", err, nil)
 
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	data, _ := io.ReadAll(res.Body)
 
 	assert.That(t, "response status must be 200", res.StatusCode, http.StatusOK)

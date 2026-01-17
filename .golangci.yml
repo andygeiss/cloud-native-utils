@@ -1,0 +1,51 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: all
+  disable: # Disable overly strict or noisy linters
+    - depguard # Import restrictions - not configured, blocks all imports
+    - exhaustruct # Requires all struct fields - too verbose for tests
+    - paralleltest # Requires t.Parallel() - not always appropriate
+    - wsl # Deprecated, replaced by wsl_v5
+    - varnamelen # Variable name length - too strict for idiomatic Go
+    - ireturn # Disallows returning interfaces - conflicts with DDD patterns
+    - noctx # Requires context in HTTP - too strict for tests
+    - tagliatelle # JSON tag naming - project uses snake_case intentionally
+    - mnd # Magic number detection - too noisy
+    - nlreturn # Newline before return - stylistic preference
+    - wrapcheck # Error wrapping - too strict for simple cases
+    - noinlineerr # Inline error handling - stylistic preference
+    - forbidigo # Forbids print statements - needed for CLI output
+    - forcetypeassert # Type assertion checks - handled by design in event handlers
+    - err113 # Error comparison - too strict
+    - lll # Line length - handled by formatter
+    - wsl_v5 # Whitespace linter - too opinionated
+
+  settings:
+    govet:
+      enable-all: true
+    revive:
+      rules:
+        - name: package-comments
+          disabled: true
+        - name: exported
+          disabled: true
+        - name: var-naming
+          disabled: true
+        - name: unused-parameter
+          disabled: true
+    gosec:
+      excludes:
+        - G301 # Directory permissions - 0755 is acceptable for test directories
+
+formatters:
+  settings:
+    gofmt:
+      rewrite-rules:
+        - pattern: "interface{}"
+          replacement: "any"
+        - pattern: "a[b:len(a)]"
+          replacement: "a[b:]"

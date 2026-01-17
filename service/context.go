@@ -8,7 +8,7 @@ import (
 
 // Context creates a new context with a cancel function that listens for
 // SIGTERM, SIGINT, SIGQUIT, and SIGKILL signals.
-func Context() (ctx context.Context, cancel context.CancelFunc) {
+func Context() (context.Context, context.CancelFunc) {
 	// Create a new context with a cancel function.
 	return signal.NotifyContext(
 		context.Background(),

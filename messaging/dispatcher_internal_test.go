@@ -28,7 +28,7 @@ func Test_InternalDispatcher_With_Roundtrip_Should_CallHandler(t *testing.T) {
 	dis := messaging.NewInternalDispatcher()
 	msg := messaging.NewMessage("my topic", []byte("my message"))
 	val := 0
-	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
+	fn := func(_ messaging.Message) (messaging.MessageState, error) {
 		val = 42
 		return messaging.MessageStateCompleted, nil
 	}
@@ -48,7 +48,7 @@ func Test_InternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded
 	dis := messaging.NewInternalDispatcher()
 	msg := messaging.NewMessage("my topic", []byte("my message"))
 	val := 0
-	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
+	fn := func(_ messaging.Message) (messaging.MessageState, error) {
 		time.Sleep(1 * time.Second)
 		val = 42
 		return messaging.MessageStateCompleted, nil
@@ -67,7 +67,7 @@ func Test_InternalDispatcher_With_SubscribeHandler_Should_Succeed(t *testing.T) 
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewInternalDispatcher()
-	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
+	fn := func(_ messaging.Message) (messaging.MessageState, error) {
 		return messaging.MessageStateCompleted, nil
 	}
 

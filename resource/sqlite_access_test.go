@@ -11,15 +11,18 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+//nolint:gochecknoinits // test setup requires init for directory creation
 func init() {
-	os.Mkdir("testdata", 0755)
+	_ = os.Mkdir("testdata", 0755)
 }
+
+const testSqlitePath = "testdata/test.sqlite"
 
 func Test_SqliteAccess_With_CreateDuplicateKey_Should_ReturnError(t *testing.T) {
 	// Arrange
-	path := "testdata/test.sqlite"
+	path := testSqlitePath
 	db, _ := sql.Open("sqlite", path)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	a := resource.NewSqliteAccess[string, string](db)
 	ctx := context.Background()
 	_ = a.Init(ctx)
@@ -34,9 +37,9 @@ func Test_SqliteAccess_With_CreateDuplicateKey_Should_ReturnError(t *testing.T) 
 
 func Test_SqliteAccess_With_CreateValidKey_Should_Succeed(t *testing.T) {
 	// Arrange
-	path := "testdata/test.sqlite"
+	path := testSqlitePath
 	db, _ := sql.Open("sqlite", path)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	a := resource.NewSqliteAccess[string, string](db)
 	ctx := context.Background()
 
@@ -51,9 +54,9 @@ func Test_SqliteAccess_With_CreateValidKey_Should_Succeed(t *testing.T) {
 
 func Test_SqliteAccess_With_DeleteValidKey_Should_RemoveValue(t *testing.T) {
 	// Arrange
-	path := "testdata/test.sqlite"
+	path := testSqlitePath
 	db, _ := sql.Open("sqlite", path)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	a := resource.NewSqliteAccess[string, string](db)
 	ctx := context.Background()
 	_ = a.Init(ctx)
@@ -70,9 +73,9 @@ func Test_SqliteAccess_With_DeleteValidKey_Should_RemoveValue(t *testing.T) {
 
 func Test_SqliteAccess_With_ReadAllMultipleKeys_Should_ReturnAllValues(t *testing.T) {
 	// Arrange
-	path := "testdata/test.sqlite"
+	path := testSqlitePath
 	db, _ := sql.Open("sqlite", path)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	a := resource.NewSqliteAccess[string, string](db)
 	ctx := context.Background()
 	_ = a.Init(ctx)
@@ -89,9 +92,9 @@ func Test_SqliteAccess_With_ReadAllMultipleKeys_Should_ReturnAllValues(t *testin
 
 func Test_SqliteAccess_With_ReadMissingKey_Should_ReturnError(t *testing.T) {
 	// Arrange
-	path := "testdata/test.sqlite"
+	path := testSqlitePath
 	db, _ := sql.Open("sqlite", path)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	a := resource.NewSqliteAccess[string, string](db)
 	ctx := context.Background()
 	_ = a.Init(ctx)
@@ -106,9 +109,9 @@ func Test_SqliteAccess_With_ReadMissingKey_Should_ReturnError(t *testing.T) {
 
 func Test_SqliteAccess_With_ReadValidKey_Should_ReturnValue(t *testing.T) {
 	// Arrange
-	path := "testdata/test.sqlite"
+	path := testSqlitePath
 	db, _ := sql.Open("sqlite", path)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	a := resource.NewSqliteAccess[string, string](db)
 	ctx := context.Background()
 	_ = a.Init(ctx)
@@ -124,9 +127,9 @@ func Test_SqliteAccess_With_ReadValidKey_Should_ReturnValue(t *testing.T) {
 
 func Test_SqliteAccess_With_UpdateValidKey_Should_UpdateValue(t *testing.T) {
 	// Arrange
-	path := "testdata/test.sqlite"
+	path := testSqlitePath
 	db, _ := sql.Open("sqlite", path)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	a := resource.NewSqliteAccess[string, string](db)
 	ctx := context.Background()
 	_ = a.Init(ctx)

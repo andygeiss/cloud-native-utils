@@ -106,7 +106,7 @@ func Test_Engine_View_With_ValidTemplate_Should_ReturnHandler(t *testing.T) {
 	// Arrange
 	engine := templating.NewEngine(efs)
 	engine.Parse("testdata/*.tmpl")
-	req := httptest.NewRequest("GET", "/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
 	// Act

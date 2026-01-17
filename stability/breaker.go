@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ErrorBreakerServiceUnavailable = errors.New("Service unavailable")
+	ErrBreakerServiceUnavailable = errors.New("service unavailable")
 )
 
 // Breaker wraps a service function with a circuit breaker mechanism.
@@ -19,9 +19,10 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 	var failureCount int
 	var lastCall = time.Now().UTC()
 	var mutex sync.RWMutex
-	return func(ctx context.Context, in IN) (out OUT, err error) {
+	return func(ctx context.Context, in IN) (OUT, error) {
+		var zero OUT
 		if ctx.Err() != nil {
-			return out, ctx.Err()
+			return zero, ctx.Err()
 		}
 
 		// Acquire a read lock to check the breaker state.
@@ -31,7 +32,7 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 			retryAt := lastCall.Add((2 << diff) * time.Second)
 			if !time.Now().UTC().After(retryAt) {
 				mutex.RUnlock()
-				return out, ErrorBreakerServiceUnavailable
+				return zero, ErrBreakerServiceUnavailable
 			}
 		}
 		mutex.RUnlock()
@@ -45,7 +46,7 @@ func Breaker[IN, OUT any](fn service.Function[IN, OUT], threshold int) service.F
 		lastCall = time.Now().UTC()
 		if err != nil {
 			failureCount++
-			return out, err
+			return zero, err
 		}
 
 		// Reset the failure count on a successful call.

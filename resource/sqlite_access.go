@@ -21,7 +21,7 @@ func NewSqliteAccess[K comparable, V any](db *sql.DB) *SqliteAccess[K, V] {
 }
 
 // Create inserts a new key-value pair into the table.
-func (a *SqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err error) {
+func (a *SqliteAccess[K, V]) Create(ctx context.Context, key K, value V) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -32,7 +32,10 @@ func (a *SqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err er
 	defer a.mutex.Unlock()
 
 	// Encode the value and insert it into the table.
-	encoded, _ := json.Marshal(value)
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
 	valueAsString := string(encoded)
 
 	// Ensure that the value is inserted atomically by using a transaction.
@@ -40,7 +43,7 @@ func (a *SqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err er
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	_, err = tx.Exec("INSERT INTO kv_store (key, value) VALUES (?, ?)", key, valueAsString)
 	if err != nil {
@@ -51,7 +54,7 @@ func (a *SqliteAccess[K, V]) Create(ctx context.Context, key K, value V) (err er
 }
 
 // Delete removes the key-value pair associated with the given key.
-func (a *SqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+func (a *SqliteAccess[K, V]) Delete(ctx context.Context, key K) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -66,7 +69,7 @@ func (a *SqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	_, err = tx.ExecContext(ctx, "DELETE FROM kv_store WHERE key = ?", key)
 	if err != nil {
@@ -77,7 +80,7 @@ func (a *SqliteAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
 }
 
 // Init initializes the table and index.
-func (a *SqliteAccess[K, V]) Init(ctx context.Context) (err error) {
+func (a *SqliteAccess[K, V]) Init(ctx context.Context) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -88,7 +91,7 @@ func (a *SqliteAccess[K, V]) Init(ctx context.Context) (err error) {
 	defer a.mutex.Unlock()
 
 	// Drop the table if it exists.
-	_, err = a.db.ExecContext(ctx, "DROP TABLE IF EXISTS kv_store;")
+	_, err := a.db.ExecContext(ctx, "DROP TABLE IF EXISTS kv_store;")
 	if err != nil {
 		return err
 	}
@@ -109,7 +112,7 @@ func (a *SqliteAccess[K, V]) Init(ctx context.Context) (err error) {
 }
 
 // Read returns the value associated with the given key.
-func (a *SqliteAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
+func (a *SqliteAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -121,7 +124,7 @@ func (a *SqliteAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error
 
 	// Query the value from the table.
 	var valueAsString string
-	err = a.db.QueryRowContext(ctx, "SELECT value FROM kv_store WHERE key = ?", key).Scan(&valueAsString)
+	err := a.db.QueryRowContext(ctx, "SELECT value FROM kv_store WHERE key = ?", key).Scan(&valueAsString)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +136,7 @@ func (a *SqliteAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error
 }
 
 // ReadAll returns all values from the table.
-func (a *SqliteAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
+func (a *SqliteAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -148,17 +151,17 @@ func (a *SqliteAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	// Store all values in a slice.
+	var values []V
 	for rows.Next() {
 		var valueAsString string
 		if err := rows.Scan(&valueAsString); err != nil {
 			return nil, err
 		}
 		var value V
-		err = json.Unmarshal([]byte(valueAsString), &value)
-		if err != nil {
+		if err := json.Unmarshal([]byte(valueAsString), &value); err != nil {
 			return nil, err
 		}
 		values = append(values, value)
@@ -168,7 +171,7 @@ func (a *SqliteAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error
 }
 
 // Update updates the value associated with the given key.
-func (a *SqliteAccess[K, V]) Update(ctx context.Context, key K, value V) (err error) {
+func (a *SqliteAccess[K, V]) Update(ctx context.Context, key K, value V) error {
 	// Skip if context is canceled or timed out.
 	if err := ctx.Err(); err != nil {
 		return err
@@ -179,14 +182,17 @@ func (a *SqliteAccess[K, V]) Update(ctx context.Context, key K, value V) (err er
 	defer a.mutex.Unlock()
 
 	// Encode the value as JSON.
-	valueAsString, _ := json.Marshal(value)
+	valueAsString, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
 
 	// Ensure that the value is updated atomically by using a transaction.
 	tx, err := a.db.Begin()
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	_, err = tx.ExecContext(ctx, "UPDATE kv_store SET value = ? WHERE key = ?", valueAsString, key)
 	if err != nil {

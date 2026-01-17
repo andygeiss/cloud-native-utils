@@ -32,9 +32,6 @@ func Test_GenerateKey_With_NoArgs_Should_ReturnNonZeroBytes(t *testing.T) {
 }
 
 func Test_GenerateKey_With_NoArgs_Should_ReturnThirtyTwoBytes(t *testing.T) {
-	// Arrange & Act
-	key := security.GenerateKey()
-
-	// Assert
-	assert.That(t, "key length must be 32 bytes", len(key), 32)
+	// Arrange & Act & Assert
+	assert.That(t, "key length must be 32 bytes", len(security.GenerateKey()), 32)
 }

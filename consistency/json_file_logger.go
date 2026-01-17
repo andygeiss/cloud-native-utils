@@ -10,13 +10,13 @@ import (
 // JsonFileLogger is a file-based implementation of the Logger interface.
 // It writes events to a JSON-formatted file for persistence.
 type JsonFileLogger[K, V any] struct {
-	closeOnce    sync.Once        // Ensures the Close method is called only once.
 	errorCh      chan error       // Channel for propagating errors to the caller.
 	eventCh      chan Event[K, V] // Channel for queuing events to be written.
 	file         string           // Path to the log file.
 	lastSequence uint64           // Sequence number of the last event.
-	mutex        sync.Mutex       // Mutex to protect shared resources.
 	wg           sync.WaitGroup   // WaitGroup for ensuring graceful shutdown.
+	mutex        sync.Mutex       // Mutex to protect shared resources.
+	closeOnce    sync.Once        // Ensures the Close method is called only once.
 }
 
 // NewJsonFileLogger initializes a new JsonFileLogger for the given file path.
@@ -32,7 +32,7 @@ func NewJsonFileLogger[K, V any](file string) *JsonFileLogger[K, V] {
 	// Ensure that the directory and file exist.
 	_ = os.Mkdir(filepath.Dir(file), 0755)
 	if _, err := os.Stat(file); os.IsNotExist(err) {
-		_ = os.WriteFile(file, []byte(""), 0644)
+		_ = os.WriteFile(file, []byte(""), 0600)
 	}
 
 	// Load the last sequence number from the file.
@@ -52,7 +52,7 @@ func NewJsonFileLogger[K, V any](file string) *JsonFileLogger[K, V] {
 // loadLastSequence reads the log file to determine the last sequence number.
 func loadLastSequence[K, V any](file string) (uint64, error) {
 	// Open the file for reading.
-	f, err := os.Open(file)
+	f, err := os.Open(file) //nolint:gosec // file path is controlled by caller
 	if err != nil {
 		// If the file doesn't exist, it's fine; this means no previous events.
 		if os.IsNotExist(err) {
@@ -60,7 +60,7 @@ func loadLastSequence[K, V any](file string) (uint64, error) {
 		}
 		return 0, err // Return any other errors.
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	// Use a JSON decoder to parse events.
 	decoder := json.NewDecoder(f)
@@ -87,12 +87,12 @@ func (a *JsonFileLogger[K, V]) run() {
 	// Mark the goroutine as done when this method exits.
 	defer a.wg.Done()
 	// Open the log file for appending or create it if it doesn't exist.
-	file, err := os.OpenFile(a.file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(a.file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		a.errorCh <- err // Report the error if the file can't be opened.
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	// JSON encoder for writing events to the file.
 	encoder := json.NewEncoder(file)
 	// Process events from the event channel.
@@ -141,7 +141,7 @@ func (a *JsonFileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
 			errorCh <- err
 			return
 		}
-		defer file.Close()
+		defer func() { _ = file.Close() }()
 		// Create a JSON decoder to read events from the file.
 		decoder := json.NewDecoder(file)
 		// Read events in a loop until EOF or an error occurs.

@@ -11,8 +11,9 @@ import (
 	"github.com/andygeiss/cloud-native-utils/service"
 )
 
+//nolint:gochecknoinits // test setup requires init for Kafka broker configuration
 func init() {
-	os.Setenv("KAFKA_BROKERS", "localhost:9092,localhost:9093")
+	_ = os.Setenv("KAFKA_BROKERS", "localhost:9092,localhost:9093")
 }
 
 func Test_ExternalDispatcher_With_PublishMessage_Should_Succeed(t *testing.T) {
@@ -43,7 +44,7 @@ func Test_ExternalDispatcher_With_Roundtrip_Should_CallHandler(t *testing.T) {
 	dis := messaging.NewExternalDispatcher()
 	msg := messaging.NewMessage("my-topic", []byte("my message"))
 	val := 0
-	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
+	fn := func(_ messaging.Message) (messaging.MessageState, error) {
 		val = 42
 		return messaging.MessageStateCompleted, nil
 	}
@@ -68,7 +69,7 @@ func Test_ExternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded
 	dis := messaging.NewExternalDispatcher()
 	msg := messaging.NewMessage("my-topic", []byte("my message"))
 	val := 0
-	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
+	fn := func(_ messaging.Message) (messaging.MessageState, error) {
 		time.Sleep(1 * time.Second)
 		val = 42
 		return messaging.MessageStateCompleted, nil
@@ -92,7 +93,7 @@ func Test_ExternalDispatcher_With_SubscribeHandler_Should_Succeed(t *testing.T) 
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
-	fn := func(msg messaging.Message) (state messaging.MessageState, err error) {
+	fn := func(_ messaging.Message) (messaging.MessageState, error) {
 		return messaging.MessageStateCompleted, nil
 	}
 

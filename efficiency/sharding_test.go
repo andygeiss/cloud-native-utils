@@ -14,7 +14,7 @@ func Test_Sharding_With_ConcurrentAccess_Should_HandleSafely(t *testing.T) {
 	// Arrange
 	shards := efficiency.NewSharding[string, string](3)
 	// Act
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		go func(i int) {
 			key := fmt.Sprintf("key %d", i)
 			value := fmt.Sprintf("value %d", i)
@@ -73,8 +73,8 @@ func BenchmarkMap_Delete(b *testing.B) {
 	}
 
 	// Initialize the map.
-	for i := 0; i < runtime.NumCPU(); i++ {
-		for j := 0; j < b.N; j++ {
+	for i := range runtime.NumCPU() {
+		for j := range b.N {
 			key := fmt.Sprintf("key %d %d", i, j)
 			users.Users[key] = User{ID: key, Name: fmt.Sprintf("value %d", i)}
 		}
@@ -84,13 +84,13 @@ func BenchmarkMap_Delete(b *testing.B) {
 
 	// Spawn a goroutine for each CPU core to perform concurrent operations.
 	var wg sync.WaitGroup
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := range runtime.NumCPU() {
 		wg.Add(1)
 
 		// The goroutine uses a mutex to ensure thread safety when accessing the map.
 		go func(i int) {
 			defer wg.Done()
-			for j := 0; j < b.N; j++ {
+			for j := range b.N {
 				key := fmt.Sprintf("key %d %d", i, j)
 				users.mutex.Lock()
 				delete(users.Users, key)
@@ -107,8 +107,8 @@ func BenchmarkMap_Get(b *testing.B) {
 	}
 
 	// Initialize the map.
-	for i := 0; i < runtime.NumCPU(); i++ {
-		for j := 0; j < b.N; j++ {
+	for i := range runtime.NumCPU() {
+		for j := range b.N {
 			key := fmt.Sprintf("key %d %d", i, j)
 			users.Users[key] = User{ID: key, Name: fmt.Sprintf("value %d", i)}
 		}
@@ -118,16 +118,16 @@ func BenchmarkMap_Get(b *testing.B) {
 
 	// Spawn a goroutine for each CPU core to perform concurrent operations.
 	var wg sync.WaitGroup
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := range runtime.NumCPU() {
 		wg.Add(1)
 
 		// The goroutine uses a mutex to ensure thread safety when accessing the map.
 		go func(i int) {
 			defer wg.Done()
-			for j := 0; j < b.N; j++ {
+			for j := range b.N {
 				key := fmt.Sprintf("key %d %d", i, j)
 				users.mutex.Lock()
-				_, _ = users.Users[key]
+				_ = users.Users[key]
 				users.mutex.Unlock()
 			}
 		}(i)
@@ -144,13 +144,13 @@ func BenchmarkMap_Put(b *testing.B) {
 
 	// Spawn a goroutine for each CPU core to perform concurrent operations.
 	var wg sync.WaitGroup
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := range runtime.NumCPU() {
 		wg.Add(1)
 
 		// The goroutine uses a mutex to ensure thread safety when accessing the map.
 		go func(i int) {
 			defer wg.Done()
-			for j := 0; j < b.N; j++ {
+			for j := range b.N {
 				key := fmt.Sprintf("key %d %d", i, j)
 				users.mutex.Lock()
 				users.Users[key] = User{ID: key, Name: fmt.Sprintf("value %d", i)}
@@ -165,8 +165,8 @@ func BenchmarkSharding_Delete(b *testing.B) {
 	shards := efficiency.NewSharding[string, User](32)
 
 	// Initialize the shards.
-	for i := 0; i < runtime.NumCPU(); i++ {
-		for j := 0; j < b.N; j++ {
+	for i := range runtime.NumCPU() {
+		for j := range b.N {
 			key := fmt.Sprintf("key %d %d", i, j)
 			shards.Put(key, User{ID: key, Name: fmt.Sprintf("value %d", i)})
 		}
@@ -176,13 +176,13 @@ func BenchmarkSharding_Delete(b *testing.B) {
 
 	// Spawn a goroutine for each CPU core to perform concurrent operations.
 	var wg sync.WaitGroup
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := range runtime.NumCPU() {
 		wg.Add(1)
 
 		// Each goroutine operates on the shards.
 		go func(i int) {
 			defer wg.Done()
-			for j := 0; j < b.N; j++ {
+			for j := range b.N {
 				key := fmt.Sprintf("key %d %d", i, j)
 				shards.Delete(key)
 			}
@@ -195,8 +195,8 @@ func BenchmarkSharding_Get(b *testing.B) {
 	shards := efficiency.NewSharding[string, User](32)
 
 	// Initialize the shards.
-	for i := 0; i < runtime.NumCPU(); i++ {
-		for j := 0; j < b.N; j++ {
+	for i := range runtime.NumCPU() {
+		for j := range b.N {
 			key := fmt.Sprintf("key %d %d", i, j)
 			shards.Put(key, User{ID: key, Name: fmt.Sprintf("value %d", i)})
 		}
@@ -206,13 +206,13 @@ func BenchmarkSharding_Get(b *testing.B) {
 
 	// Spawn a goroutine for each CPU core to perform concurrent operations.
 	var wg sync.WaitGroup
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := range runtime.NumCPU() {
 		wg.Add(1)
 
 		// Each goroutine operates on the shards.
 		go func(i int) {
 			defer wg.Done()
-			for j := 0; j < b.N; j++ {
+			for j := range b.N {
 				key := fmt.Sprintf("key %d %d", i, j)
 				_, _ = shards.Get(key)
 			}
@@ -228,13 +228,13 @@ func BenchmarkSharding_Put(b *testing.B) {
 
 	// Spawn a goroutine for each CPU core to perform concurrent operations.
 	var wg sync.WaitGroup
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := range runtime.NumCPU() {
 		wg.Add(1)
 
 		// Each goroutine operates on the shards.
 		go func(i int) {
 			defer wg.Done()
-			for j := 0; j < b.N; j++ {
+			for j := range b.N {
 				key := fmt.Sprintf("key %d %d", i, j)
 				shards.Put(key, User{ID: key, Name: fmt.Sprintf("value %d", i)})
 			}

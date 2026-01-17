@@ -1,4 +1,4 @@
-package resource
+package resource //nolint:testpackage // internal package tests for unexported types
 
 import (
 	"context"
@@ -33,8 +33,8 @@ func Test_IndexedAccess_With_MultipleEntities_Should_FindByIndex(t *testing.T) {
 	store.AddIndex("role", func(e *testEntity) string { return e.Role })
 	entity1 := &testEntity{ID: "1", Email: "alice@example.com", Role: "admin"}
 	entity2 := &testEntity{ID: "2", Email: "bob@example.com", Role: "admin"}
-	store.Create(context.Background(), "1", entity1)
-	store.Create(context.Background(), "2", entity2)
+	_ = store.Create(context.Background(), "1", entity1)
+	_ = store.Create(context.Background(), "2", entity2)
 	// Act
 	byEmail, _ := store.FindByIndex(context.Background(), "email", "alice@example.com")
 	byRole, _ := store.FindByIndex(context.Background(), "role", "admin")
@@ -52,7 +52,7 @@ func Test_IndexedAccess_With_ExistingEntity_Should_FindOneByIndex(t *testing.T) 
 	store := NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	entity := &testEntity{ID: "1", Email: "alice@example.com", Role: "admin"}
-	store.Create(context.Background(), "1", entity)
+	_ = store.Create(context.Background(), "1", entity)
 	// Act
 	found, ok := store.FindOneByIndex(context.Background(), "email", "alice@example.com")
 	_, notOk := store.FindOneByIndex(context.Background(), "email", "unknown@example.com")
@@ -68,7 +68,7 @@ func Test_IndexedAccess_With_UpdatedEmail_Should_UpdateIndex(t *testing.T) {
 	store := NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	entity := &testEntity{ID: "1", Email: "old@example.com", Role: "admin"}
-	store.Create(context.Background(), "1", entity)
+	_ = store.Create(context.Background(), "1", entity)
 	// Act
 	updated := &testEntity{ID: "1", Email: "new@example.com", Role: "admin"}
 	err := store.Update(context.Background(), "1", updated)
@@ -86,7 +86,7 @@ func Test_IndexedAccess_With_DeletedEntity_Should_RemoveFromIndex(t *testing.T) 
 	store := NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	entity := &testEntity{ID: "1", Email: "test@example.com", Role: "admin"}
-	store.Create(context.Background(), "1", entity)
+	_ = store.Create(context.Background(), "1", entity)
 	// Act
 	err := store.Delete(context.Background(), "1")
 	// Assert
@@ -100,7 +100,7 @@ func Test_IndexedAccess_With_ExistingKey_Should_Read(t *testing.T) {
 	base := NewInMemoryAccess[string, *testEntity]()
 	store := NewIndexedAccess(base)
 	entity := &testEntity{ID: "1", Email: "test@example.com", Role: "admin"}
-	store.Create(context.Background(), "1", entity)
+	_ = store.Create(context.Background(), "1", entity)
 	// Act
 	result, err := store.Read(context.Background(), "1")
 	// Assert
@@ -112,8 +112,8 @@ func Test_IndexedAccess_With_MultipleEntities_Should_ReadAll(t *testing.T) {
 	// Arrange
 	base := NewInMemoryAccess[string, *testEntity]()
 	store := NewIndexedAccess(base)
-	store.Create(context.Background(), "1", &testEntity{ID: "1"})
-	store.Create(context.Background(), "2", &testEntity{ID: "2"})
+	_ = store.Create(context.Background(), "1", &testEntity{ID: "1"})
+	_ = store.Create(context.Background(), "2", &testEntity{ID: "2"})
 	// Act
 	result, err := store.ReadAll(context.Background())
 	// Assert

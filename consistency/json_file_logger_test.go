@@ -10,13 +10,14 @@ import (
 	"github.com/andygeiss/cloud-native-utils/consistency"
 )
 
-func decodeJson[K, V any](logFile string) (events []consistency.Event[K, V], err error) {
-	file, err := os.Open(logFile)
+func decodeJson[K, V any](logFile string) ([]consistency.Event[K, V], error) {
+	file, err := os.Open(logFile) //nolint:gosec // test helper with controlled file path
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	decoder := json.NewDecoder(file)
+	var events []consistency.Event[K, V]
 	for {
 		var event consistency.Event[K, V]
 		if err := decoder.Decode(&event); err != nil {
@@ -30,7 +31,7 @@ func decodeJson[K, V any](logFile string) (events []consistency.Event[K, V], err
 func Test_JsonFileLogger_With_CloseGracefully_Should_WriteAllEvents(t *testing.T) {
 	// Arrange
 	logFile := "json_file_graceful_shutdown.log"
-	defer os.Remove(logFile)
+	defer func() { _ = os.Remove(logFile) }()
 	logger := consistency.NewJsonFileLogger[string, string](logFile)
 	logger.WritePut("key1", "value1")
 	logger.WritePut("key2", "value2")
@@ -51,7 +52,7 @@ func Test_JsonFileLogger_With_NonExistentPath_Should_ReturnError(t *testing.T) {
 	// Arrange
 	logFile := "/non-existent/json_file_error_handling.log"
 	logger := consistency.NewJsonFileLogger[string, string](logFile)
-	defer logger.Close()
+	defer func() { _ = logger.Close() }()
 	logger.WritePut("key1", "value1")
 
 	// Act
@@ -66,25 +67,23 @@ func Test_JsonFileLogger_With_ReadEventsError_Should_ReturnError(t *testing.T) {
 	// Arrange
 	logFile := "/non-existent/json_file_read_events_error.log"
 	logger := consistency.NewJsonFileLogger[string, string](logFile)
-	defer logger.Close()
+	defer func() { _ = logger.Close() }()
 
 	// Act
 	_, errorCh := logger.ReadEvents()
 
 	// Assert
-	select {
-	case err := <-errorCh:
-		assert.That(t, "err must not be nil", err != nil, true)
-	}
+	err := <-errorCh
+	assert.That(t, "err must not be nil", err != nil, true)
 }
 
 func Test_JsonFileLogger_With_ReadEventsSuccess_Should_ReturnEvents(t *testing.T) {
 	// Arrange
 	logFile := "json_file_read_events_succeeds.log"
-	defer os.Remove(logFile)
+	defer func() { _ = os.Remove(logFile) }()
 	logger := consistency.NewJsonFileLogger[string, string](logFile)
 	logger.WritePut("1", "value")
-	logger.Close()
+	_ = logger.Close()
 
 	// Act
 	eventCh, errorCh := logger.ReadEvents()
@@ -102,9 +101,9 @@ func Test_JsonFileLogger_With_ReadEventsSuccess_Should_ReturnEvents(t *testing.T
 func Test_JsonFileLogger_With_WritePutAndDelete_Should_LogAllEvents(t *testing.T) {
 	// Arrange
 	logFile := "json_file_logger_succeeds.log"
-	defer os.Remove(logFile)
+	defer func() { _ = os.Remove(logFile) }()
 	logger := consistency.NewJsonFileLogger[string, string](logFile)
-	defer logger.Close()
+	defer func() { _ = logger.Close() }()
 
 	// Act
 	logger.WritePut("key1", "value1")
@@ -118,6 +117,6 @@ func Test_JsonFileLogger_With_WritePutAndDelete_Should_LogAllEvents(t *testing.T
 	assert.That(t, "err must be nil", err == nil, true)
 	assert.That(t, "events length must be 4", len(events), 4)
 	for i := range 4 {
-		assert.That(t, "sequence must be correct", events[i].Sequence, uint64(i+1))
+		assert.That(t, "sequence must be correct", events[i].Sequence, uint64(i)+1) //nolint:gosec // test code with controlled loop bounds
 	}
 }

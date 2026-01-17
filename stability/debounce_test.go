@@ -54,7 +54,7 @@ func Test_Debounce_With_TwoCallsAfterDuration_Should_ReturnError(t *testing.T) {
 	fn := stability.Debounce[int](mockSucceedsTimes(1), 50*time.Millisecond)
 
 	// Act
-	fn(context.Background(), 42)
+	_, _ = fn(context.Background(), 42)
 	time.Sleep(100 * time.Millisecond)
 	_, err := fn(context.Background(), 42)
 
@@ -67,7 +67,7 @@ func Test_Debounce_With_TwoCalls_Should_ReturnLastResult(t *testing.T) {
 	fn := stability.Debounce[int](mockSucceedsTimes(2), 50*time.Millisecond)
 
 	// Act
-	fn(context.Background(), 21)
+	_, _ = fn(context.Background(), 21)
 	res, err := fn(context.Background(), 42)
 
 	// Assert

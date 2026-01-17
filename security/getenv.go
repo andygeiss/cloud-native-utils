@@ -10,26 +10,27 @@ import (
 // into a 32-byte array. If the environment variable is not set,
 // the value is not a valid hex string, or the decoded byte length
 // is not 32, the function returns an empty array.
-func Getenv(key string) (out [32]byte) {
+func Getenv(key string) [32]byte {
+	var out [32]byte
 
 	// Fetch the environment variable using the provided key.
 	hexValue := os.Getenv(key)
 
 	// If the environment variable is not set or empty, return an empty array.
 	if hexValue == "" {
-		return
+		return out
 	}
 
 	// Decode the hexadecimal string into raw bytes.
 	rawBytes, err := hex.DecodeString(hexValue)
 	if err != nil {
 		// If decoding fails, return an empty array.
-		return
+		return out
 	}
 
 	// Ensure the decoded byte slice is exactly 32 bytes long.
 	if len(rawBytes) != 32 {
-		return
+		return out
 	}
 
 	// Copy the decoded bytes into the output array.

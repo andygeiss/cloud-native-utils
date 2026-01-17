@@ -20,7 +20,7 @@ func NewInMemoryAccess[K comparable, V any]() *InMemoryAccess[K, V] {
 }
 
 // Create creates a new resource.
-func (a *InMemoryAccess[K, V]) Create(ctx context.Context, key K, value V) (err error) {
+func (a *InMemoryAccess[K, V]) Create(ctx context.Context, key K, value V) error {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return ctx.Err()
@@ -41,7 +41,7 @@ func (a *InMemoryAccess[K, V]) Create(ctx context.Context, key K, value V) (err 
 }
 
 // Delete deletes a resource.
-func (a *InMemoryAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
+func (a *InMemoryAccess[K, V]) Delete(ctx context.Context, key K) error {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return ctx.Err()
@@ -61,7 +61,7 @@ func (a *InMemoryAccess[K, V]) Delete(ctx context.Context, key K) (err error) {
 }
 
 // Read reads a resource.
-func (a *InMemoryAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err error) {
+func (a *InMemoryAccess[K, V]) Read(ctx context.Context, key K) (*V, error) {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -80,7 +80,7 @@ func (a *InMemoryAccess[K, V]) Read(ctx context.Context, key K) (ptr *V, err err
 }
 
 // ReadAll reads all resources.
-func (a *InMemoryAccess[K, V]) ReadAll(ctx context.Context) (values []V, err error) {
+func (a *InMemoryAccess[K, V]) ReadAll(ctx context.Context) ([]V, error) {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -91,6 +91,7 @@ func (a *InMemoryAccess[K, V]) ReadAll(ctx context.Context) (values []V, err err
 	defer a.mutex.RUnlock()
 
 	// Create a slice to hold the values.
+	values := make([]V, 0, len(a.kv))
 	for _, value := range a.kv {
 		values = append(values, value)
 	}
@@ -98,7 +99,7 @@ func (a *InMemoryAccess[K, V]) ReadAll(ctx context.Context) (values []V, err err
 }
 
 // Update updates a resource.
-func (a *InMemoryAccess[K, V]) Update(ctx context.Context, key K, value V) (err error) {
+func (a *InMemoryAccess[K, V]) Update(ctx context.Context, key K, value V) error {
 	// Skip if context is canceled or timed out.
 	if ctx.Err() != nil {
 		return ctx.Err()

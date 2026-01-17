@@ -35,7 +35,7 @@ func Debounce[IN, OUT any](fn service.Function[IN, OUT], duration time.Duration)
 		mu.Lock()
 
 		// Update our "latest" context & input
-		lastCtx = ctx
+		lastCtx = ctx //nolint:fatcontext // intentional: debounce uses the latest context
 		lastIn = in
 
 		// Each caller waits on its own channel to learn when the

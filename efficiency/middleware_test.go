@@ -11,11 +11,11 @@ import (
 
 func Test_WithCompression_With_GzipAcceptEncoding_Should_AddVaryHeader(t *testing.T) {
 	// Arrange
-	r, _ := http.NewRequest("GET", "/", nil)
+	r, _ := http.NewRequest(http.MethodGet, "/", nil)
 	r.Header.Set("Accept-Encoding", "gzip")
 	w := httptest.NewRecorder()
 	handler := efficiency.WithCompression(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
+		_, _ = w.Write([]byte("Hello, World!"))
 	}))
 
 	// Act
@@ -27,11 +27,11 @@ func Test_WithCompression_With_GzipAcceptEncoding_Should_AddVaryHeader(t *testin
 
 func Test_WithCompression_With_GzipAcceptEncoding_Should_CompressResponse(t *testing.T) {
 	// Arrange
-	r, _ := http.NewRequest("GET", "/", nil)
+	r, _ := http.NewRequest(http.MethodGet, "/", nil)
 	r.Header.Set("Accept-Encoding", "gzip")
 	w := httptest.NewRecorder()
 	handler := efficiency.WithCompression(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
+		_, _ = w.Write([]byte("Hello, World!"))
 	}))
 
 	// Act
@@ -45,7 +45,7 @@ func Test_WithCompression_With_GzipAcceptEncoding_Should_CompressResponse(t *tes
 
 func Test_WithCompression_With_HeadRequest_Should_NotCompress(t *testing.T) {
 	// Arrange
-	r, _ := http.NewRequest("HEAD", "/", nil)
+	r, _ := http.NewRequest(http.MethodHead, "/", nil)
 	r.Header.Set("Accept-Encoding", "gzip")
 	w := httptest.NewRecorder()
 	handler := efficiency.WithCompression(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -62,10 +62,10 @@ func Test_WithCompression_With_HeadRequest_Should_NotCompress(t *testing.T) {
 
 func Test_WithCompression_With_NoAcceptEncoding_Should_NotCompress(t *testing.T) {
 	// Arrange
-	r, _ := http.NewRequest("GET", "/", nil)
+	r, _ := http.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 	handler := efficiency.WithCompression(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
+		_, _ = w.Write([]byte("Hello, World!"))
 	}))
 
 	// Act
@@ -79,7 +79,7 @@ func Test_WithCompression_With_NoAcceptEncoding_Should_NotCompress(t *testing.T)
 
 func Test_WithCompression_With_NoContentStatus_Should_HandleCorrectly(t *testing.T) {
 	// Arrange
-	r, _ := http.NewRequest("DELETE", "/resource", nil)
+	r, _ := http.NewRequest(http.MethodDelete, "/resource", nil)
 	r.Header.Set("Accept-Encoding", "gzip")
 	w := httptest.NewRecorder()
 	handler := efficiency.WithCompression(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -95,12 +95,12 @@ func Test_WithCompression_With_NoContentStatus_Should_HandleCorrectly(t *testing
 
 func Test_WithCompression_With_RangeRequest_Should_NotCompress(t *testing.T) {
 	// Arrange
-	r, _ := http.NewRequest("GET", "/", nil)
+	r, _ := http.NewRequest(http.MethodGet, "/", nil)
 	r.Header.Set("Accept-Encoding", "gzip")
 	r.Header.Set("Range", "bytes=0-100")
 	w := httptest.NewRecorder()
 	handler := efficiency.WithCompression(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
+		_, _ = w.Write([]byte("Hello, World!"))
 	}))
 
 	// Act

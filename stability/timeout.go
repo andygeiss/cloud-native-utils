@@ -15,9 +15,10 @@ func Timeout[IN, OUT any](fn service.Function[IN, OUT], duration time.Duration) 
 		out OUT
 		err error
 	}
-	return func(ctx context.Context, in IN) (out OUT, err error) {
+	return func(ctx context.Context, in IN) (OUT, error) {
+		var zero OUT
 		if ctx.Err() != nil {
-			return out, ctx.Err()
+			return zero, ctx.Err()
 		}
 
 		// Create a child context with a timeout based on the specified duration.
@@ -40,7 +41,7 @@ func Timeout[IN, OUT any](fn service.Function[IN, OUT], duration time.Duration) 
 		case res := <-resCh:
 			return res.out, res.err
 		case <-withTimeout.Done():
-			return out, withTimeout.Err()
+			return zero, withTimeout.Err()
 		}
 	}
 }

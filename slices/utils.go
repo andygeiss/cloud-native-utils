@@ -1,14 +1,11 @@
 package slices
 
+import "slices"
+
 // Contains returns true if the slice contains the given element.
 // Uses comparable constraint for type-safe equality comparison.
 func Contains[T comparable](slice []T, element T) bool {
-	for _, item := range slice {
-		if item == element {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, element)
 }
 
 // ContainsAny returns true if the slice contains any of the given elements.

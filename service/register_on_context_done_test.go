@@ -44,8 +44,7 @@ func Test_RegisterOnContextDone_With_CancelledContext_Should_CallFunction(t *tes
 
 func Test_RegisterOnContextDone_With_ValidContext_Should_NotCallFunctionImmediately(t *testing.T) {
 	// Arrange
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	called := false
 
 	// Act

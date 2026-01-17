@@ -1,3 +1,4 @@
+//nolint:dupl // json and yaml file access tests have similar structure by design
 package resource_test
 
 import (
@@ -13,7 +14,7 @@ import (
 func Test_JsonFileAccess_With_CreateAlreadyExists_Should_ReturnError(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_create_already_exists.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 
@@ -42,7 +43,7 @@ func Test_JsonFileAccess_With_CreateDirectoryNotFound_Should_ReturnError(t *test
 func Test_JsonFileAccess_With_CreateValidKey_Should_Succeed(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_create.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 
@@ -58,7 +59,7 @@ func Test_JsonFileAccess_With_CreateValidKey_Should_Succeed(t *testing.T) {
 func Test_JsonFileAccess_With_DeleteMissingKey_Should_ReturnError(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_delete_not_exists.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 
@@ -74,7 +75,7 @@ func Test_JsonFileAccess_With_DeleteMissingKey_Should_ReturnError(t *testing.T) 
 func Test_JsonFileAccess_With_DeleteValidKey_Should_RemoveResource(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_delete.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 
@@ -93,7 +94,7 @@ func Test_JsonFileAccess_With_DeleteValidKey_Should_RemoveResource(t *testing.T)
 func Test_JsonFileAccess_With_ReadAllMultipleKeys_Should_ReturnAllValues(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_read_all.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 
@@ -125,7 +126,7 @@ func Test_JsonFileAccess_With_ReadDirectoryNotFound_Should_ReturnError(t *testin
 func Test_JsonFileAccess_With_ReadMissingKey_Should_ReturnError(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_read_not_exists.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 
@@ -142,7 +143,7 @@ func Test_JsonFileAccess_With_ReadMissingKey_Should_ReturnError(t *testing.T) {
 func Test_JsonFileAccess_With_ReadValidKey_Should_ReturnValue(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_read.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 
@@ -159,7 +160,7 @@ func Test_JsonFileAccess_With_ReadValidKey_Should_ReturnValue(t *testing.T) {
 func Test_JsonFileAccess_With_UpdateMissingKey_Should_ReturnError(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_update_not_exists.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 
@@ -175,7 +176,7 @@ func Test_JsonFileAccess_With_UpdateMissingKey_Should_ReturnError(t *testing.T) 
 func Test_JsonFileAccess_With_UpdateValidKey_Should_UpdateValue(t *testing.T) {
 	// Arrange
 	path := "./json_file_access_update.json"
-	defer os.Remove(path)
+	defer func() { _ = os.Remove(path) }()
 	a := resource.NewJsonFileAccess[string, int](path)
 	ctx := context.Background()
 

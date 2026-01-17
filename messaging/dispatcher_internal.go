@@ -20,7 +20,6 @@ func NewInternalDispatcher() Dispatcher {
 
 // Publish publishes a message to the dispatcher.
 func (a *internalDispatcher) Publish(ctx context.Context, message Message) error {
-
 	fns := a.fns[message.Topic]
 
 	// Skip publishing if there are no subscribers.

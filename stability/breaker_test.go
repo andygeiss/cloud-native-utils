@@ -31,7 +31,7 @@ func Test_Breaker_With_ConcurrentCalls_Should_AllSucceed(t *testing.T) {
 	errs := make(chan error, goroutines)
 
 	// Act
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			_, err := fn(context.Background(), 42)
 			errs <- err
@@ -39,7 +39,7 @@ func Test_Breaker_With_ConcurrentCalls_Should_AllSucceed(t *testing.T) {
 	}
 
 	// Assert
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		err := <-errs
 		assert.That(t, "err must be nil", err == nil, true)
 	}
@@ -62,11 +62,11 @@ func Test_Breaker_With_Recovery_Should_SucceedAfterWait(t *testing.T) {
 	fn := stability.Breaker[int](mockFailsTimes(threshold), threshold)
 
 	// Act - Exceed the failure threshold to trip the breaker
-	for i := 0; i < threshold; i++ {
+	for range threshold {
 		_, _ = fn(context.Background(), 42)
 	}
 	_, err := fn(context.Background(), 42)
-	assert.That(t, "err must be ServiceUnavailable", err.Error(), stability.ErrorBreakerServiceUnavailable.Error())
+	assert.That(t, "err must be ServiceUnavailable", err.Error(), stability.ErrBreakerServiceUnavailable.Error())
 
 	// Wait for the breaker to recover
 	time.Sleep(2 * time.Second)
@@ -97,13 +97,13 @@ func Test_Breaker_With_ThresholdExceeded_Should_ReturnServiceUnavailable(t *test
 	fn := stability.Breaker[int](mockAlwaysFails(), threshold)
 
 	// Act
-	for i := 0; i < threshold; i++ {
+	for range threshold {
 		_, _ = fn(context.Background(), 42)
 	}
 	_, err := fn(context.Background(), 42)
 
 	// Assert
-	assert.That(t, "err must be correct", err.Error(), stability.ErrorBreakerServiceUnavailable.Error())
+	assert.That(t, "err must be correct", err.Error(), stability.ErrBreakerServiceUnavailable.Error())
 }
 
 func Test_Breaker_With_TimeoutContext_Should_ReturnError(t *testing.T) {

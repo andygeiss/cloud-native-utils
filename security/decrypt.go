@@ -8,7 +8,7 @@ import (
 
 // Decrypt takes an encrypted byte slice (ciphertext) and a 256-bit AES key,
 // and decrypts the ciphertext using AES-GCM.
-func Decrypt(ciphertext []byte, key [32]byte) (plaintext []byte, err error) {
+func Decrypt(ciphertext []byte, key [32]byte) ([]byte, error) {
 	// Create a new AES cipher block with the provided key.
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -23,7 +23,7 @@ func Decrypt(ciphertext []byte, key [32]byte) (plaintext []byte, err error) {
 
 	// Ensure the ciphertext is long enough to include the nonce.
 	if len(ciphertext) < gcm.NonceSize() {
-		return nil, errors.New("Malformed ciphertext")
+		return nil, errors.New("malformed ciphertext")
 	}
 
 	// Decrypt the ciphertext using the nonce and the encrypted message.
