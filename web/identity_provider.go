@@ -40,6 +40,15 @@ func NewIdentityProvider() *identityProvider {
 // IdentityProvider is a singleton instance of the identity provider.
 var IdentityProvider = NewIdentityProvider() //nolint:gochecknoglobals // singleton pattern for identity provider
 
+// Verifier returns an OIDC ID token verifier for Bearer token validation.
+// The identity provider must be initialized first via Login().
+func (a *identityProvider) Verifier() *oidc.IDTokenVerifier {
+	if a.provider == nil || a.oidcConfig == nil {
+		return nil
+	}
+	return a.provider.Verifier(a.oidcConfig)
+}
+
 // Callback returns a handler function for the identity provider's callback endpoint.
 func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

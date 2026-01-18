@@ -100,3 +100,40 @@ func Test_IdentityProviderLogout_With_ValidSession_Should_DeleteSessionAndRedire
 	assert.That(t, "status code must be 302", w.Code, 302)
 	assert.That(t, "session must be deleted", exists, false)
 }
+
+func Test_IdentityProviderLogout_With_NoSessionCookie_Should_StillClearCookie(t *testing.T) {
+	// Arrange
+	t.Setenv("REDIRECT_URL", "http://localhost:8080")
+	sessions := web.NewServerSessions()
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/auth/logout", nil)
+	// No session cookie set
+
+	// Act
+	web.IdentityProvider.Logout(sessions)(w, r)
+
+	// Assert
+	assert.That(t, "status code must be 302", w.Code, 302)
+	cookies := w.Result().Cookies()
+	var sidCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "sid" {
+			sidCookie = c
+			break
+		}
+	}
+	assert.That(t, "sid cookie must be set", sidCookie != nil, true)
+	assert.That(t, "sid cookie value must be empty", sidCookie.Value, "")
+	assert.That(t, "sid cookie MaxAge must be -1", sidCookie.MaxAge, -1)
+}
+
+func Test_IdentityProviderVerifier_With_UninitializedProvider_Should_ReturnNil(t *testing.T) {
+	// Arrange
+	provider := web.NewIdentityProvider()
+
+	// Act
+	verifier := provider.Verifier()
+
+	// Assert
+	assert.That(t, "verifier must be nil when provider not initialized", verifier == nil, true)
+}
