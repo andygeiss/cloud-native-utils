@@ -2,7 +2,6 @@ package web
 
 import (
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/andygeiss/cloud-native-utils/env"
@@ -13,12 +12,8 @@ import (
 // The server has a default timeout of 5 seconds for read, write, and idle connections.
 // The timeout can be adjusted by setting the SERVER_*_TIMEOUT environment variables.
 func NewServer(mux *http.ServeMux) *http.Server {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
 	return &http.Server{
-		Addr:              ":" + port,
+		Addr:              ":" + env.Get("PORT", "8080"),
 		Handler:           mux,
 		IdleTimeout:       env.Get("SERVER_IDLE_TIMEOUT", 5*time.Second),
 		MaxHeaderBytes:    1 << 20, // Maximum size of request headers (1 MiB).
