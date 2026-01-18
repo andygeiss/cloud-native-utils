@@ -67,7 +67,7 @@ A modular Go library providing reusable utilities for building cloud-native appl
 | `slices` | Collections | `Map`, `Filter`, `Unique`, `Contains` |
 | `stability` | Resilience | `Retry`, `Breaker`, `Throttle`, `Debounce` |
 | `templating` | Views | `Engine` |
-| `web` | HTTP | `NewServer`, `NewClient`, `NewServeMux`, `WithAuth` |
+| `web` | HTTP | `NewServer`, `NewClient`, `NewServeMux`, `WithAuth`, `WithBearerAuth` |
 
 ---
 
@@ -1082,7 +1082,9 @@ logger.Info("http request handled", "method", r.Method, "path", r.URL.Path, "dur
 | Environment config | `env/env.go` |
 | Encryption | `security/encrypt.go` |
 | Server factory | `web/server.go` |
-| HTTP middleware | `web/middleware.go` |
+| Auth middleware (session) | `web/middleware.go` |
+| Auth middleware (bearer) | `web/middleware.go` |
+| Identity provider | `web/identity_provider.go` |
 | JSON logger | `logging/logger_json.go` |
 | Test assertions | `assert/that.go` |
 | Mock patterns | `stability/mocks_test.go` |
@@ -1193,7 +1195,7 @@ mux, sessions := web.NewServeMux(ctx, efs)
 // mux now has /liveness, /readiness, /static/, and /auth/* endpoints
 ```
 
-### 15.3 Authentication Middleware
+### 15.3 Session-Based Authentication Middleware
 
 ```go
 // FILE: web/middleware.go
@@ -1205,7 +1207,30 @@ handler := web.WithAuth(sessions, func(w http.ResponseWriter, r *http.Request) {
 mux.HandleFunc("GET /protected", handler)
 ```
 
-### 15.4 TLS Client
+### 15.4 Bearer Token Authentication Middleware (MCP)
+
+```go
+// FILE: web/middleware.go
+// Get OIDC verifier after identity provider is initialized via Login()
+verifier := web.IdentityProvider.Verifier()
+
+// Apply to MCP endpoint - returns JSON-RPC 2.0 errors on auth failure
+handler := web.WithBearerAuth(verifier, func(w http.ResponseWriter, r *http.Request) {
+    email := r.Context().Value(web.ContextEmail).(string)
+    subject := r.Context().Value(web.ContextSubject).(string)
+    // Use authenticated user info from Bearer token
+})
+mux.HandleFunc("POST /mcp", handler)
+```
+
+**Context values populated by WithBearerAuth:**
+- `ContextEmail` - User's email from token claims
+- `ContextName` - User's name from token claims
+- `ContextSubject` - Subject (user ID) from token
+- `ContextIssuer` - Token issuer URL
+- `ContextVerified` - Email verification status
+
+### 15.5 TLS Client
 
 ```go
 // FILE: web/client.go

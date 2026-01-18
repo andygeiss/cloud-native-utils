@@ -55,7 +55,7 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 | **slices** | Generic slice utilities (`Map`, `Filter`, `Unique`, etc.) |
 | **stability** | Resilience wrappers (circuit breaker, retry, throttle, debounce, timeout) |
 | **templating** | HTML template engine with `embed.FS` support |
-| **web** | HTTP server, client, routing, sessions, OIDC, middleware |
+| **web** | HTTP server, client, routing, sessions, OIDC, session & bearer auth middleware |
 
 ---
 
@@ -264,10 +264,19 @@ client := web.NewClientWithTLS(certFile, keyFile, caFile)
 var efs embed.FS
 mux, sessions := web.NewServeMux(ctx, efs)
 
-// Use authentication middleware
+// Session-based authentication middleware (for web UI)
 mux.HandleFunc("GET /protected", web.WithAuth(sessions, func(w http.ResponseWriter, r *http.Request) {
     email := r.Context().Value(web.ContextEmail).(string)
     // Handle authenticated request
+}))
+
+// Bearer token authentication middleware (for MCP/API endpoints)
+// Returns JSON-RPC 2.0 errors on auth failure
+verifier := web.IdentityProvider.Verifier() // After OIDC provider initialized
+mux.HandleFunc("POST /mcp", web.WithBearerAuth(verifier, func(w http.ResponseWriter, r *http.Request) {
+    email := r.Context().Value(web.ContextEmail).(string)
+    subject := r.Context().Value(web.ContextSubject).(string)
+    // Handle authenticated MCP request
 }))
 ```
 
