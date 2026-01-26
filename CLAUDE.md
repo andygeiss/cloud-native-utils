@@ -38,7 +38,7 @@
 cloud-native-utils/
 ├── assert/          Test assertions (assert.That)
 ├── consistency/     Transactional event log (JSON file persistence)
-├── efficiency/      Channel helpers, gzip middleware
+├── efficiency/      Channel helpers, gzip middleware, similarity search
 ├── env/             Generic environment variable parsing
 ├── event/           Domain event interfaces
 ├── extensibility/   Dynamic Go plugin loading
@@ -234,6 +234,7 @@ See `.env.example` for the full list. Key variables:
 - [x] MCP server (Model Context Protocol for AI tools)
 - [x] Bearer token authentication middleware
 - [x] ShardedSparseAccess for high-concurrency workloads
+- [x] Similarity search (Cosine, Jaccard) for sparse vector/set data
 
 ### Planned
 - [ ] Redis backend for resource package
@@ -312,6 +313,28 @@ mux.HandleFunc("GET /protected", web.WithAuth(sessions, handler))
 mux.HandleFunc("POST /mcp", web.WithBearerAuth(verifier, handler))
 ```
 
+### Similarity Search (efficiency)
+
+```go
+// Implement SparseVectorProvider for cosine similarity
+type Document struct { /* ... */ }
+func (d Document) SparseVector() (indices []int, values []float64, norm float64) { /* ... */ }
+
+// Implement SparseSetProvider for Jaccard similarity
+func (d Document) SparseSet() []int { /* ... */ }
+
+// Search with cosine similarity (TF-IDF vectors)
+opts := efficiency.SearchOptions{TopK: 10, Threshold: 0.5}
+results := efficiency.FindSimilarCosine(store, query, opts, nil)
+
+// Search with Jaccard similarity (term sets)
+results := efficiency.FindSimilarJaccard(store, query, opts, nil)
+
+// Context-based cancellation
+stopped := efficiency.SearchContext(ctx)
+results := efficiency.FindSimilarCosine(store, query, opts, stopped)
+```
+
 ---
 
 ## Gotchas
@@ -342,3 +365,5 @@ mux.HandleFunc("POST /mcp", web.WithBearerAuth(verifier, handler))
 7. **Mutex ordering** - Always acquire locks in consistent order to avoid deadlocks. Use RLock for reads, Lock for writes.
 
 8. **ShardedSparseAccess memory trade-off** - Uses ~2x memory vs InMemoryAccess due to bidirectional key mapping. Use when concurrent throughput is critical; use InMemoryAccess for memory-constrained scenarios.
+
+9. **Similarity search requires sorted indices** - `SparseVectorProvider` and `SparseSetProvider` must return indices in ascending order for O(m+n) merge-loop efficiency. Pre-compute and cache norms for `SparseVectorProvider`.

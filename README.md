@@ -42,7 +42,7 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 |---------|-------------|
 | **assert** | Minimal test assertion helper (`assert.That`) |
 | **consistency** | Transactional event log with JSON file persistence |
-| **efficiency** | Channel helpers (`Generate`, `Merge`, `Split`, `Process`) and gzip middleware |
+| **efficiency** | Channel helpers (`Generate`, `Merge`, `Split`, `Process`), gzip middleware, similarity search (Cosine, Jaccard) |
 | **env** | Generic environment variable parsing (`env.Get[T]`) |
 | **event** | Domain event interfaces (`Event`, `EventPublisher`, `EventSubscriber`) |
 | **extensibility** | Dynamic Go plugin loading |
@@ -107,6 +107,38 @@ _ = store.Create(ctx, "user-1", user)
 userPtr, _ := store.Read(ctx, "user-1")
 _ = store.Update(ctx, "user-1", updatedUser)
 _ = store.Delete(ctx, "user-1")
+```
+
+### Similarity Search
+
+```go
+import "github.com/andygeiss/cloud-native-utils/efficiency"
+
+// Document implements SparseVectorProvider (for cosine) and SparseSetProvider (for Jaccard)
+type Document struct {
+    Indices []int     // Sorted term indices
+    Values  []float64 // TF-IDF values (for cosine)
+    Norm    float64   // Pre-computed L2 norm (for cosine)
+}
+
+func (d Document) SparseVector() ([]int, []float64, float64) {
+    return d.Indices, d.Values, d.Norm
+}
+
+func (d Document) SparseSet() []int {
+    return d.Indices
+}
+
+// Find similar documents using cosine similarity
+opts := efficiency.SearchOptions{TopK: 10, Threshold: 0.5}
+results := efficiency.FindSimilarCosine(store, queryDoc, opts, nil)
+
+// Find similar documents using Jaccard similarity
+results := efficiency.FindSimilarJaccard(store, queryDoc, opts, nil)
+
+// With context-based cancellation
+stopped := efficiency.SearchContext(ctx)
+results := efficiency.FindSimilarCosine(store, queryDoc, opts, stopped)
 ```
 
 ### Stability (Resilience Patterns)
