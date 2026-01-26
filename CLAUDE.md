@@ -45,7 +45,7 @@ cloud-native-utils/
 ├── logging/         Structured JSON logging (log/slog)
 ├── mcp/             Model Context Protocol server (Claude Desktop)
 ├── messaging/       Pub-sub dispatchers (in-memory, Kafka)
-├── resource/        Generic CRUD backends (memory, JSON, YAML, SQLite, PostgreSQL)
+├── resource/        Generic CRUD backends (memory, sharded-sparse, JSON, YAML, SQLite, PostgreSQL)
 ├── security/        AES-GCM encryption, password hashing, HMAC
 ├── service/         Context helpers, lifecycle management
 ├── slices/          Generic slice utilities
@@ -233,6 +233,7 @@ See `.env.example` for the full list. Key variables:
 - [x] Web (server, client, sessions, OIDC)
 - [x] MCP server (Model Context Protocol for AI tools)
 - [x] Bearer token authentication middleware
+- [x] ShardedSparseAccess for high-concurrency workloads
 
 ### Planned
 - [ ] Redis backend for resource package
@@ -252,6 +253,7 @@ See `.env.example` for the full list. Key variables:
 | No global state | Testability, concurrent safety |
 | `sync.RWMutex` over channels | Simpler for CRUD operations |
 | golangci-lint | Consistent code quality across packages |
+| Sharding + sparse-dense for high-perf storage | 3-4x concurrent throughput, O(1) delete, cache-friendly iteration |
 
 ---
 
@@ -271,6 +273,7 @@ type Access[K, V any] interface {
 
 // Implementations
 store := resource.NewInMemoryAccess[string, User]()
+store := resource.NewShardedSparseAccess[string, User](32)  // High-performance: 32 shards
 store := resource.NewJsonFileAccess[string, User]("users.json")
 store := resource.NewPostgresAccess[string, User](db)
 ```
@@ -337,3 +340,5 @@ mux.HandleFunc("POST /mcp", web.WithBearerAuth(verifier, handler))
 6. **Test package separation** - Tests use `package {name}_test` to test public API only.
 
 7. **Mutex ordering** - Always acquire locks in consistent order to avoid deadlocks. Use RLock for reads, Lock for writes.
+
+8. **ShardedSparseAccess memory trade-off** - Uses ~2x memory vs InMemoryAccess due to bidirectional key mapping. Use when concurrent throughput is critical; use InMemoryAccess for memory-constrained scenarios.
