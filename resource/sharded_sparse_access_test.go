@@ -501,6 +501,125 @@ func Test_ShardedSparseAccessWithCapacity_Should_Work(t *testing.T) {
 	assert.That(t, "value must be 42", *v, 42)
 }
 
+// --- SearchSimilar Tests ---
+
+type testDoc struct {
+	ID    string
+	Score float64
+}
+
+func Test_SearchSimilar_With_CancelledContext_Should_ReturnPartialResults(t *testing.T) {
+	// Arrange
+	a := resource.NewShardedSparseAccess[string, testDoc](32)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Pre-cancel
+
+	for i := range 100 {
+		_ = a.Create(context.Background(), fmt.Sprintf("doc%d", i), testDoc{Score: float64(i)})
+	}
+
+	// Act
+	results := a.SearchSimilar(ctx, func(d testDoc) float64 {
+		return d.Score
+	}, resource.SearchOptions{TopK: 10})
+
+	// Assert - should return partial or no results due to cancellation
+	assert.That(t, "results should be fewer than 10", len(results) < 10, true)
+}
+
+func Test_SearchSimilar_With_DefaultTopK_Should_UseTen(t *testing.T) {
+	// Arrange
+	a := resource.NewShardedSparseAccess[string, testDoc](4)
+	ctx := context.Background()
+
+	for i := range 20 {
+		_ = a.Create(ctx, fmt.Sprintf("doc%d", i), testDoc{Score: float64(i)})
+	}
+
+	// Act
+	results := a.SearchSimilar(ctx, func(d testDoc) float64 {
+		return d.Score
+	}, resource.SearchOptions{}) // TopK defaults to 10
+
+	// Assert
+	assert.That(t, "results len must be 10", len(results), 10)
+}
+
+func Test_SearchSimilar_With_DescendingOrder_Should_SortCorrectly(t *testing.T) {
+	// Arrange
+	a := resource.NewShardedSparseAccess[string, testDoc](4)
+	ctx := context.Background()
+
+	_ = a.Create(ctx, "low", testDoc{Score: 0.1})
+	_ = a.Create(ctx, "mid", testDoc{Score: 0.5})
+	_ = a.Create(ctx, "high", testDoc{Score: 0.9})
+
+	// Act
+	results := a.SearchSimilar(ctx, func(d testDoc) float64 {
+		return d.Score
+	}, resource.SearchOptions{TopK: 10})
+
+	// Assert
+	assert.That(t, "results len must be 3", len(results), 3)
+	assert.That(t, "first result should be high", results[0].Key, "high")
+	assert.That(t, "second result should be mid", results[1].Key, "mid")
+	assert.That(t, "third result should be low", results[2].Key, "low")
+}
+
+func Test_SearchSimilar_With_EmptyStore_Should_ReturnNoResults(t *testing.T) {
+	// Arrange
+	a := resource.NewShardedSparseAccess[string, testDoc](4)
+	ctx := context.Background()
+
+	// Act
+	results := a.SearchSimilar(ctx, func(d testDoc) float64 {
+		return d.Score
+	}, resource.SearchOptions{TopK: 10})
+
+	// Assert
+	assert.That(t, "results must be empty", len(results), 0)
+}
+
+func Test_SearchSimilar_With_Threshold_Should_FilterLowScores(t *testing.T) {
+	// Arrange
+	a := resource.NewShardedSparseAccess[string, testDoc](4)
+	ctx := context.Background()
+
+	_ = a.Create(ctx, "low", testDoc{Score: 0.2})
+	_ = a.Create(ctx, "high", testDoc{Score: 0.8})
+
+	// Act
+	results := a.SearchSimilar(ctx, func(d testDoc) float64 {
+		return d.Score
+	}, resource.SearchOptions{TopK: 10, Threshold: 0.5})
+
+	// Assert
+	assert.That(t, "results len must be 1", len(results), 1)
+	assert.That(t, "result key must be high", results[0].Key, "high")
+}
+
+func Test_SearchSimilar_With_TopK_Should_LimitResults(t *testing.T) {
+	// Arrange
+	a := resource.NewShardedSparseAccess[string, testDoc](4)
+	ctx := context.Background()
+
+	for i := range 20 {
+		_ = a.Create(ctx, fmt.Sprintf("doc%d", i), testDoc{Score: float64(i)})
+	}
+
+	// Act
+	results := a.SearchSimilar(ctx, func(d testDoc) float64 {
+		return d.Score
+	}, resource.SearchOptions{TopK: 5})
+
+	// Assert
+	assert.That(t, "results len must be 5", len(results), 5)
+	// Results should be the top 5 scores (15-19) in descending order
+	for i := range len(results) - 1 {
+		assert.That(t, "results must be descending", results[i].Score >= results[i+1].Score, true)
+	}
+}
+
 // --- Benchmarks ---
 
 func BenchmarkComparison_InMemoryAccess_Concurrent_Create(b *testing.B) {
@@ -666,7 +785,7 @@ func BenchmarkShardedSparseAccess_ReadAll(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	for range b.N {
+	for b.Loop() {
 		_, _ = a.ReadAll(ctx)
 	}
 }

@@ -38,7 +38,7 @@
 cloud-native-utils/
 ├── assert/          Test assertions (assert.That)
 ├── consistency/     Transactional event log (JSON file persistence)
-├── efficiency/      Channel helpers, gzip middleware, similarity search
+├── efficiency/      Channel helpers, gzip middleware, similarity search, sparse data structures
 ├── env/             Generic environment variable parsing
 ├── event/           Domain event interfaces
 ├── extensibility/   Dynamic Go plugin loading
@@ -255,6 +255,7 @@ See `.env.example` for the full list. Key variables:
 | `sync.RWMutex` over channels | Simpler for CRUD operations |
 | golangci-lint | Consistent code quality across packages |
 | Sharding + sparse-dense for high-perf storage | 3-4x concurrent throughput, O(1) delete, cache-friendly iteration |
+| KeyedSparseSet → SparseSharding → ShardedSparseAccess | Layered composition: data structure, concurrency, CRUD semantics |
 
 ---
 
@@ -313,26 +314,51 @@ mux.HandleFunc("GET /protected", web.WithAuth(sessions, handler))
 mux.HandleFunc("POST /mcp", web.WithBearerAuth(verifier, handler))
 ```
 
-### Similarity Search (efficiency)
+### Sparse Data Structures (efficiency)
 
 ```go
-// Implement SparseVectorProvider for cosine similarity
-type Document struct { /* ... */ }
-func (d Document) SparseVector() (indices []int, values []float64, norm float64) { /* ... */ }
+// KeyedSparseSet: O(1) operations, cache-friendly iteration
+// Uses bidirectional key mapping (sparse-dense) for O(1) delete via swap-remove
+set := efficiency.NewKeyedSparseSet[string, User](100)
+isNew := set.Put("user-1", user)  // Returns true if key was new
+value := set.Get("user-1")         // Returns *User or nil
+deleted := set.Delete("user-1")    // O(1) swap-remove
 
-// Implement SparseSetProvider for Jaccard similarity
-func (d Document) SparseSet() []int { /* ... */ }
+// SparseSharding: Concurrent access with per-shard locking
+// Wraps KeyedSparseSet with FNV-1a hash distribution
+shards := efficiency.NewSparseSharding[string, User](32)
+shards.Put("user-1", user)
+shards.ForEach(func(k string, v User) bool { return true })
+shards.ForEachShard(func(idx int, iterate func(fn func(string, User) bool)) {
+    // Per-shard iteration with cancellation checks between shards
+    iterate(func(k string, v User) bool { return true })
+})
+```
 
-// Search with cosine similarity (TF-IDF vectors)
-opts := efficiency.SearchOptions{TopK: 10, Threshold: 0.5}
-results := efficiency.FindSimilarCosine(store, query, opts, nil)
+### Similarity Search (resource + efficiency)
 
-// Search with Jaccard similarity (term sets)
-results := efficiency.FindSimilarJaccard(store, query, opts, nil)
+```go
+// SearchSimilar is a method on ShardedSparseAccess
+// Use a custom scorer function with utility functions from efficiency package
 
-// Context-based cancellation
-stopped := efficiency.SearchContext(ctx)
-results := efficiency.FindSimilarCosine(store, query, opts, stopped)
+// Cosine similarity for TF-IDF vectors
+results := store.SearchSimilar(ctx, func(doc Document) float64 {
+    return efficiency.CosineSimilarity(
+        query.Indices, doc.Indices,
+        query.Values, doc.Values,
+        query.Norm, doc.Norm,
+    )
+}, resource.SearchOptions{TopK: 10, Threshold: 0.5})
+
+// Jaccard similarity for tag/term sets
+results := store.SearchSimilar(ctx, func(article Article) float64 {
+    return efficiency.JaccardSimilarity(queryTags, article.Tags)
+}, resource.SearchOptions{TopK: 10})
+
+// Custom scoring (e.g., weighted combination)
+results := store.SearchSimilar(ctx, func(item Item) float64 {
+    return 0.7*textScore(query, item) + 0.3*tagScore(query, item)
+}, resource.SearchOptions{TopK: 5})
 ```
 
 ---
@@ -366,4 +392,4 @@ results := efficiency.FindSimilarCosine(store, query, opts, stopped)
 
 8. **ShardedSparseAccess memory trade-off** - Uses ~2x memory vs InMemoryAccess due to bidirectional key mapping. Use when concurrent throughput is critical; use InMemoryAccess for memory-constrained scenarios.
 
-9. **Similarity search requires sorted indices** - `SparseVectorProvider` and `SparseSetProvider` must return indices in ascending order for O(m+n) merge-loop efficiency. Pre-compute and cache norms for `SparseVectorProvider`.
+9. **Similarity search requires sorted indices** - `CosineSimilarity` and `JaccardSimilarity` utility functions require index slices to be sorted in ascending order for O(m+n) merge-loop efficiency. Pre-compute and cache norms for cosine similarity.

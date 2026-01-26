@@ -42,7 +42,7 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 |---------|-------------|
 | **assert** | Minimal test assertion helper (`assert.That`) |
 | **consistency** | Transactional event log with JSON file persistence |
-| **efficiency** | Channel helpers (`Generate`, `Merge`, `Split`, `Process`), gzip middleware, similarity search (Cosine, Jaccard) |
+| **efficiency** | Channel helpers (`Generate`, `Merge`, `Split`, `Process`), gzip middleware, similarity search (Cosine, Jaccard), sparse data structures (`KeyedSparseSet`, `SparseSharding`) |
 | **env** | Generic environment variable parsing (`env.Get[T]`) |
 | **event** | Domain event interfaces (`Event`, `EventPublisher`, `EventSubscriber`) |
 | **extensibility** | Dynamic Go plugin loading |
@@ -112,33 +112,35 @@ _ = store.Delete(ctx, "user-1")
 ### Similarity Search
 
 ```go
-import "github.com/andygeiss/cloud-native-utils/efficiency"
+import (
+    "github.com/andygeiss/cloud-native-utils/efficiency"
+    "github.com/andygeiss/cloud-native-utils/resource"
+)
 
-// Document implements SparseVectorProvider (for cosine) and SparseSetProvider (for Jaccard)
+// Document with sparse vector data
 type Document struct {
     Indices []int     // Sorted term indices
     Values  []float64 // TF-IDF values (for cosine)
     Norm    float64   // Pre-computed L2 norm (for cosine)
 }
 
-func (d Document) SparseVector() ([]int, []float64, float64) {
-    return d.Indices, d.Values, d.Norm
-}
-
-func (d Document) SparseSet() []int {
-    return d.Indices
-}
+// Create store and populate with documents
+store := resource.NewShardedSparseAccess[string, Document](32)
+_ = store.Create(ctx, "doc-1", doc1)
 
 // Find similar documents using cosine similarity
-opts := efficiency.SearchOptions{TopK: 10, Threshold: 0.5}
-results := efficiency.FindSimilarCosine(store, queryDoc, opts, nil)
+results := store.SearchSimilar(ctx, func(doc Document) float64 {
+    return efficiency.CosineSimilarity(
+        query.Indices, doc.Indices,
+        query.Values, doc.Values,
+        query.Norm, doc.Norm,
+    )
+}, resource.SearchOptions{TopK: 10, Threshold: 0.5})
 
-// Find similar documents using Jaccard similarity
-results := efficiency.FindSimilarJaccard(store, queryDoc, opts, nil)
-
-// With context-based cancellation
-stopped := efficiency.SearchContext(ctx)
-results := efficiency.FindSimilarCosine(store, queryDoc, opts, stopped)
+// Find similar documents using Jaccard similarity (for tag sets)
+results := store.SearchSimilar(ctx, func(doc Document) float64 {
+    return efficiency.JaccardSimilarity(query.Indices, doc.Indices)
+}, resource.SearchOptions{TopK: 10})
 ```
 
 ### Stability (Resilience Patterns)
@@ -323,7 +325,7 @@ mux.HandleFunc("POST /mcp", web.WithBearerAuth(verifier, func(w http.ResponseWri
 cloud-native-utils/
 ├── assert/          # Test assertions
 ├── consistency/     # Event logging
-├── efficiency/      # Channel helpers, compression
+├── efficiency/      # Channel helpers, compression, sparse data structures
 ├── env/             # Environment variable parsing
 ├── event/           # Domain event interfaces
 ├── extensibility/   # Plugin loading

@@ -2,7 +2,7 @@ set dotenv-load
 
 # Benchmark the Go sources.
 benchmark:
-    @cd ./consistency && go test -bench .
+    @go test -bench=. -benchmem ./consistency/... ./efficiency/... ./resource/...
 
 # Create a local CA and sign a server certificate.
 # This will only be used if domains = ["localhost"].
