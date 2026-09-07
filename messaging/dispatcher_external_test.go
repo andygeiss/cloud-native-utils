@@ -4,7 +4,6 @@ package messaging_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -13,12 +12,14 @@ import (
 	"github.com/andygeiss/cloud-native-utils/service"
 )
 
-//nolint:gochecknoinits // test setup requires init for Kafka broker configuration
-func init() {
-	_ = os.Setenv("KAFKA_BROKERS", "localhost:9092,localhost:9093")
+// setupKafkaEnv points the dispatcher at the local brokers.
+func setupKafkaEnv(t *testing.T) {
+	t.Helper()
+	t.Setenv("KAFKA_BROKERS", "localhost:9092,localhost:9093")
 }
 
 func Test_ExternalDispatcher_With_PublishMessage_Should_Succeed(t *testing.T) {
+	setupKafkaEnv(t)
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
@@ -31,6 +32,7 @@ func Test_ExternalDispatcher_With_PublishMessage_Should_Succeed(t *testing.T) {
 }
 
 func Test_ExternalDispatcher_With_Roundtrip_Should_CallHandler(t *testing.T) {
+	setupKafkaEnv(t)
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
@@ -50,6 +52,7 @@ func Test_ExternalDispatcher_With_Roundtrip_Should_CallHandler(t *testing.T) {
 }
 
 func Test_ExternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded(t *testing.T) {
+	setupKafkaEnv(t)
 	// Arrange
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
@@ -72,6 +75,7 @@ func Test_ExternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded
 }
 
 func Test_ExternalDispatcher_With_SubscribeHandler_Should_Succeed(t *testing.T) {
+	setupKafkaEnv(t)
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()

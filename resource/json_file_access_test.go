@@ -1,4 +1,3 @@
-//nolint:dupl // json and yaml file access tests have similar structure by design
 package resource_test
 
 import (

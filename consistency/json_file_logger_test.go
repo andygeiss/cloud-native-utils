@@ -11,7 +11,7 @@ import (
 )
 
 func decodeJson[K, V any](logFile string) ([]consistency.Event[K, V], error) {
-	file, err := os.Open(logFile) //nolint:gosec // test helper with controlled file path
+	file, err := os.Open(logFile) // logFile is built by the test, never by user input.
 	if err != nil {
 		return nil, err
 	}
@@ -117,6 +117,6 @@ func Test_JsonFileLogger_With_WritePutAndDelete_Should_LogAllEvents(t *testing.T
 	assert.That(t, "err must be nil", err == nil, true)
 	assert.That(t, "events length must be 4", len(events), 4)
 	for i := range 4 {
-		assert.That(t, "sequence must be correct", events[i].Sequence, uint64(i)+1) //nolint:gosec // test code with controlled loop bounds
+		assert.That(t, "sequence must be correct", events[i].Sequence, uint64(i)+1)
 	}
 }

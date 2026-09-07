@@ -52,7 +52,7 @@ func NewJsonFileLogger[K, V any](file string) *JsonFileLogger[K, V] {
 // loadLastSequence reads the log file to determine the last sequence number.
 func loadLastSequence[K, V any](file string) (uint64, error) {
 	// Open the file for reading.
-	f, err := os.Open(file) //nolint:gosec // file path is controlled by caller
+	f, err := os.Open(file) // The caller chooses the path; this is a library, not a server.
 	if err != nil {
 		// If the file doesn't exist, it's fine; this means no previous events.
 		if os.IsNotExist(err) {
