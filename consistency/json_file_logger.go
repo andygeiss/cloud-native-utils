@@ -2,6 +2,8 @@ package consistency
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -149,7 +151,7 @@ func (a *JsonFileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
 			var event Event[K, V]
 			// Decode the next event from the file.
 			if err := decoder.Decode(&event); err != nil {
-				if err.Error() == "EOF" {
+				if errors.Is(err, io.EOF) {
 					// Exit gracefully if all events have been read.
 					return
 				}
