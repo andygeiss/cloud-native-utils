@@ -2,10 +2,10 @@ package templating
 
 import (
 	"fmt"
+	"html/template"
 	"io"
 	"io/fs"
 	"net/http"
-	"text/template"
 )
 
 // Engine is a simple wrapper around the Go templating engine.

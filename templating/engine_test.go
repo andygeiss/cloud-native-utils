@@ -117,3 +117,17 @@ func Test_Engine_View_With_ValidTemplate_Should_ReturnHandler(t *testing.T) {
 	assert.That(t, "handler must return 200", w.Code, http.StatusOK)
 	assert.That(t, "handler must render content", w.Body.String(), "\nHello View\n")
 }
+
+func Test_Engine_With_HtmlInData_Should_EscapeIt(t *testing.T) {
+	// Arrange
+	engine := templating.NewEngine(efs)
+	engine.Parse("testdata/*.tmpl")
+	var result bytes.Buffer
+
+	// Act
+	err := engine.Render(&result, "index", struct{ Name string }{Name: "<script>alert(1)</script>"})
+
+	// Assert
+	assert.That(t, "engine.Render must succeed", err, nil)
+	assert.That(t, "html in data must be escaped", result.String(), "\nHello &lt;script&gt;alert(1)&lt;/script&gt;\n")
+}
