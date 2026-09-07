@@ -258,6 +258,8 @@ See `.env.example` for the full list. Key variables:
 | Andy's engineering baseline is the source of truth | Stack, versions and gates are decided once, across every project |
 | `make check` is the only gate, and there is no CI server | One person runs the gates; a second machine repeating them is not worth its upkeep |
 | Tests needing a broker, an issuer or certificates sit behind `//go:build integration` | `make check` must never depend on what happens to be running on a developer's machine |
+| `encoding/json/v2` everywhere | Stricter defaults, and the module is at v0 so no tag promised the old wire format |
+| Templates are `html/template` | The package serves HTTP responses; escaping is not optional |
 
 ---
 
@@ -401,4 +403,11 @@ results := store.SearchSimilar(ctx, func(item Item) float64 {
     - On macOS, `plugin.Open` fails with `chained fixups, seg_count does not match number of segments` unless the plugin is linked with `-ldflags=-extldflags=-Wl,-no_fixup_chains`.
     - Go keys a plugin by its package path, so opening a second build of the same source fails with `plugin already loaded`. Build it once.
 
-11. **Similarity search requires sorted indices** - `CosineSimilarity` and `JaccardSimilarity` utility functions require index slices to be sorted in ascending order for O(m+n) merge-loop efficiency. Pre-compute and cache norms for cosine similarity.
+11. **`encoding/json/v2` has three traps this repo already hit** - See `stack/go.md` for the full list; these are the ones that bit here:
+    - `omitempty` drops only *empty* JSON values, and `false` and `0` are not empty. A bool or number that used to disappear now ships. Use `omitzero`.
+    - Map keys marshal in Go's random map order. Anything written to a file or compared as bytes needs `json.Deterministic(true)` — `resource/json_file_access.go` does.
+    - `json.RawMessage` is `jsontext.Value`, and streaming is `jsontext.NewEncoder`/`NewDecoder` with `json.MarshalEncode`/`UnmarshalDecode`. The encoder still writes one newline per top-level value, so line-delimited logs keep their format.
+
+12. **Fuzz seeds run in a plain `go test`** - Every target under `testdata/fuzz/` replays on each `make check`. Only `go test -fuzz=<Name>` explores new inputs. A crash found while fuzzing writes its input there; commit that file, it becomes the regression test.
+
+13. **Similarity search requires sorted indices** - `CosineSimilarity` and `JaccardSimilarity` utility functions require index slices to be sorted in ascending order for O(m+n) merge-loop efficiency. Pre-compute and cache norms for cosine similarity.
