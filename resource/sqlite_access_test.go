@@ -127,3 +127,30 @@ func Test_SqliteAccess_With_UpdateValidKey_Should_UpdateValue(t *testing.T) {
 	assert.That(t, "err must be nil", err, nil)
 	assert.That(t, "value must be 'value2'", *value, "value2")
 }
+
+func Test_SqliteAccess_With_MapValue_Should_StoreStableBytes(t *testing.T) {
+	// Arrange
+	type doc struct {
+		Tags map[string]int `json:"tags"`
+	}
+	db := newTestDB(t)
+	a := resource.NewSqliteAccess[string, doc](db)
+	ctx := context.Background()
+	_ = a.Init(ctx)
+	value := doc{Tags: map[string]int{"zeta": 1, "alpha": 2, "mike": 3, "bravo": 4, "yankee": 5}}
+	_ = a.Create(ctx, "key", value)
+
+	var first string
+	_ = db.QueryRowContext(ctx, "SELECT value FROM kv_store WHERE key = ?", "key").Scan(&first)
+
+	// Act
+	for range 10 {
+		_ = a.Update(ctx, "key", value)
+	}
+	var last string
+	_ = db.QueryRowContext(ctx, "SELECT value FROM kv_store WHERE key = ?", "key").Scan(&last)
+
+	// Assert
+	assert.That(t, "map keys must be sorted", first, `{"tags":{"alpha":2,"bravo":4,"mike":3,"yankee":5,"zeta":1}}`)
+	assert.That(t, "rewriting the same value must not change the bytes", last, first)
+}

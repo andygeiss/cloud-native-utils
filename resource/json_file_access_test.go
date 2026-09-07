@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/andygeiss/cloud-native-utils/assert"
@@ -189,4 +190,27 @@ func Test_JsonFileAccess_With_UpdateValidKey_Should_UpdateValue(t *testing.T) {
 	assert.That(t, "err2 must be nil", err2, nil)
 	assert.That(t, "err3 must be nil", err3, nil)
 	assert.That(t, "v must be 21", *v, 21)
+}
+
+func Test_JsonFileAccess_With_MapValue_Should_StoreStableBytes(t *testing.T) {
+	// Arrange
+	type doc struct {
+		Tags map[string]int `json:"tags"`
+	}
+	path := filepath.Join(t.TempDir(), "store.json")
+	a := resource.NewJsonFileAccess[string, doc](path)
+	ctx := context.Background()
+	value := doc{Tags: map[string]int{"zeta": 1, "alpha": 2, "mike": 3, "bravo": 4, "yankee": 5}}
+	_ = a.Create(ctx, "key", value)
+	first, _ := os.ReadFile(path)
+
+	// Act
+	for range 10 {
+		_ = a.Update(ctx, "key", value)
+	}
+	last, _ := os.ReadFile(path)
+
+	// Assert
+	assert.That(t, "map keys must be sorted", string(first), `{"key":{"tags":{"alpha":2,"bravo":4,"mike":3,"yankee":5,"zeta":1}}}`)
+	assert.That(t, "rewriting the same value must not change the bytes", string(last), string(first))
 }
