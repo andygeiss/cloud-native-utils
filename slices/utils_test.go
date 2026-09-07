@@ -1,9 +1,10 @@
-package slices //nolint:testpackage // internal package tests
+package slices_test
 
 import (
 	"testing"
 
 	"github.com/andygeiss/cloud-native-utils/assert"
+	"github.com/andygeiss/cloud-native-utils/slices"
 )
 
 func Test_Contains_With_ExistingElement_Should_ReturnTrue(t *testing.T) {
@@ -11,9 +12,9 @@ func Test_Contains_With_ExistingElement_Should_ReturnTrue(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	resultA := Contains(slice, "a")
-	resultB := Contains(slice, "b")
-	resultC := Contains(slice, "c")
+	resultA := slices.Contains(slice, "a")
+	resultB := slices.Contains(slice, "b")
+	resultC := slices.Contains(slice, "c")
 
 	// Assert
 	assert.That(t, "should contain 'a'", resultA, true)
@@ -26,7 +27,7 @@ func Test_Contains_With_MissingElement_Should_ReturnFalse(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	result := Contains(slice, "d")
+	result := slices.Contains(slice, "d")
 
 	// Assert
 	assert.That(t, "should not contain 'd'", result, false)
@@ -37,7 +38,7 @@ func Test_Contains_With_EmptySlice_Should_ReturnFalse(t *testing.T) {
 	slice := []string{}
 
 	// Act
-	result := Contains(slice, "a")
+	result := slices.Contains(slice, "a")
 
 	// Assert
 	assert.That(t, "empty slice should not contain anything", result, false)
@@ -48,8 +49,8 @@ func Test_Contains_With_Ints_Should_Work(t *testing.T) {
 	slice := []int{1, 2, 3, 4, 5}
 
 	// Act
-	result3 := Contains(slice, 3)
-	result6 := Contains(slice, 6)
+	result3 := slices.Contains(slice, 3)
+	result6 := slices.Contains(slice, 6)
 
 	// Assert
 	assert.That(t, "should contain 3", result3, true)
@@ -61,8 +62,8 @@ func Test_ContainsAny_With_MatchingElements_Should_ReturnTrue(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	resultBD := ContainsAny(slice, []string{"b", "d"})
-	resultC := ContainsAny(slice, []string{"c"})
+	resultBD := slices.ContainsAny(slice, []string{"b", "d"})
+	resultC := slices.ContainsAny(slice, []string{"c"})
 
 	// Assert
 	assert.That(t, "should find 'b' or 'd'", resultBD, true)
@@ -74,7 +75,7 @@ func Test_ContainsAny_With_NoMatchingElements_Should_ReturnFalse(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	result := ContainsAny(slice, []string{"d", "e"})
+	result := slices.ContainsAny(slice, []string{"d", "e"})
 
 	// Assert
 	assert.That(t, "should not find 'd' or 'e'", result, false)
@@ -85,7 +86,7 @@ func Test_ContainsAll_With_AllElements_Should_ReturnTrue(t *testing.T) {
 	slice := []string{"a", "b", "c", "d"}
 
 	// Act
-	result := ContainsAll(slice, []string{"a", "b", "c"})
+	result := slices.ContainsAll(slice, []string{"a", "b", "c"})
 
 	// Assert
 	assert.That(t, "should contain all of a,b,c", result, true)
@@ -96,7 +97,7 @@ func Test_ContainsAll_With_MissingElement_Should_ReturnFalse(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	result := ContainsAll(slice, []string{"a", "b", "d"})
+	result := slices.ContainsAll(slice, []string{"a", "b", "d"})
 
 	// Assert
 	assert.That(t, "should not contain all of a,b,d", result, false)
@@ -107,9 +108,9 @@ func Test_IndexOf_With_ExistingElement_Should_ReturnIndex(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	indexA := IndexOf(slice, "a")
-	indexB := IndexOf(slice, "b")
-	indexC := IndexOf(slice, "c")
+	indexA := slices.IndexOf(slice, "a")
+	indexB := slices.IndexOf(slice, "b")
+	indexC := slices.IndexOf(slice, "c")
 
 	// Assert
 	assert.That(t, "index of 'a' should be 0", indexA, 0)
@@ -122,7 +123,7 @@ func Test_IndexOf_With_MissingElement_Should_ReturnNegativeOne(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	result := IndexOf(slice, "d")
+	result := slices.IndexOf(slice, "d")
 
 	// Assert
 	assert.That(t, "index of 'd' should be -1", result, -1)
@@ -133,7 +134,7 @@ func Test_Filter_With_Predicate_Should_ReturnMatchingElements(t *testing.T) {
 	slice := []int{1, 2, 3, 4, 5, 6}
 
 	// Act
-	result := Filter(slice, func(n int) bool { return n%2 == 0 })
+	result := slices.Filter(slice, func(n int) bool { return n%2 == 0 })
 
 	// Assert
 	assert.That(t, "should have 3 even numbers", len(result), 3)
@@ -147,7 +148,7 @@ func Test_Map_With_Mapper_Should_TransformElements(t *testing.T) {
 	slice := []int{1, 2, 3}
 
 	// Act
-	result := Map(slice, func(n int) int { return n * 2 })
+	result := slices.Map(slice, func(n int) int { return n * 2 })
 
 	// Assert
 	assert.That(t, "should have 3 elements", len(result), 3)
@@ -161,7 +162,7 @@ func Test_Unique_With_Duplicates_Should_RemoveDuplicates(t *testing.T) {
 	slice := []string{"a", "b", "a", "c", "b", "d"}
 
 	// Act
-	result := Unique(slice)
+	result := slices.Unique(slice)
 
 	// Assert
 	assert.That(t, "should have 4 unique elements", len(result), 4)
@@ -173,7 +174,7 @@ func Test_First_With_NonEmptySlice_Should_ReturnFirst(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	first, ok := First(slice)
+	first, ok := slices.First(slice)
 
 	// Assert
 	assert.That(t, "ok should be true", ok, true)
@@ -185,7 +186,7 @@ func Test_First_With_EmptySlice_Should_ReturnFalse(t *testing.T) {
 	slice := []string{}
 
 	// Act
-	_, ok := First(slice)
+	_, ok := slices.First(slice)
 
 	// Assert
 	assert.That(t, "ok should be false", ok, false)
@@ -196,7 +197,7 @@ func Test_Last_With_NonEmptySlice_Should_ReturnLast(t *testing.T) {
 	slice := []string{"a", "b", "c"}
 
 	// Act
-	last, ok := Last(slice)
+	last, ok := slices.Last(slice)
 
 	// Assert
 	assert.That(t, "ok should be true", ok, true)
@@ -208,7 +209,7 @@ func Test_Last_With_EmptySlice_Should_ReturnFalse(t *testing.T) {
 	slice := []string{}
 
 	// Act
-	_, ok := Last(slice)
+	_, ok := slices.Last(slice)
 
 	// Assert
 	assert.That(t, "ok should be false", ok, false)
@@ -219,7 +220,7 @@ func Test_Copy_With_Slice_Should_CreateIndependentCopy(t *testing.T) {
 	original := []int{1, 2, 3}
 
 	// Act
-	copied := Copy(original)
+	copied := slices.Copy(original)
 	copied[0] = 100
 
 	// Assert
@@ -232,7 +233,7 @@ func Test_Copy_With_NilSlice_Should_ReturnNil(t *testing.T) {
 	var original []int = nil
 
 	// Act
-	copied := Copy(original)
+	copied := slices.Copy(original)
 
 	// Assert
 	assert.That(t, "copy of nil should be nil", copied == nil, true)
