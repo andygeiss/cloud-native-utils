@@ -32,7 +32,9 @@ func (a *PostgresAccess[K, V]) Create(ctx context.Context, key K, value V) error
 	defer a.mutex.Unlock()
 
 	// Encode the value and insert it into the table.
-	encoded, err := json.Marshal(value)
+	// Deterministic keeps map keys sorted, so a value stores as the same bytes
+	// whichever backend holds it. Access promises backends are interchangeable.
+	encoded, err := json.Marshal(value, json.Deterministic(true))
 	if err != nil {
 		return err
 	}
@@ -182,7 +184,9 @@ func (a *PostgresAccess[K, V]) Update(ctx context.Context, key K, value V) error
 	defer a.mutex.Unlock()
 
 	// Encode the value as JSON.
-	valueAsString, err := json.Marshal(value)
+	// Deterministic keeps map keys sorted, so a value stores as the same bytes
+	// whichever backend holds it. Access promises backends are interchangeable.
+	valueAsString, err := json.Marshal(value, json.Deterministic(true))
 	if err != nil {
 		return err
 	}
