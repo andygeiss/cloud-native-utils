@@ -69,12 +69,12 @@ cloud-native-utils/
 ## Commands
 
 ```
-just test            Run all tests with coverage
-just test-integration Run integration tests (requires tags)
-just benchmark       Run consistency benchmarks
-just lint            Run golangci-lint
-just plugin          Build test plugins
-just make-certs      Generate mTLS certificates
+make                 Every gate against the working tree (before each commit)
+make ci              Every gate against the committed tree (before each push)
+make test            Unit tests: go test -race -shuffle=on ./...
+make benchmark       Benchmarks for consistency, efficiency and resource
+make certs           Generate mTLS certificates into security/testdata
+make test-integration Tests behind the integration build tag
 ```
 
 ---
@@ -253,9 +253,11 @@ See `.env.example` for the full list. Key variables:
 | Context-first parameters | Cloud-native pattern, cancellation support |
 | No global state | Testability, concurrent safety |
 | `sync.RWMutex` over channels | Simpler for CRUD operations |
-| golangci-lint | Consistent code quality across packages |
 | Sharding + sparse-dense for high-perf storage | 3-4x concurrent throughput, O(1) delete, cache-friendly iteration |
 | KeyedSparseSet → SparseSharding → ShardedSparseAccess | Layered composition: data structure, concurrency, CRUD semantics |
+| Andy's engineering baseline is the source of truth | Stack, versions and gates are decided once, across every project |
+| `make check` is the only gate, and there is no CI server | One person runs the gates; a second machine repeating them is not worth its upkeep |
+| Tests needing a broker, an issuer or certificates sit behind `//go:build integration` | `make check` must never depend on what happens to be running on a developer's machine |
 
 ---
 
@@ -392,4 +394,11 @@ results := store.SearchSimilar(ctx, func(item Item) float64 {
 
 8. **ShardedSparseAccess memory trade-off** - Uses ~2x memory vs InMemoryAccess due to bidirectional key mapping. Use when concurrent throughput is critical; use InMemoryAccess for memory-constrained scenarios.
 
-9. **Similarity search requires sorted indices** - `CosineSimilarity` and `JaccardSimilarity` utility functions require index slices to be sorted in ascending order for O(m+n) merge-loop efficiency. Pre-compute and cache norms for cosine similarity.
+9. **Integration tests are tagged, not `-short`** - A test that needs a Kafka broker, an OIDC issuer or a certificate goes behind `//go:build integration` and runs under `make test-integration`. `make check` runs plain `go test`, so a `testing.Short()` guard would not save it.
+
+10. **The plugin test builds its own plugin** - `extensibility` compiles `testdata/adapter.go` once in `TestMain`. Three things forced that, and each will bite again:
+    - A `.so` must match the loading binary's toolchain *and* its `-race` setting, so no single committed file can satisfy both `go test` and `go test -race`.
+    - On macOS, `plugin.Open` fails with `chained fixups, seg_count does not match number of segments` unless the plugin is linked with `-ldflags=-extldflags=-Wl,-no_fixup_chains`.
+    - Go keys a plugin by its package path, so opening a second build of the same source fails with `plugin already loaded`. Build it once.
+
+11. **Similarity search requires sorted indices** - `CosineSimilarity` and `JaccardSimilarity` utility functions require index slices to be sorted in ascending order for O(m+n) merge-loop efficiency. Pre-compute and cache norms for cosine similarity.
