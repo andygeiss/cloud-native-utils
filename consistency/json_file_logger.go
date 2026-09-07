@@ -70,7 +70,7 @@ func loadLastSequence[K, V any](file string) (uint64, error) {
 	for {
 		var event Event[K, V]
 		if err := decoder.Decode(&event); err != nil {
-			if err.Error() == "EOF" {
+			if errors.Is(err, io.EOF) {
 				break // End of file, stop reading.
 			}
 			return 0, err // Return decoding errors.
