@@ -1,10 +1,11 @@
-package resource // White-box: these tests reach unexported types.
+package resource_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/andygeiss/cloud-native-utils/assert"
+	"github.com/andygeiss/cloud-native-utils/resource"
 )
 
 type testEntity struct {
@@ -15,8 +16,8 @@ type testEntity struct {
 
 func Test_IndexedAccess_With_ValidEntity_Should_Create(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	entity := &testEntity{ID: "1", Email: "test@example.com", Role: "admin"}
 
@@ -29,8 +30,8 @@ func Test_IndexedAccess_With_ValidEntity_Should_Create(t *testing.T) {
 
 func Test_IndexedAccess_With_MultipleEntities_Should_FindByIndex(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	store.AddIndex("role", func(e *testEntity) string { return e.Role })
 	entity1 := &testEntity{ID: "1", Email: "alice@example.com", Role: "admin"}
@@ -52,8 +53,8 @@ func Test_IndexedAccess_With_MultipleEntities_Should_FindByIndex(t *testing.T) {
 
 func Test_IndexedAccess_With_ExistingEntity_Should_FindOneByIndex(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	entity := &testEntity{ID: "1", Email: "alice@example.com", Role: "admin"}
 	_ = store.Create(context.Background(), "1", entity)
@@ -70,8 +71,8 @@ func Test_IndexedAccess_With_ExistingEntity_Should_FindOneByIndex(t *testing.T) 
 
 func Test_IndexedAccess_With_UpdatedEmail_Should_UpdateIndex(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	entity := &testEntity{ID: "1", Email: "old@example.com", Role: "admin"}
 	_ = store.Create(context.Background(), "1", entity)
@@ -90,8 +91,8 @@ func Test_IndexedAccess_With_UpdatedEmail_Should_UpdateIndex(t *testing.T) {
 
 func Test_IndexedAccess_With_DeletedEntity_Should_RemoveFromIndex(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	entity := &testEntity{ID: "1", Email: "test@example.com", Role: "admin"}
 	_ = store.Create(context.Background(), "1", entity)
@@ -107,8 +108,8 @@ func Test_IndexedAccess_With_DeletedEntity_Should_RemoveFromIndex(t *testing.T) 
 
 func Test_IndexedAccess_With_ExistingKey_Should_Read(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 	entity := &testEntity{ID: "1", Email: "test@example.com", Role: "admin"}
 	_ = store.Create(context.Background(), "1", entity)
 
@@ -122,8 +123,8 @@ func Test_IndexedAccess_With_ExistingKey_Should_Read(t *testing.T) {
 
 func Test_IndexedAccess_With_MultipleEntities_Should_ReadAll(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 	_ = store.Create(context.Background(), "1", &testEntity{ID: "1"})
 	_ = store.Create(context.Background(), "2", &testEntity{ID: "2"})
 
@@ -137,8 +138,8 @@ func Test_IndexedAccess_With_MultipleEntities_Should_ReadAll(t *testing.T) {
 
 func Test_IndexedAccess_With_UnknownIndex_Should_ReturnEmpty(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 
 	// Act
 	result, err := store.FindByIndex(context.Background(), "unknown", "value")
@@ -150,8 +151,8 @@ func Test_IndexedAccess_With_UnknownIndex_Should_ReturnEmpty(t *testing.T) {
 
 func Test_IndexedAccess_With_EmptyIndexKey_Should_NotIndex(t *testing.T) {
 	// Arrange
-	base := NewInMemoryAccess[string, *testEntity]()
-	store := NewIndexedAccess(base)
+	base := resource.NewInMemoryAccess[string, *testEntity]()
+	store := resource.NewIndexedAccess(base)
 	store.AddIndex("email", func(e *testEntity) string { return e.Email })
 	entity := &testEntity{ID: "1", Email: "", Role: "admin"} // Empty email
 
