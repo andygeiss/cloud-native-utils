@@ -13,6 +13,9 @@ package efficiency
 //	        query.Norm, doc.Norm,
 //	    )
 //	}, resource.SearchOptions{TopK: 10})
+//
+// Each values slice runs parallel to its indices slice and MUST be at least as
+// long; a shorter one is a programmer error and panics.
 func CosineSimilarity(indicesA, indicesB []int, valuesA, valuesB []float64, normA, normB float64) float64 {
 	if normA == 0 || normB == 0 {
 		return 0.0
