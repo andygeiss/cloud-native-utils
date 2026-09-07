@@ -66,7 +66,7 @@ func generateZipfDocument(rng *rand.Rand, vocabSize, avgTerms int) BenchDoc {
 func createBenchStore(corpusSize, vocabSize, avgTermsPerDoc int) *resource.ShardedSparseAccess[string, BenchDoc] {
 	store := resource.NewShardedSparseAccessWithCapacity[string, BenchDoc](32, corpusSize/32+1)
 	ctx := context.Background()
-	rng := rand.New(rand.NewSource(42)) //nolint:gosec // G404: weak random acceptable for benchmarks.
+	rng := rand.New(rand.NewSource(42)) // A fixed seed keeps corpora comparable between runs.
 
 	for i := range corpusSize {
 		doc := generateZipfDocument(rng, vocabSize, avgTermsPerDoc)
@@ -75,9 +75,8 @@ func createBenchStore(corpusSize, vocabSize, avgTermsPerDoc int) *resource.Shard
 	return store
 }
 
-// newBenchRng creates a seeded random generator for benchmarks.
-//
-//nolint:gosec // G404: weak random acceptable for benchmarks.
+// newBenchRng creates a seeded random generator for benchmarks. The seed is
+// fixed so runs stay comparable.
 func newBenchRng() *rand.Rand {
 	return rand.New(rand.NewSource(99))
 }

@@ -26,7 +26,7 @@ func TLSClientConfig(certFile, keyFile, caFile string) *tls.Config {
 	var rootCAs *x509.CertPool
 	if caFile != "" {
 		caPool := x509.NewCertPool()
-		caCert, err := os.ReadFile(caFile) //nolint:gosec // caFile is a trusted path from config
+		caCert, err := os.ReadFile(caFile) // caFile comes from configuration, never from a request.
 		if err == nil {
 			caPool.AppendCertsFromPEM(caCert)
 			rootCAs = caPool

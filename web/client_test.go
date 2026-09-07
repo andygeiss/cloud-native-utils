@@ -5,7 +5,6 @@ package web_test
 import (
 	"io"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
@@ -23,7 +22,7 @@ func Test_ClientWithTLS_With_ValidCertificates_Should_Succeed(t *testing.T) {
 
 	client := web.NewClientWithTLS(clientCrt, clientKey, caCrt)
 
-	os.Setenv("PORT", "443") //nolint:errcheck,tenv // integration test setup
+	t.Setenv("PORT", "443")
 
 	go func() {
 		mux := http.NewServeMux()

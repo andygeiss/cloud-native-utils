@@ -1,4 +1,4 @@
-package resource //nolint:testpackage // internal package tests for unexported types
+package resource // White-box: these tests reach unexported types.
 
 import (
 	"context"

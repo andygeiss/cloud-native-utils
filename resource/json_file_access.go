@@ -1,4 +1,3 @@
-//nolint:dupl // json and yaml file access have similar structure by design
 package resource
 
 import (
@@ -9,7 +8,8 @@ import (
 	"sync"
 )
 
-// JsonFileAccess is a json file access.
+// JsonFileAccess is a json file access. It mirrors [YamlFileAccess] on
+// purpose, so the two stay easy to compare; do not merge them.
 type JsonFileAccess[K comparable, V any] struct {
 	path  string
 	mutex sync.RWMutex
@@ -187,7 +187,7 @@ func (a *JsonFileAccess[K, V]) Update(ctx context.Context, key K, value V) error
 
 func fromJsonFile[K comparable, V any](path string) (map[K]V, error) {
 	var values map[K]V
-	data, err := os.ReadFile(path) //nolint:gosec // path is validated by caller
+	data, err := os.ReadFile(path) // The caller chooses and validates the path.
 	if err != nil {
 		return nil, err
 	}
