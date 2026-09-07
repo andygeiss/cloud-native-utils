@@ -1,7 +1,8 @@
 package consistency
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	json "encoding/json/v2"
 	"errors"
 	"io"
 	"os"
@@ -65,11 +66,11 @@ func loadLastSequence[K, V any](file string) (uint64, error) {
 	defer func() { _ = f.Close() }()
 
 	// Use a JSON decoder to parse events.
-	decoder := json.NewDecoder(f)
+	decoder := jsontext.NewDecoder(f)
 	var lastSeq uint64
 	for {
 		var event Event[K, V]
-		if err := decoder.Decode(&event); err != nil {
+		if err := json.UnmarshalDecode(decoder, &event); err != nil {
 			if errors.Is(err, io.EOF) {
 				break // End of file, stop reading.
 			}
@@ -96,10 +97,10 @@ func (a *JsonFileLogger[K, V]) run() {
 	}
 	defer func() { _ = file.Close() }()
 	// JSON encoder for writing events to the file.
-	encoder := json.NewEncoder(file)
+	encoder := jsontext.NewEncoder(file)
 	// Process events from the event channel.
 	for event := range a.eventCh {
-		if err := encoder.Encode(event); err != nil {
+		if err := json.MarshalEncode(encoder, event); err != nil {
 			a.errorCh <- err
 			return
 		}
@@ -145,12 +146,12 @@ func (a *JsonFileLogger[K, V]) ReadEvents() (<-chan Event[K, V], <-chan error) {
 		}
 		defer func() { _ = file.Close() }()
 		// Create a JSON decoder to read events from the file.
-		decoder := json.NewDecoder(file)
+		decoder := jsontext.NewDecoder(file)
 		// Read events in a loop until EOF or an error occurs.
 		for {
 			var event Event[K, V]
 			// Decode the next event from the file.
-			if err := decoder.Decode(&event); err != nil {
+			if err := json.UnmarshalDecode(decoder, &event); err != nil {
 				if errors.Is(err, io.EOF) {
 					// Exit gracefully if all events have been read.
 					return

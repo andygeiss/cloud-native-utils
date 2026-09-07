@@ -2,7 +2,7 @@ package resource
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"os"
 	"sync"
@@ -198,7 +198,9 @@ func fromJsonFile[K comparable, V any](path string) (map[K]V, error) {
 }
 
 func intoJsonFile[K comparable, V any](path string, values map[K]V) error {
-	data, err := json.Marshal(values)
+	// Without this, v2 marshals map keys in Go's random map order and the
+	// file churns on every write.
+	data, err := json.Marshal(values, json.Deterministic(true))
 	if err != nil {
 		return err
 	}

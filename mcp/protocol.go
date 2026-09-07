@@ -21,7 +21,7 @@ type Capabilities struct {
 
 // ToolsCapability represents tools capability.
 type ToolsCapability struct {
-	ListChanged bool `json:"listChanged,omitempty"`
+	ListChanged bool `json:"listChanged,omitzero"`
 }
 
 // Implementation represents server or client implementation info.
@@ -44,7 +44,7 @@ type ToolsCallParams struct {
 // ToolsCallResult represents the result of tools/call.
 type ToolsCallResult struct {
 	Content []ContentBlock `json:"content"`
-	IsError bool           `json:"isError,omitempty"`
+	IsError bool           `json:"isError,omitzero"`
 }
 
 // ContentBlock represents a content block in tool results.

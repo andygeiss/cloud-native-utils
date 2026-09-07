@@ -1,7 +1,8 @@
 package consistency_test
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	json "encoding/json/v2"
 	"os"
 	"testing"
 	"time"
@@ -16,11 +17,11 @@ func decodeJson[K, V any](logFile string) ([]consistency.Event[K, V], error) {
 		return nil, err
 	}
 	defer func() { _ = file.Close() }()
-	decoder := json.NewDecoder(file)
+	decoder := jsontext.NewDecoder(file)
 	var events []consistency.Event[K, V]
 	for {
 		var event consistency.Event[K, V]
-		if err := decoder.Decode(&event); err != nil {
+		if err := json.UnmarshalDecode(decoder, &event); err != nil {
 			break
 		}
 		events = append(events, event)
