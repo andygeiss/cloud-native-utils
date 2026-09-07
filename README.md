@@ -313,7 +313,7 @@ client := web.NewClientWithTLS(certFile, keyFile, caFile)
 // Create mux with OIDC, health, liveness, readiness endpoints
 //go:embed assets
 var efs embed.FS
-mux, sessions := web.NewServeMux(ctx, efs)
+mux, sessions, idp := web.NewServeMux(ctx, efs)
 
 // Session-based authentication middleware (for web UI)
 mux.HandleFunc("GET /protected", web.WithAuth(sessions, func(w http.ResponseWriter, r *http.Request) {
@@ -323,7 +323,7 @@ mux.HandleFunc("GET /protected", web.WithAuth(sessions, func(w http.ResponseWrit
 
 // Bearer token authentication middleware (for MCP/API endpoints)
 // Returns JSON-RPC 2.0 errors on auth failure
-verifier := web.IdentityProvider.Verifier() // After OIDC provider initialized
+verifier := idp.Verifier() // After OIDC provider initialized
 mux.HandleFunc("POST /mcp", web.WithBearerAuth(verifier, func(w http.ResponseWriter, r *http.Request) {
     email := r.Context().Value(web.ContextEmail).(string)
     subject := r.Context().Value(web.ContextSubject).(string)

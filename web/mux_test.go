@@ -18,7 +18,7 @@ func Test_NewServeMux_With_CanceledContext_Should_ReturnServiceUnavailable(t *te
 	// Arrange
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	mux, _ := web.NewServeMux(ctx, efs)
+	mux, _, _ := web.NewServeMux(ctx, efs)
 	req := httptest.NewRequest(http.MethodGet, "/readiness", nil)
 	w := httptest.NewRecorder()
 
@@ -32,7 +32,7 @@ func Test_NewServeMux_With_CanceledContext_Should_ReturnServiceUnavailable(t *te
 func Test_NewServeMux_With_LivenessEndpoint_Should_ReturnOK(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := web.NewServeMux(ctx, efs)
+	mux, _, _ := web.NewServeMux(ctx, efs)
 	req := httptest.NewRequest(http.MethodGet, "/liveness", nil)
 	w := httptest.NewRecorder()
 
@@ -47,7 +47,7 @@ func Test_NewServeMux_With_LivenessEndpoint_Should_ReturnOK(t *testing.T) {
 func Test_NewServeMux_With_ReadinessEndpoint_Should_ReturnOK(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := web.NewServeMux(ctx, efs)
+	mux, _, _ := web.NewServeMux(ctx, efs)
 	req := httptest.NewRequest(http.MethodGet, "/readiness", nil)
 	w := httptest.NewRecorder()
 
@@ -61,7 +61,7 @@ func Test_NewServeMux_With_ReadinessEndpoint_Should_ReturnOK(t *testing.T) {
 func Test_NewServeMux_With_StaticAssets_Should_ServeFiles(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := web.NewServeMux(ctx, efs)
+	mux, _, _ := web.NewServeMux(ctx, efs)
 	req := httptest.NewRequest(http.MethodGet, "/static/keepalive.txt", nil)
 	w := httptest.NewRecorder()
 
@@ -76,7 +76,7 @@ func Test_NewServeMux_With_StaticAssets_Should_ServeFiles(t *testing.T) {
 func Test_NewServeMux_With_UnknownRoute_Should_Return404(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := web.NewServeMux(ctx, efs)
+	mux, _, _ := web.NewServeMux(ctx, efs)
 	req := httptest.NewRequest(http.MethodGet, "/unknown", nil)
 	w := httptest.NewRecorder()
 
@@ -92,7 +92,7 @@ func Test_NewServeMux_With_ValidContext_Should_ReturnNonNilMux(t *testing.T) {
 	ctx := context.Background()
 
 	// Act
-	mux, _ := web.NewServeMux(ctx, efs)
+	mux, _, _ := web.NewServeMux(ctx, efs)
 
 	// Assert
 	assert.That(t, "mux must not be nil", mux != nil, true)
@@ -101,7 +101,7 @@ func Test_NewServeMux_With_ValidContext_Should_ReturnNonNilMux(t *testing.T) {
 func Test_NewServeMux_With_HealthEndpoint_Should_Return200(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
-	mux, _ := web.NewServeMux(ctx, efs)
+	mux, _, _ := web.NewServeMux(ctx, efs)
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	w := httptest.NewRecorder()
 
