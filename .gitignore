@@ -1,2 +1,5 @@
 .coverage.pprof
+.env
+*.so
 *.sqlite
+security/testdata/
