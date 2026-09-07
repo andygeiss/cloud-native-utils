@@ -1,3 +1,8 @@
+// Package env reads configuration from environment variables.
+//
+// [Get] is the entry point: it parses the variable into the type of the
+// default value it is given, and returns that default when the variable is
+// unset or cannot be parsed.
 package env
 
 import (

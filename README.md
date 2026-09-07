@@ -7,11 +7,24 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/andygeiss/cloud-native-utils.svg)](https://pkg.go.dev/github.com/andygeiss/cloud-native-utils)
 [![License](https://img.shields.io/github/license/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/blob/master/LICENSE)
 [![Releases](https://img.shields.io/github/v/release/andygeiss/cloud-native-utils)](https://github.com/andygeiss/cloud-native-utils/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/andygeiss/cloud-native-utils)](https://goreportcard.com/report/github.com/andygeiss/cloud-native-utils)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b4e3a9c4859b47f1bc43613970ec8d12)](https://app.codacy.com/gh/andygeiss/cloud-native-utils/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/b4e3a9c4859b47f1bc43613970ec8d12)](https://app.codacy.com/gh/andygeiss/cloud-native-utils/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
 A modular Go library providing reusable utilities for building cloud-native applications.
+
+---
+
+```bash
+go get github.com/andygeiss/cloud-native-utils
+```
+
+```go
+// Wrap any function with a circuit breaker, then a retry.
+fn := stability.Breaker(callPaymentAPI, 3)
+fn = stability.Retry(fn, 5, time.Second)
+out, err := fn(ctx, in)
+```
+
+**Requirements:** Go 1.27 or later.
 
 ---
 
@@ -23,6 +36,7 @@ A modular Go library providing reusable utilities for building cloud-native appl
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Running Tests](#running-tests)
+- [Baseline deviations](#baseline-deviations)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -65,7 +79,7 @@ The library covers common cloud-native needs: resilience patterns, structured lo
 go get github.com/andygeiss/cloud-native-utils
 ```
 
-**Requirements:** Go 1.25.4 or later
+**Requirements:** Go 1.27 or later
 
 ---
 
@@ -341,41 +355,69 @@ cloud-native-utils/
 └── web/             # HTTP server, client, sessions, OIDC
 ```
 
-For detailed architecture and conventions, see [CONTEXT.md](CONTEXT.md).
+For detailed architecture and conventions, see [CLAUDE.md](CLAUDE.md); for the job this library does, see [SPEC.md](SPEC.md).
 
 ---
 
 ## Running Tests
 
+`make` runs every gate in one go: format, vet, fix, staticcheck, govulncheck, tidy,
+test, build.
+
 ```bash
-# Run all tests
-go test ./...
-
-# Run tests with coverage
-go test -cover ./...
-
-# Run tests verbose
-go test -v ./...
-
-# Using just (recommended)
-just test
+make          # the gates against your working tree; run before every commit
+make ci       # the same gates against the committed tree; run before every push
 ```
+
+The inner loop and the extras:
+
+```bash
+make test              # go test -race -shuffle=on ./...
+make benchmark         # the allocation-sensitive packages
+make certs             # a local CA and an mTLS pair, written to security/testdata
+make test-integration  # the tests behind the integration build tag
+```
+
+`make test-integration` needs what the unit tests do not: a Kafka broker for
+`messaging`, an OIDC issuer for `web`, and the certificates `make certs` writes.
+`mkcert` must already be installed.
 
 ---
 
-## Linting
+## Baseline deviations
 
-This project uses [golangci-lint](https://golangci-lint.run/) for code quality checks.
+This library follows [Andy's engineering baseline](https://github.com/andygeiss/baseline).
+Where it differs, it says so here.
 
-```bash
-# Run linter
-just lint
+### Third-party dependencies
 
-# Or directly
-golangci-lint run ./...
-```
+The baseline asks a library for **zero** third-party dependencies, and asks that any
+exception be justified. There are seven.
 
-Configuration is in `.golangci.yml`.
+| Dependency | Used by | Why the standard library is not enough |
+|---|---|---|
+| `github.com/coreos/go-oidc/v3` | web | OIDC discovery and ID-token checking. Hand-rolling it means hand-rolling JWKS rotation and JWT validation — the part of a login flow that must not be homemade. |
+| `github.com/jackc/pgx/v5` | resource | Postgres driver and pool. On the baseline's approved list. |
+| `github.com/segmentio/kafka-go` | messaging | The Kafka wire protocol. There is no standard-library equivalent, and a Kafka-backed dispatcher is why `messaging` exists. |
+| `golang.org/x/crypto` | security | argon2 and bcrypt password hashing. On the approved list. |
+| `golang.org/x/oauth2` | web | The authorization-code flow `go-oidc` is built on. Taking `go-oidc` means taking this. |
+| `gopkg.in/yaml.v3` | resource | YAML parsing. The standard library has none. |
+| `modernc.org/sqlite` | resource | SQLite driver in pure Go, so binaries stay CGO-free. On the approved list. |
+
+Four of them — `go-oidc`, `kafka-go`, `oauth2` and `yaml.v3` — are not on the approved
+list in the baseline's `stack/go.md`. Each stays inside the one package named above, so
+a project that imports only `slices` or `stability` never builds it.
+
+### Rules met by a different route
+
+These are not waivers. The rule holds; this library reaches it another way.
+
+- **A library must not log.** No package here writes a log line by itself. `logging`
+  hands you a configured `*slog.Logger`, and `web.WithLogging` is a middleware you
+  install with your own logger. What is worth logging stays your decision.
+- **Implementation detail belongs under `internal/`.** There is no `internal/`. Every
+  package is public surface on purpose: the module is a set of small packages, not one
+  package with parts hidden inside it.
 
 ---
 
@@ -390,9 +432,9 @@ Contributions are welcome:
 5. Open a Pull Request
 
 Please ensure your code:
-- Follows the conventions in [CONTEXT.md](CONTEXT.md)
+- Follows the conventions in [CLAUDE.md](CLAUDE.md)
 - Includes tests (`*_test.go` files)
-- Passes `just test` and `just lint`
+- Passes `make ci`
 
 ---
 
