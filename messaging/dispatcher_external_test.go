@@ -1,3 +1,5 @@
+//go:build integration
+
 package messaging_test
 
 import (
@@ -17,11 +19,6 @@ func init() {
 }
 
 func Test_ExternalDispatcher_With_PublishMessage_Should_Succeed(t *testing.T) {
-	// Skip this integration test.
-	if testing.Short() {
-		return
-	}
-
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
@@ -34,11 +31,6 @@ func Test_ExternalDispatcher_With_PublishMessage_Should_Succeed(t *testing.T) {
 }
 
 func Test_ExternalDispatcher_With_Roundtrip_Should_CallHandler(t *testing.T) {
-	// Skip this integration test.
-	if testing.Short() {
-		return
-	}
-
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
@@ -58,11 +50,6 @@ func Test_ExternalDispatcher_With_Roundtrip_Should_CallHandler(t *testing.T) {
 }
 
 func Test_ExternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded(t *testing.T) {
-	// Skip this integration test.
-	if testing.Short() {
-		return
-	}
-
 	// Arrange
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
@@ -85,11 +72,6 @@ func Test_ExternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded
 }
 
 func Test_ExternalDispatcher_With_SubscribeHandler_Should_Succeed(t *testing.T) {
-	// Skip this integration test.
-	if testing.Short() {
-		return
-	}
-
 	// Arrange
 	ctx := context.Background()
 	dis := messaging.NewExternalDispatcher()
