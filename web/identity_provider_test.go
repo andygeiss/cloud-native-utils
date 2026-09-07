@@ -1,3 +1,5 @@
+//go:build integration
+
 package web_test
 
 import (
@@ -19,9 +21,6 @@ func setupOIDCEnv(t *testing.T) {
 }
 
 func Test_IdentityProviderCallback_With_MissingState_Should_ReturnBadRequest(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
 	setupOIDCEnv(t)
 
 	// Arrange
@@ -37,9 +36,6 @@ func Test_IdentityProviderCallback_With_MissingState_Should_ReturnBadRequest(t *
 }
 
 func Test_IdentityProviderCallback_With_ValidSession_Should_ProcessRequest(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
 	setupOIDCEnv(t)
 
 	// Arrange
@@ -56,9 +52,6 @@ func Test_IdentityProviderCallback_With_ValidSession_Should_ProcessRequest(t *te
 }
 
 func Test_IdentityProviderLogin_With_ValidRequest_Should_RedirectWithOIDCParams(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
 	setupOIDCEnv(t)
 
 	// Arrange
@@ -80,9 +73,6 @@ func Test_IdentityProviderLogin_With_ValidRequest_Should_RedirectWithOIDCParams(
 }
 
 func Test_IdentityProviderLogout_With_ValidSession_Should_DeleteSessionAndRedirect(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode")
-	}
 	setupOIDCEnv(t)
 
 	// Arrange

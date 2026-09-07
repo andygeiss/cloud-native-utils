@@ -2,6 +2,7 @@ package messaging_test
 
 import (
 	"context"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -47,10 +48,12 @@ func Test_InternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded
 	defer cancel()
 	dis := messaging.NewInternalDispatcher()
 	msg := messaging.NewMessage("my topic", []byte("my message"))
-	val := 0
+	// The handler outlives the context, so it writes val after the assertion
+	// below has read it. An atomic keeps that write race-free.
+	var val atomic.Int64
 	fn := func(_ messaging.Message) (messaging.MessageState, error) {
 		time.Sleep(1 * time.Second)
-		val = 42
+		val.Store(42)
 		return messaging.MessageStateCompleted, nil
 	}
 
@@ -60,7 +63,7 @@ func Test_InternalDispatcher_With_RoundtripTimeout_Should_ReturnDeadlineExceeded
 
 	// Assert
 	assert.That(t, "err must be correct", err, context.DeadlineExceeded)
-	assert.That(t, "val must be 0", val, 0)
+	assert.That(t, "val must be 0", val.Load(), int64(0))
 }
 
 func Test_InternalDispatcher_With_SubscribeHandler_Should_Succeed(t *testing.T) {

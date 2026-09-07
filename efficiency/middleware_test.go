@@ -1,6 +1,8 @@
 package efficiency_test
 
 import (
+	"compress/gzip"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -40,7 +42,16 @@ func Test_WithCompression_With_GzipAcceptEncoding_Should_CompressResponse(t *tes
 	// Assert
 	assert.That(t, "status code must be 200", w.Result().StatusCode, http.StatusOK)
 	assert.That(t, "content encoding must be gzip", w.Header().Get("Content-Encoding"), "gzip")
-	assert.That(t, "content length must be greater than 0", w.Body.Bytes(), []byte{31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 242, 72, 205, 201, 201, 215, 81, 8, 207, 47, 202, 73, 81, 4, 4, 0, 0, 255, 255, 208, 195, 74, 236, 13, 0, 0, 0})
+	// The exact bytes are the flate encoder's business and change between Go
+	// releases, so assert what the middleware promises: it round-trips.
+	zr, err := gzip.NewReader(w.Body)
+	if err != nil {
+		t.Fatalf("opening the gzip reader failed: %v", err)
+	}
+	defer func() { _ = zr.Close() }()
+	body, err := io.ReadAll(zr)
+	assert.That(t, "body must decompress", err, nil)
+	assert.That(t, "body must round-trip", string(body), "Hello, World!")
 }
 
 func Test_WithCompression_With_HeadRequest_Should_NotCompress(t *testing.T) {
