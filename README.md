@@ -33,6 +33,7 @@ out, err := fn(ctx, in)
 - [Overview](#overview)
 - [Features](#features)
 - [Installation](#installation)
+- [Upgrading from v0.5.11](#upgrading-from-v0511)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Running Tests](#running-tests)
@@ -80,6 +81,42 @@ go get github.com/andygeiss/cloud-native-utils
 ```
 
 **Requirements:** Go 1.27 or later
+
+---
+
+## Upgrading from v0.5.11
+
+The module is at v0, so these changes ship without a major version. Four of them
+need an edit or a second look.
+
+**Go 1.27 is required.** `go.mod` declares `go 1.27`, and the packages import
+`encoding/json/v2`, which arrived in that release.
+
+**Templates now escape HTML.** `templating` used `text/template`, which escapes
+nothing, while calling itself an HTML engine. It uses `html/template` now, so a
+value carrying markup renders as text — which is what you want for anything a
+user typed. If you deliberately render markup you produced yourself, wrap it in
+`template.HTML`. This is the only change here that alters output for code that
+was already correct.
+
+**`web.IdentityProvider` is gone.** It was a package-level singleton, so two
+servers in one process shared one provider, including the code verifiers for
+logins still in flight. `NewServeMux` now builds the provider and returns it:
+
+```go
+mux, sessions, idp := web.NewServeMux(ctx, efs)
+verifier := idp.Verifier()
+```
+
+**`mcp` uses `jsontext.Value` for raw JSON.** `Request.ID`, `Request.Params` and
+`Response.ID` changed from `json.RawMessage`, as did the `id` parameter of
+`NewResponse` and `NewErrorResponse`. Both types are `[]byte` underneath, so a
+`[]byte` argument still compiles; a variable declared as `json.RawMessage` needs
+its type changed.
+
+**Stored JSON is now byte-stable.** Every `resource` backend sorts map keys, so a
+value containing a map stores the same bytes on every write and across backends.
+Nothing to change; existing data still loads.
 
 ---
 
