@@ -51,8 +51,6 @@ func TLSClientConfig(certFile, keyFile, caFile string) *tls.Config {
 		},
 		// Set the minimum supported TLS version to 1.2 to avoid insecure older versions.
 		MinVersion: tls.VersionTLS12,
-		// Prefer server-selected cipher suites over client preferences.
-		PreferServerCipherSuites: true,
 		// Use the system's root CA certificates to verify server certificates by default (nil)
 		// or provide a custom pool of trusted certificates.
 		RootCAs: rootCAs,
