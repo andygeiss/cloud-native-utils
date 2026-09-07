@@ -13,8 +13,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// identityProvider represents an identity provider.
-type identityProvider struct {
+// IdentityProvider signs a user in through an OpenID Connect provider.
+//
+// [NewIdentityProvider] builds one. Hold it for the lifetime of the server:
+// the first [IdentityProvider.Login] discovers the provider's configuration
+// and the code verifiers for in-flight logins live inside it.
+type IdentityProvider struct {
 	oauth2Config       *oauth2.Config
 	oidcConfig         *oidc.Config
 	provider           *oidc.Provider
@@ -31,18 +35,15 @@ type IdentityTokenClaims struct {
 }
 
 // NewIdentityProvider creates a new identity provider.
-func NewIdentityProvider() *identityProvider {
-	return &identityProvider{
+func NewIdentityProvider() *IdentityProvider {
+	return &IdentityProvider{
 		stateCodeVerifiers: resource.NewInMemoryAccess[string, string](),
 	}
 }
 
-// IdentityProvider is a singleton instance of the identity provider.
-var IdentityProvider = NewIdentityProvider() //nolint:gochecknoglobals // singleton pattern for identity provider
-
 // Verifier returns an OIDC ID token verifier for Bearer token validation.
 // The identity provider must be initialized first via Login().
-func (a *identityProvider) Verifier() *oidc.IDTokenVerifier {
+func (a *IdentityProvider) Verifier() *oidc.IDTokenVerifier {
 	if a.provider == nil || a.oidcConfig == nil {
 		return nil
 	}
@@ -50,7 +51,7 @@ func (a *identityProvider) Verifier() *oidc.IDTokenVerifier {
 }
 
 // Callback returns a handler function for the identity provider's callback endpoint.
-func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
+func (a *IdentityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Retrieve the code and state parameters from the request URL.
 		ctx := r.Context()
@@ -120,7 +121,7 @@ func (a *identityProvider) Callback(sessions *ServerSessions) http.HandlerFunc {
 }
 
 // Login returns a handler function for the identity provider's login endpoint.
-func (a *identityProvider) Login() http.HandlerFunc {
+func (a *IdentityProvider) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Ensure that the identity provider is properly configured.
 		if a.oauth2Config == nil {
@@ -149,7 +150,7 @@ func (a *identityProvider) Login() http.HandlerFunc {
 }
 
 // Logout handles the logout request.
-func (a *identityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
+func (a *IdentityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Retrieve the session ID from the cookie.
 		cookie, err := r.Cookie("sid")
@@ -174,7 +175,7 @@ func (a *identityProvider) Logout(sessions *ServerSessions) http.HandlerFunc {
 	}
 }
 
-func (a *identityProvider) setup(ctx context.Context) error {
+func (a *IdentityProvider) setup(ctx context.Context) error {
 	// Initialize the identity provider.
 	oidcProvider, err := oidc.NewProvider(ctx, os.Getenv("OIDC_ISSUER"))
 	if err != nil {

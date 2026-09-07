@@ -29,7 +29,7 @@ func Test_IdentityProviderCallback_With_MissingState_Should_ReturnBadRequest(t *
 	r := httptest.NewRequest(http.MethodGet, "/auth/callback", nil)
 
 	// Act
-	web.IdentityProvider.Callback(sessions)(w, r)
+	web.NewIdentityProvider().Callback(sessions)(w, r)
 
 	// Assert
 	assert.That(t, "status code must be 400", w.Code, http.StatusBadRequest)
@@ -45,7 +45,7 @@ func Test_IdentityProviderCallback_With_ValidSession_Should_ProcessRequest(t *te
 	r := httptest.NewRequest(http.MethodGet, "/auth/login", nil)
 
 	// Act
-	web.IdentityProvider.Callback(sessions)(w, r)
+	web.NewIdentityProvider().Callback(sessions)(w, r)
 
 	// Assert
 	assert.That(t, "status code must be 400", w.Code, http.StatusBadRequest)
@@ -59,7 +59,7 @@ func Test_IdentityProviderLogin_With_ValidRequest_Should_RedirectWithOIDCParams(
 	r := httptest.NewRequest(http.MethodGet, "/auth/login", nil)
 
 	// Act
-	web.IdentityProvider.Login()(w, r)
+	web.NewIdentityProvider().Login()(w, r)
 
 	// Assert
 	location := w.Header().Get("Location")
@@ -83,7 +83,7 @@ func Test_IdentityProviderLogout_With_ValidSession_Should_DeleteSessionAndRedire
 	r.AddCookie(&http.Cookie{Name: "sid", Value: "test-id"})
 
 	// Act
-	web.IdentityProvider.Logout(sessions)(w, r)
+	web.NewIdentityProvider().Logout(sessions)(w, r)
 	_, exists := sessions.Read("test-id")
 
 	// Assert
@@ -100,7 +100,7 @@ func Test_IdentityProviderLogout_With_NoSessionCookie_Should_StillClearCookie(t 
 	// No session cookie set
 
 	// Act
-	web.IdentityProvider.Logout(sessions)(w, r)
+	web.NewIdentityProvider().Logout(sessions)(w, r)
 
 	// Assert
 	assert.That(t, "status code must be 302", w.Code, 302)

@@ -10,13 +10,17 @@ import (
 
 // NewServeMux creates a new mux with the liveness check endpoint (/liveness)
 // and the readiness check endpoint (/readiness).
-// The mux is returned along with a new ServerSessions instance.
-func NewServeMux(ctx context.Context, efs fs.FS) (*http.ServeMux, *ServerSessions) {
+// The mux is returned along with the ServerSessions and IdentityProvider it
+// wires, both of which the caller owns.
+func NewServeMux(ctx context.Context, efs fs.FS) (*http.ServeMux, *ServerSessions, *IdentityProvider) {
 	// Create a new mux with liveness and readyness endpoint.
 	mux := http.NewServeMux()
 
 	// Create an in-memory store for the server sessions.
 	serverSessions := NewServerSessions()
+
+	// Create the identity provider these routes sign users in through.
+	identityProvider := NewIdentityProvider()
 
 	// Chroot into the assets directory for static files.
 	staticFS, err := fs.Sub(efs, "assets")
@@ -28,9 +32,9 @@ func NewServeMux(ctx context.Context, efs fs.FS) (*http.ServeMux, *ServerSession
 	mux.Handle("/static/", efficiency.WithCompression(http.FileServerFS(staticFS)))
 
 	// Add OpenID Connect endpoints to the mux.
-	mux.Handle("GET /auth/callback", IdentityProvider.Callback(serverSessions))
-	mux.Handle("GET /auth/login", IdentityProvider.Login())
-	mux.Handle("GET /auth/logout/{session_id}", IdentityProvider.Logout(serverSessions))
+	mux.Handle("GET /auth/callback", identityProvider.Callback(serverSessions))
+	mux.Handle("GET /auth/login", identityProvider.Login())
+	mux.Handle("GET /auth/logout/{session_id}", identityProvider.Logout(serverSessions))
 
 	// Health endpoint
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -53,5 +57,5 @@ func NewServeMux(ctx context.Context, efs fs.FS) (*http.ServeMux, *ServerSession
 		}
 	})
 
-	return mux, serverSessions
+	return mux, serverSessions, identityProvider
 }
