@@ -442,8 +442,15 @@ exception be justified. There are seven.
 | `modernc.org/sqlite` | resource | SQLite driver in pure Go, so binaries stay CGO-free. On the approved list. |
 
 Four of them — `go-oidc`, `kafka-go`, `oauth2` and `yaml.v3` — are not on the approved
-list in the baseline's `stack/go.md`. Each stays inside the one package named above, so
-a project that imports only `slices` or `stability` never builds it.
+list in the baseline's `stack/go.md`. All four were waived 2026-09-07 by Andy, when this
+section was written; each was already in `go.mod`, added by Andy:
+
+- `kafka-go` on 2025-09-18, with the Kafka dispatcher.
+- `go-oidc` and `oauth2` on 2025-09-25, with the identity provider.
+- `yaml.v3` on 2025-12-19, with YAML file support.
+
+Each stays inside the one package named above, so a project that imports only `slices`
+or `stability` never builds it.
 
 ### Rules met by a different route
 
